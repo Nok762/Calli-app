@@ -1,0 +1,2289 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "Bibliotheque d'exercices de callisthenie. Chaque exercice porte les metadonnees necessaires au moteur d'adaptation (substitution par pattern/muscles/materiel, gestion des zones a risque, regression/progression).",
+    "echelle_difficulte": "1 (tres facile) a 10 (skill avance)",
+    "enums": {
+      "type": [
+        "reps",
+        "hold"
+      ],
+      "pattern": [
+        "poussee_horizontale",
+        "poussee_verticale",
+        "tirage_vertical",
+        "tirage_horizontal",
+        "squat",
+        "hinge",
+        "gainage_anti_extension",
+        "gainage_anti_rotation",
+        "straight_arm"
+      ],
+      "equipement": [
+        "aucun",
+        "barre",
+        "anneaux",
+        "parallettes",
+        "elastiques",
+        "surface_surelevee"
+      ],
+      "lateralite": [
+        "bilateral",
+        "unilateral"
+      ],
+      "zones_a_risque": [
+        "poignets",
+        "epaules",
+        "coudes",
+        "lombaires",
+        "genoux"
+      ]
+    },
+    "note_moteur": "Pour substituer un exercice: filtrer sur meme 'pattern' + 'muscles_primaires' recouvrants, compatible avec l'equipement dispo, sans zone a risque signalee, difficulte proche (ou via regression/progression). Le champ 'equivalence' liste des substituts directs pre-valides."
+  },
+  "exercices": [
+    {
+      "id": "hp_pompes_murales",
+      "nom": "Pompes murales",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "aucun",
+        "surface_surelevee"
+      ],
+      "difficulte": 1,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets"
+      ],
+      "regression": [],
+      "progression": [
+        "hp_pompes_inclinees"
+      ],
+      "equivalence": [],
+      "consignes": "Debout face au mur, mains a hauteur d'epaules, corps gaine, flechir les coudes.",
+      "erreurs_frequentes": [
+        "Cambrer le bas du dos",
+        "Ecarter trop les coudes"
+      ]
+    },
+    {
+      "id": "hp_pompes_inclinees",
+      "nom": "Pompes inclinees",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets"
+      ],
+      "regression": [
+        "hp_pompes_murales"
+      ],
+      "progression": [
+        "hp_pompes_genoux",
+        "hp_pompes_completes"
+      ],
+      "equivalence": [
+        "hp_pompes_genoux"
+      ],
+      "consignes": "Mains sur une surface surelevee (table, banc), plus la surface est haute plus c'est facile.",
+      "erreurs_frequentes": [
+        "Hanches qui montent",
+        "Tete qui tombe vers l'avant"
+      ]
+    },
+    {
+      "id": "hp_pompes_genoux",
+      "nom": "Pompes sur genoux",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets"
+      ],
+      "regression": [
+        "hp_pompes_inclinees"
+      ],
+      "progression": [
+        "hp_pompes_completes"
+      ],
+      "equivalence": [
+        "hp_pompes_inclinees"
+      ],
+      "consignes": "Appui sur les genoux, ligne epaules-hanches-genoux droite, gainage actif.",
+      "erreurs_frequentes": [
+        "Fesses relevees",
+        "Amplitude partielle"
+      ]
+    },
+    {
+      "id": "hp_pompes_completes",
+      "nom": "Pompes completes",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "deltoides_anterieurs",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "hp_pompes_genoux",
+        "hp_pompes_inclinees"
+      ],
+      "progression": [
+        "hp_pompes_diamant",
+        "hp_pompes_pseudo_planche",
+        "hp_pompes_archer"
+      ],
+      "equivalence": [],
+      "consignes": "Corps en planche rigide, coudes ~45 deg du buste, descendre poitrine au sol.",
+      "erreurs_frequentes": [
+        "Lombaires cambrees",
+        "Coudes trop ouverts a 90 deg"
+      ]
+    },
+    {
+      "id": "hp_pompes_diamant",
+      "nom": "Pompes diamant",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "pectoraux",
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "coudes"
+      ],
+      "regression": [
+        "hp_pompes_completes"
+      ],
+      "progression": [
+        "hp_pompes_archer",
+        "hp_pompes_une_main"
+      ],
+      "equivalence": [
+        "hp_pompes_pseudo_planche"
+      ],
+      "consignes": "Mains jointes sous le sternum formant un losange, coudes pres du corps.",
+      "erreurs_frequentes": [
+        "Coudes qui s'ecartent",
+        "Douleur poignet si placement trop bas"
+      ]
+    },
+    {
+      "id": "hp_pompes_pseudo_planche",
+      "nom": "Pompes pseudo-planche",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "deltoides_anterieurs",
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "hp_pompes_completes"
+      ],
+      "progression": [
+        "sa_planche_lean",
+        "hp_pompes_une_main"
+      ],
+      "equivalence": [
+        "hp_pompes_diamant"
+      ],
+      "consignes": "Mains au niveau du nombril, doigts vers l'arriere, buste penche en avant. Prepare la planche.",
+      "erreurs_frequentes": [
+        "Ne pas se pencher en avant (perd l'interet)",
+        "Coudes en arriere non controles"
+      ]
+    },
+    {
+      "id": "hp_pompes_archer",
+      "nom": "Pompes archer",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux",
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "deltoides_anterieurs",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 7,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "hp_pompes_completes",
+        "hp_pompes_diamant"
+      ],
+      "progression": [
+        "hp_pompes_une_main"
+      ],
+      "equivalence": [],
+      "consignes": "Poids sur un bras, l'autre tendu sur le cote sert d'appui leger. Alterner.",
+      "erreurs_frequentes": [
+        "Bras d'appui qui pousse trop",
+        "Rotation du bassin"
+      ]
+    },
+    {
+      "id": "hp_pompes_une_main",
+      "nom": "Pompes a une main",
+      "type": "reps",
+      "pattern": "poussee_horizontale",
+      "muscles_primaires": [
+        "pectoraux",
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "deltoides_anterieurs",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 9,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "hp_pompes_archer"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Pieds ecartes pour la stabilite, un bras dans le dos, gainer fort anti-rotation.",
+      "erreurs_frequentes": [
+        "Rotation excessive du buste",
+        "Amplitude reduite"
+      ]
+    },
+    {
+      "id": "sa_planche_lean",
+      "nom": "Planche lean",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "deltoides_anterieurs"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "poignets"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [],
+      "progression": [
+        "sa_planche_tuck"
+      ],
+      "equivalence": [
+        "hp_pompes_pseudo_planche"
+      ],
+      "consignes": "En position de pompe haute, avancer les epaules devant les mains, scapulas protractees.",
+      "erreurs_frequentes": [
+        "Ne pas assez avancer les epaules",
+        "Coudes flechis"
+      ],
+      "skill": "planche",
+      "step": 1
+    },
+    {
+      "id": "sa_planche_tuck",
+      "nom": "Tuck planche",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "deltoides_anterieurs"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "pectoraux",
+        "poignets"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "sa_planche_lean"
+      ],
+      "progression": [
+        "sa_planche_tuck_avancee"
+      ],
+      "equivalence": [],
+      "consignes": "Genoux ramenes a la poitrine, bras tendus, scapulas protractees, bassin retroverse. Critere: tenir 15-20s.",
+      "erreurs_frequentes": [
+        "Coudes qui plient",
+        "Scapulas retractees"
+      ],
+      "skill": "planche",
+      "step": 2
+    },
+    {
+      "id": "sa_planche_tuck_avancee",
+      "nom": "Tuck planche avancee",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "deltoides_anterieurs"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "pectoraux",
+        "poignets"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "sa_planche_tuck"
+      ],
+      "progression": [
+        "sa_planche_straddle"
+      ],
+      "equivalence": [],
+      "consignes": "Depuis la tuck, ouvrir l'angle des hanches (dos parallele au sol, genoux encore flechis). Critere: 10-15s.",
+      "erreurs_frequentes": [
+        "Hanches qui remontent",
+        "Perte de la protraction"
+      ],
+      "skill": "planche",
+      "step": 3
+    },
+    {
+      "id": "sa_planche_straddle",
+      "nom": "Straddle planche",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "deltoides_anterieurs"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "pectoraux",
+        "poignets",
+        "fessiers"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 8,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "sa_planche_tuck_avancee"
+      ],
+      "progression": [
+        "sa_planche_complete"
+      ],
+      "equivalence": [],
+      "consignes": "Jambes tendues et ecartees pour reduire le bras de levier, corps parallele au sol. Critere: 5-10s.",
+      "erreurs_frequentes": [
+        "Jambes non tendues",
+        "Bassin qui s'affaisse"
+      ],
+      "skill": "planche",
+      "step": 4
+    },
+    {
+      "id": "sa_planche_complete",
+      "nom": "Planche complete",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "deltoides_anterieurs"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "pectoraux",
+        "poignets",
+        "fessiers"
+      ],
+      "equipement": [
+        "aucun",
+        "parallettes"
+      ],
+      "difficulte": 10,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "sa_planche_straddle"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Corps entier tendu et parallele au sol, jambes serrees. Skill avance.",
+      "erreurs_frequentes": [
+        "Compensation lombaire",
+        "Epaules pas assez en avant"
+      ],
+      "skill": "planche",
+      "step": 5
+    },
+    {
+      "id": "vp_pompes_pike",
+      "nom": "Pompes pike",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "deltoides"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "trapezes"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "hp_pompes_completes"
+      ],
+      "progression": [
+        "vp_pompes_pike_surelevees",
+        "vp_atr_mur_tenue"
+      ],
+      "equivalence": [
+        "vp_dips_banc"
+      ],
+      "consignes": "En V inverse (fesses hautes), descendre le sommet du crane vers le sol.",
+      "erreurs_frequentes": [
+        "Ne pas assez relever les hanches",
+        "Coudes qui s'ecartent"
+      ]
+    },
+    {
+      "id": "vp_pompes_pike_surelevees",
+      "nom": "Pompes pike surelevees",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "deltoides"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "trapezes"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "vp_pompes_pike"
+      ],
+      "progression": [
+        "vp_atr_mur_pompes"
+      ],
+      "equivalence": [
+        "vp_dips_barres"
+      ],
+      "consignes": "Pieds sur une surface surelevee pour rapprocher de la verticale. Plus haut = plus dur.",
+      "erreurs_frequentes": [
+        "Buste pas assez vertical",
+        "Descente incontrolee"
+      ]
+    },
+    {
+      "id": "vp_atr_mur_tenue",
+      "nom": "ATR au mur (tenue)",
+      "type": "hold",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "deltoides"
+      ],
+      "muscles_secondaires": [
+        "trapezes",
+        "gainage",
+        "poignets"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "vp_pompes_pike"
+      ],
+      "progression": [
+        "vp_atr_mur_pompes",
+        "vp_atr_libre"
+      ],
+      "equivalence": [],
+      "consignes": "Poirier dos ou ventre au mur, corps gaine et aligne, regard entre les mains. Critere: 30-60s.",
+      "erreurs_frequentes": [
+        "Banane lombaire",
+        "Trop d'ecart des mains"
+      ],
+      "skill": "handstand",
+      "step": 1
+    },
+    {
+      "id": "vp_atr_mur_pompes",
+      "nom": "ATR pompes au mur",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "deltoides"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "trapezes",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "vp_atr_mur_tenue",
+        "vp_pompes_pike_surelevees"
+      ],
+      "progression": [
+        "vp_atr_libre"
+      ],
+      "equivalence": [],
+      "consignes": "En poirier au mur, flechir les coudes pour descendre la tete puis remonter.",
+      "erreurs_frequentes": [
+        "Amplitude partielle",
+        "Cambrure excessive"
+      ],
+      "skill": "handstand",
+      "step": 2
+    },
+    {
+      "id": "vp_atr_libre",
+      "nom": "ATR libre",
+      "type": "hold",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "deltoides"
+      ],
+      "muscles_secondaires": [
+        "trapezes",
+        "gainage",
+        "poignets"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "vp_atr_mur_tenue"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Equilibre sur les mains sans appui, corrections par les doigts. Travail d'equilibre.",
+      "erreurs_frequentes": [
+        "Chercher l'equilibre en cambrant",
+        "Regard mal place"
+      ],
+      "skill": "handstand",
+      "step": 3
+    },
+    {
+      "id": "vp_dips_banc",
+      "nom": "Dips sur banc",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "pectoraux",
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "poignets"
+      ],
+      "regression": [],
+      "progression": [
+        "vp_dips_barres"
+      ],
+      "equivalence": [
+        "vp_pompes_pike"
+      ],
+      "consignes": "Mains sur un banc derriere soi, descendre en flechissant les coudes vers l'arriere.",
+      "erreurs_frequentes": [
+        "Epaules qui montent aux oreilles",
+        "Descente trop basse (stress epaule)"
+      ]
+    },
+    {
+      "id": "vp_dips_barres",
+      "nom": "Dips aux barres",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "pectoraux",
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "deltoides_anterieurs"
+      ],
+      "equipement": [
+        "parallettes",
+        "barre"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "vp_dips_banc"
+      ],
+      "progression": [
+        "vp_dips_anneaux",
+        "vt_muscle_up"
+      ],
+      "equivalence": [],
+      "consignes": "Sur barres paralleles, descendre jusqu'a ~90 deg coude, buste legerement penche.",
+      "erreurs_frequentes": [
+        "Descente trop profonde",
+        "Depression scapulaire absente"
+      ]
+    },
+    {
+      "id": "vp_dips_anneaux",
+      "nom": "Dips aux anneaux",
+      "type": "reps",
+      "pattern": "poussee_verticale",
+      "muscles_primaires": [
+        "pectoraux",
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "deltoides_anterieurs",
+        "gainage"
+      ],
+      "equipement": [
+        "anneaux"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "vp_dips_barres"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Sur anneaux (instables), tourner les pouces vers l'exterieur en haut (RTO).",
+      "erreurs_frequentes": [
+        "Anneaux qui partent",
+        "Perte de gainage"
+      ]
+    },
+    {
+      "id": "vt_suspension",
+      "nom": "Suspension (dead hang)",
+      "type": "hold",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "avant_bras",
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "trapezes"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 1,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [],
+      "progression": [
+        "vt_tractions_scapulaires"
+      ],
+      "equivalence": [],
+      "consignes": "Suspendu bras tendus, epaules relachees puis actives. Critere grip: 30-60s.",
+      "erreurs_frequentes": [
+        "Epaules totalement passives trop longtemps"
+      ]
+    },
+    {
+      "id": "vt_tractions_scapulaires",
+      "nom": "Tractions scapulaires",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux",
+        "trapezes"
+      ],
+      "muscles_secondaires": [
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "vt_suspension"
+      ],
+      "progression": [
+        "vt_tractions_negatives",
+        "ht_rowing_horizontal"
+      ],
+      "equivalence": [],
+      "consignes": "Bras tendus, activer les scapulas pour se hisser de quelques cm sans plier les coudes.",
+      "erreurs_frequentes": [
+        "Plier les coudes",
+        "Amplitude nulle"
+      ]
+    },
+    {
+      "id": "vt_tractions_negatives",
+      "nom": "Tractions negatives",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "biceps",
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "vt_tractions_scapulaires"
+      ],
+      "progression": [
+        "vt_tractions_supination",
+        "vt_tractions"
+      ],
+      "equivalence": [],
+      "consignes": "Partir menton au-dessus de la barre (saut) puis descendre lentement (3-5s).",
+      "erreurs_frequentes": [
+        "Descente trop rapide",
+        "Relachement scapulaire brutal"
+      ]
+    },
+    {
+      "id": "vt_tractions_supination",
+      "nom": "Tractions supination (chin-up)",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux",
+        "biceps"
+      ],
+      "muscles_secondaires": [
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "coudes",
+        "epaules"
+      ],
+      "regression": [
+        "vt_tractions_negatives"
+      ],
+      "progression": [
+        "vt_tractions"
+      ],
+      "equivalence": [
+        "vt_tractions"
+      ],
+      "consignes": "Paume vers soi, tirer le menton au-dessus de la barre, amplitude complete.",
+      "erreurs_frequentes": [
+        "Amplitude partielle",
+        "Balancier (kipping)"
+      ]
+    },
+    {
+      "id": "vt_tractions",
+      "nom": "Tractions (pronation)",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "biceps",
+        "avant_bras",
+        "trapezes"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "vt_tractions_supination",
+        "vt_tractions_negatives"
+      ],
+      "progression": [
+        "vt_tractions_archer",
+        "vt_muscle_up",
+        "vt_traction_une_main"
+      ],
+      "equivalence": [
+        "vt_tractions_supination"
+      ],
+      "consignes": "Paume vers l'avant, depression scapulaire d'abord, menton au-dessus de la barre.",
+      "erreurs_frequentes": [
+        "Kipping",
+        "Ne pas descendre bras tendus"
+      ]
+    },
+    {
+      "id": "vt_tractions_archer",
+      "nom": "Tractions archer",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux",
+        "biceps"
+      ],
+      "muscles_secondaires": [
+        "avant_bras",
+        "gainage"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 8,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "vt_tractions"
+      ],
+      "progression": [
+        "vt_traction_une_main"
+      ],
+      "equivalence": [],
+      "consignes": "Tirer vers une main, l'autre bras reste tendu sur la barre. Alterner.",
+      "erreurs_frequentes": [
+        "Bras tendu qui aide trop",
+        "Rotation du buste"
+      ]
+    },
+    {
+      "id": "vt_muscle_up",
+      "nom": "Muscle-up",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux",
+        "pectoraux",
+        "triceps"
+      ],
+      "muscles_secondaires": [
+        "biceps",
+        "gainage"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 8,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes",
+        "poignets"
+      ],
+      "regression": [
+        "vt_tractions",
+        "vp_dips_barres"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Traction explosive haute + transition du buste au-dessus de la barre + dips. Enchainement pull+push.",
+      "erreurs_frequentes": [
+        "Kipping excessif",
+        "Transition sans force (chip)"
+      ],
+      "skill": "muscle_up",
+      "step": 1
+    },
+    {
+      "id": "vt_traction_une_main",
+      "nom": "Traction a une main",
+      "type": "reps",
+      "pattern": "tirage_vertical",
+      "muscles_primaires": [
+        "dorsaux",
+        "biceps"
+      ],
+      "muscles_secondaires": [
+        "avant_bras",
+        "gainage"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 10,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "vt_tractions_archer"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Une seule main sur la barre, gainer fort contre la rotation. Skill avance.",
+      "erreurs_frequentes": [
+        "Rotation incontrolee",
+        "Charge sur le coude sans echauffement"
+      ],
+      "skill": "one_arm_pull_up",
+      "step": 1
+    },
+    {
+      "id": "sa_tirage_bras_tendus_elastique",
+      "nom": "Tirage bras tendus (elastique)",
+      "type": "reps",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "gainage"
+      ],
+      "equipement": [
+        "elastiques"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [],
+      "progression": [
+        "sa_front_lever_tuck"
+      ],
+      "equivalence": [],
+      "consignes": "Accessoire straight-arm : tirer l'elastique bras tendus, du haut vers les hanches. Prepare les leviers.",
+      "erreurs_frequentes": [
+        "Plier les coudes",
+        "Utiliser l'elan"
+      ]
+    },
+    {
+      "id": "sa_front_lever_tuck",
+      "nom": "Front lever tuck",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "sa_tirage_bras_tendus_elastique"
+      ],
+      "progression": [
+        "sa_front_lever_tuck_avance"
+      ],
+      "equivalence": [],
+      "consignes": "Suspendu, genoux a la poitrine, dos parallele au sol, bras tendus, scapulas depressees. Critere: 15-20s.",
+      "erreurs_frequentes": [
+        "Coudes flechis",
+        "Scapulas elevees"
+      ],
+      "skill": "front_lever",
+      "step": 1
+    },
+    {
+      "id": "sa_front_lever_tuck_avance",
+      "nom": "Front lever tuck avance",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "sa_front_lever_tuck"
+      ],
+      "progression": [
+        "sa_front_lever_straddle"
+      ],
+      "equivalence": [],
+      "consignes": "Depuis la tuck, ouvrir l'angle hanche/genou (dos plat, cuisses ~horizontales). Critere: 10-15s.",
+      "erreurs_frequentes": [
+        "Hanches qui tombent",
+        "Perte de la depression scapulaire"
+      ],
+      "skill": "front_lever",
+      "step": 2
+    },
+    {
+      "id": "sa_front_lever_straddle",
+      "nom": "Front lever straddle",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "avant_bras",
+        "fessiers"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 8,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "sa_front_lever_tuck_avance"
+      ],
+      "progression": [
+        "sa_front_lever_complet"
+      ],
+      "equivalence": [],
+      "consignes": "Jambes tendues ecartees, corps horizontal. Critere: 5-10s.",
+      "erreurs_frequentes": [
+        "Bassin qui s'affaisse",
+        "Jambes flechies"
+      ],
+      "skill": "front_lever",
+      "step": 3
+    },
+    {
+      "id": "sa_front_lever_complet",
+      "nom": "Front lever complet",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "avant_bras",
+        "fessiers"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 9,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "sa_front_lever_straddle"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Corps entier horizontal, jambes serrees et tendues, bras tendus. Skill avance.",
+      "erreurs_frequentes": [
+        "Cambrure lombaire",
+        "Epaules non depressees"
+      ],
+      "skill": "front_lever",
+      "step": 4
+    },
+    {
+      "id": "ht_rowing_incline",
+      "nom": "Rowing incline (sous table)",
+      "type": "reps",
+      "pattern": "tirage_horizontal",
+      "muscles_primaires": [
+        "dorsaux",
+        "trapezes"
+      ],
+      "muscles_secondaires": [
+        "biceps",
+        "avant_bras"
+      ],
+      "equipement": [
+        "surface_surelevee",
+        "barre"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [],
+      "progression": [
+        "ht_rowing_horizontal"
+      ],
+      "equivalence": [
+        "vt_tractions_scapulaires"
+      ],
+      "consignes": "Corps oblique sous une barre/table haute, tirer la poitrine vers l'appui. Plus le corps est vertical, plus c'est facile.",
+      "erreurs_frequentes": [
+        "Hanches qui tombent",
+        "Amplitude partielle"
+      ]
+    },
+    {
+      "id": "ht_rowing_horizontal",
+      "nom": "Rowing horizontal (australien)",
+      "type": "reps",
+      "pattern": "tirage_horizontal",
+      "muscles_primaires": [
+        "dorsaux",
+        "trapezes"
+      ],
+      "muscles_secondaires": [
+        "biceps",
+        "avant_bras",
+        "gainage"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "ht_rowing_incline"
+      ],
+      "progression": [
+        "ht_rowing_archer"
+      ],
+      "equivalence": [
+        "vt_tractions_scapulaires"
+      ],
+      "consignes": "Corps droit et horizontal sous la barre, talons au sol, tirer la poitrine a la barre.",
+      "erreurs_frequentes": [
+        "Bassin relache",
+        "Epaules qui montent"
+      ]
+    },
+    {
+      "id": "ht_rowing_archer",
+      "nom": "Rowing archer",
+      "type": "reps",
+      "pattern": "tirage_horizontal",
+      "muscles_primaires": [
+        "dorsaux",
+        "biceps"
+      ],
+      "muscles_secondaires": [
+        "avant_bras",
+        "gainage"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 6,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "ht_rowing_horizontal"
+      ],
+      "progression": [
+        "ht_rowing_une_main"
+      ],
+      "equivalence": [],
+      "consignes": "Tirer vers une main, l'autre bras s'etend sur le cote. Alterner.",
+      "erreurs_frequentes": [
+        "Rotation du bassin",
+        "Bras d'appui qui tire"
+      ]
+    },
+    {
+      "id": "ht_rowing_une_main",
+      "nom": "Rowing a une main",
+      "type": "reps",
+      "pattern": "tirage_horizontal",
+      "muscles_primaires": [
+        "dorsaux",
+        "biceps"
+      ],
+      "muscles_secondaires": [
+        "avant_bras",
+        "gainage"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 8,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "ht_rowing_archer"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Une seule main sur l'appui, gainer anti-rotation, tirer la poitrine.",
+      "erreurs_frequentes": [
+        "Rotation incontrolee",
+        "Amplitude reduite"
+      ]
+    },
+    {
+      "id": "sa_back_lever_tuck",
+      "nom": "Back lever tuck",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux",
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "biceps"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "sa_front_lever_tuck"
+      ],
+      "progression": [
+        "sa_back_lever_straddle"
+      ],
+      "equivalence": [],
+      "consignes": "Dos vers le sol, genoux replies, bras tendus derriere. Critere: 15-20s. Echauffer les epaules++.",
+      "erreurs_frequentes": [
+        "Coudes flechis",
+        "Ouvrir trop vite les epaules"
+      ],
+      "skill": "back_lever",
+      "step": 1
+    },
+    {
+      "id": "sa_back_lever_straddle",
+      "nom": "Back lever straddle",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux",
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "biceps"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 7,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "sa_back_lever_tuck"
+      ],
+      "progression": [
+        "sa_back_lever_complet"
+      ],
+      "equivalence": [],
+      "consignes": "Jambes tendues ecartees, corps horizontal face au sol. Critere: 5-10s.",
+      "erreurs_frequentes": [
+        "Bassin qui casse",
+        "Manque de mobilite epaule"
+      ],
+      "skill": "back_lever",
+      "step": 2
+    },
+    {
+      "id": "sa_back_lever_complet",
+      "nom": "Back lever complet",
+      "type": "hold",
+      "pattern": "straight_arm",
+      "muscles_primaires": [
+        "dorsaux",
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "biceps",
+        "fessiers"
+      ],
+      "equipement": [
+        "barre",
+        "anneaux"
+      ],
+      "difficulte": 8,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "coudes"
+      ],
+      "regression": [
+        "sa_back_lever_straddle"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Corps entier horizontal, jambes serrees, face au sol, bras tendus. Skill avance.",
+      "erreurs_frequentes": [
+        "Cambrure",
+        "Descente non controlee"
+      ],
+      "skill": "back_lever",
+      "step": 3
+    },
+    {
+      "id": "sq_squat_libre",
+      "nom": "Squat au poids du corps",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [],
+      "progression": [
+        "sq_squat_fendu",
+        "sq_squat_bulgare"
+      ],
+      "equivalence": [],
+      "consignes": "Pieds largeur epaules, descendre cuisses paralleles minimum, dos neutre.",
+      "erreurs_frequentes": [
+        "Genoux qui rentrent",
+        "Talons qui decollent"
+      ]
+    },
+    {
+      "id": "sq_squat_fendu",
+      "nom": "Squat fendu (split squat)",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_libre"
+      ],
+      "progression": [
+        "sq_squat_bulgare"
+      ],
+      "equivalence": [],
+      "consignes": "Grand pas en avant, descendre le genou arriere vers le sol, poids sur la jambe avant.",
+      "erreurs_frequentes": [
+        "Buste qui bascule",
+        "Genou avant qui depasse trop"
+      ]
+    },
+    {
+      "id": "sq_squat_bulgare",
+      "nom": "Squat bulgare",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 5,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_fendu"
+      ],
+      "progression": [
+        "sq_pistol_boite",
+        "sq_shrimp"
+      ],
+      "equivalence": [],
+      "consignes": "Pied arriere sureleve, descendre en fente profonde sur la jambe avant.",
+      "erreurs_frequentes": [
+        "Appui sur la jambe arriere",
+        "Bascule laterale"
+      ]
+    },
+    {
+      "id": "sq_pistol_boite",
+      "nom": "Pistol assis (sur boite)",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 6,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_bulgare"
+      ],
+      "progression": [
+        "sq_pistol"
+      ],
+      "equivalence": [
+        "sq_shrimp"
+      ],
+      "consignes": "Descendre sur une jambe jusqu'a s'asseoir sur une boite, puis remonter. Baisser la boite pour progresser.",
+      "erreurs_frequentes": [
+        "Se laisser tomber",
+        "Talon qui decolle"
+      ],
+      "skill": "pistol",
+      "step": 1
+    },
+    {
+      "id": "sq_shrimp",
+      "nom": "Shrimp squat",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 7,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_bulgare"
+      ],
+      "progression": [
+        "sq_pistol"
+      ],
+      "equivalence": [
+        "sq_pistol_boite"
+      ],
+      "consignes": "Sur une jambe, attraper le pied arriere, descendre le genou arriere au sol.",
+      "erreurs_frequentes": [
+        "Perte d'equilibre",
+        "Buste trop penche"
+      ]
+    },
+    {
+      "id": "sq_pistol",
+      "nom": "Pistol squat",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "gainage",
+        "mollets"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 8,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_pistol_boite",
+        "sq_shrimp"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Squat complet sur une jambe, l'autre tendue devant, remonter sans appui. Critere skill.",
+      "erreurs_frequentes": [
+        "Talon qui decolle",
+        "Effondrement du genou vers l'interieur"
+      ],
+      "skill": "pistol",
+      "step": 2
+    },
+    {
+      "id": "hg_pont_fessier",
+      "nom": "Pont fessier",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "lombaires"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [],
+      "progression": [
+        "hg_pont_fessier_une_jambe",
+        "hg_nordic_negatif"
+      ],
+      "equivalence": [],
+      "consignes": "Allonge dos au sol, pieds a plat, monter le bassin en serrant les fessiers.",
+      "erreurs_frequentes": [
+        "Hyperextension lombaire",
+        "Ne pas serrer les fessiers en haut"
+      ]
+    },
+    {
+      "id": "hg_pont_fessier_une_jambe",
+      "nom": "Pont fessier une jambe",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "lombaires",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [
+        "hg_pont_fessier"
+      ],
+      "progression": [
+        "hg_nordic_negatif"
+      ],
+      "equivalence": [],
+      "consignes": "Idem pont fessier mais une jambe tendue, monter le bassin sur l'appui unique.",
+      "erreurs_frequentes": [
+        "Bassin qui s'incline",
+        "Cambrure excessive"
+      ]
+    },
+    {
+      "id": "hg_nordic_negatif",
+      "nom": "Nordic curl negatif",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "ischios"
+      ],
+      "muscles_secondaires": [
+        "fessiers",
+        "mollets"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "genoux",
+        "lombaires"
+      ],
+      "regression": [
+        "hg_pont_fessier_une_jambe"
+      ],
+      "progression": [
+        "hg_nordic"
+      ],
+      "equivalence": [],
+      "consignes": "Genoux fixes/cales, descendre le buste vers l'avant le plus lentement possible, freiner avec les ischios.",
+      "erreurs_frequentes": [
+        "Casser au niveau des hanches",
+        "Chute non freinee"
+      ],
+      "skill": "nordic",
+      "step": 1
+    },
+    {
+      "id": "hg_nordic",
+      "nom": "Nordic curl complet",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "ischios"
+      ],
+      "muscles_secondaires": [
+        "fessiers",
+        "mollets",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 9,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "genoux",
+        "lombaires"
+      ],
+      "regression": [
+        "hg_nordic_negatif"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Descente ET remontee controlees par les ischios, corps gaine et aligne. Skill avance.",
+      "erreurs_frequentes": [
+        "Plier aux hanches pour tricher",
+        "Amplitude reduite"
+      ],
+      "skill": "nordic",
+      "step": 2
+    },
+    {
+      "id": "ax_gainage_planche",
+      "nom": "Gainage planche",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage"
+      ],
+      "muscles_secondaires": [
+        "deltoides_anterieurs",
+        "fessiers"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires",
+        "epaules"
+      ],
+      "regression": [],
+      "progression": [
+        "ax_hollow_hold"
+      ],
+      "equivalence": [],
+      "consignes": "Sur les avant-bras, corps aligne tete-talons, nombril rentre. Critere: 45-60s.",
+      "erreurs_frequentes": [
+        "Fesses hautes ou basses",
+        "Retenir sa respiration"
+      ]
+    },
+    {
+      "id": "ax_hollow_hold",
+      "nom": "Hollow hold",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage"
+      ],
+      "muscles_secondaires": [
+        "fléchisseurs_hanche"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [
+        "ax_gainage_planche"
+      ],
+      "progression": [
+        "ax_hollow_rocks",
+        "ax_l_sit_tuck"
+      ],
+      "equivalence": [],
+      "consignes": "Dos au sol, bas du dos plaque, epaules et jambes decollees en cuvette. Critere: 30-45s.",
+      "erreurs_frequentes": [
+        "Bas du dos qui decolle",
+        "Jambes trop hautes (triche)"
+      ]
+    },
+    {
+      "id": "ax_hollow_rocks",
+      "nom": "Hollow rocks",
+      "type": "reps",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage"
+      ],
+      "muscles_secondaires": [
+        "fléchisseurs_hanche"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [
+        "ax_hollow_hold"
+      ],
+      "progression": [
+        "ax_dragon_flag_negatif"
+      ],
+      "equivalence": [],
+      "consignes": "En position hollow, se balancer d'avant en arriere en gardant la cuvette.",
+      "erreurs_frequentes": [
+        "Perte de la position hollow pendant le rock",
+        "Elan par les bras"
+      ]
+    },
+    {
+      "id": "ax_dragon_flag_negatif",
+      "nom": "Dragon flag negatif",
+      "type": "reps",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage"
+      ],
+      "muscles_secondaires": [
+        "dorsaux",
+        "fessiers"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires",
+        "epaules"
+      ],
+      "regression": [
+        "ax_hollow_rocks"
+      ],
+      "progression": [
+        "ax_dragon_flag"
+      ],
+      "equivalence": [],
+      "consignes": "Agripper un appui derriere la tete, corps tendu decolle, descendre lentement en une ligne.",
+      "erreurs_frequentes": [
+        "Casser aux hanches",
+        "Cambrure lombaire pendant la descente"
+      ],
+      "skill": "dragon_flag",
+      "step": 1
+    },
+    {
+      "id": "ax_dragon_flag",
+      "nom": "Dragon flag",
+      "type": "reps",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage"
+      ],
+      "muscles_secondaires": [
+        "dorsaux",
+        "fessiers"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 8,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires",
+        "epaules"
+      ],
+      "regression": [
+        "ax_dragon_flag_negatif"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Corps entier tendu et rigide en appui sur les epaules, monter et descendre en une ligne. Skill avance.",
+      "erreurs_frequentes": [
+        "Pliure aux hanches",
+        "Perte de rigidite"
+      ],
+      "skill": "dragon_flag",
+      "step": 2
+    },
+    {
+      "id": "ax_l_sit_tuck",
+      "nom": "Tuck L-sit",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "quadriceps"
+      ],
+      "equipement": [
+        "parallettes",
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "ax_hollow_hold"
+      ],
+      "progression": [
+        "ax_l_sit_une_jambe",
+        "ax_l_sit"
+      ],
+      "equivalence": [],
+      "consignes": "En appui mains au sol/parallettes, decoller les fesses, genoux replies vers la poitrine. Critere: 15-20s.",
+      "erreurs_frequentes": [
+        "Epaules pas depressees",
+        "Bassin non decolle"
+      ],
+      "skill": "l_sit",
+      "step": 1
+    },
+    {
+      "id": "ax_l_sit_une_jambe",
+      "nom": "L-sit une jambe",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "quadriceps"
+      ],
+      "equipement": [
+        "parallettes",
+        "aucun"
+      ],
+      "difficulte": 5,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "ax_l_sit_tuck"
+      ],
+      "progression": [
+        "ax_l_sit"
+      ],
+      "equivalence": [],
+      "consignes": "Depuis la tuck, tendre une jambe a l'horizontale, l'autre repliee. Alterner.",
+      "erreurs_frequentes": [
+        "Jambe non tendue",
+        "Bascule du bassin"
+      ],
+      "skill": "l_sit",
+      "step": 2
+    },
+    {
+      "id": "ax_l_sit",
+      "nom": "L-sit",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "quadriceps"
+      ],
+      "equipement": [
+        "parallettes",
+        "aucun"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "ax_l_sit_une_jambe"
+      ],
+      "progression": [
+        "ax_v_sit"
+      ],
+      "equivalence": [],
+      "consignes": "Deux jambes tendues a l'horizontale, corps en L, epaules depressees. Critere: 10-15s.",
+      "erreurs_frequentes": [
+        "Jambes qui tombent",
+        "Epaules qui montent"
+      ],
+      "skill": "l_sit",
+      "step": 3
+    },
+    {
+      "id": "ax_v_sit",
+      "nom": "V-sit",
+      "type": "hold",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "triceps",
+        "quadriceps",
+        "dorsaux"
+      ],
+      "equipement": [
+        "parallettes"
+      ],
+      "difficulte": 9,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "epaules"
+      ],
+      "regression": [
+        "ax_l_sit"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Depuis le L-sit, remonter les jambes au-dessus de l'horizontale vers un V. Skill avance.",
+      "erreurs_frequentes": [
+        "Compression insuffisante",
+        "Bascule arriere"
+      ],
+      "skill": "v_sit",
+      "step": 1
+    },
+    {
+      "id": "ar_gainage_lateral",
+      "nom": "Gainage lateral",
+      "type": "hold",
+      "pattern": "gainage_anti_rotation",
+      "muscles_primaires": [
+        "gainage",
+        "obliques"
+      ],
+      "muscles_secondaires": [
+        "fessiers",
+        "deltoides"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules",
+        "lombaires"
+      ],
+      "regression": [],
+      "progression": [
+        "ar_releve_genoux_suspendu"
+      ],
+      "equivalence": [],
+      "consignes": "Sur un avant-bras, corps aligne de profil, hanche haute. Critere: 30-45s par cote.",
+      "erreurs_frequentes": [
+        "Hanche qui s'affaisse",
+        "Rotation du buste"
+      ]
+    },
+    {
+      "id": "ar_releve_genoux_suspendu",
+      "nom": "Releve de genoux suspendu",
+      "type": "reps",
+      "pattern": "gainage_anti_rotation",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "obliques",
+        "avant_bras"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "lombaires"
+      ],
+      "regression": [
+        "ar_gainage_lateral"
+      ],
+      "progression": [
+        "ar_releve_jambes_suspendu"
+      ],
+      "equivalence": [],
+      "consignes": "Suspendu a la barre, monter les genoux vers la poitrine sans balancier.",
+      "erreurs_frequentes": [
+        "Balancier (kipping)",
+        "Retroversion absente"
+      ]
+    },
+    {
+      "id": "ar_releve_jambes_suspendu",
+      "nom": "Releve de jambes suspendu",
+      "type": "reps",
+      "pattern": "gainage_anti_rotation",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "obliques",
+        "avant_bras",
+        "dorsaux"
+      ],
+      "equipement": [
+        "barre"
+      ],
+      "difficulte": 6,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "epaules",
+        "lombaires"
+      ],
+      "regression": [
+        "ar_releve_genoux_suspendu"
+      ],
+      "progression": [],
+      "equivalence": [],
+      "consignes": "Suspendu, monter les jambes tendues jusqu'a l'horizontale ou plus (toes-to-bar).",
+      "erreurs_frequentes": [
+        "Elan",
+        "Jambes flechies"
+      ]
+    }
+  ]
+}

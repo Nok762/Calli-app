@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "description": "Criteres de deblocage structures pour les arbres de skills. Le seed (exercices.seed.json) reste la source de verite des exercices ; ce fichier ne fait qu'ajouter le critere machine-lisible de chaque etape (valeurs reprises des consignes du seed quand elles existent, proposees sinon).",
+  "ordre": [
+    "planche",
+    "front_lever",
+    "back_lever",
+    "muscle_up",
+    "handstand",
+    "pistol",
+    "l_sit",
+    "v_sit",
+    "dragon_flag",
+    "nordic",
+    "one_arm_pull_up"
+  ],
+  "noms": {
+    "planche": "Planche",
+    "front_lever": "Front lever",
+    "back_lever": "Back lever",
+    "muscle_up": "Muscle-up",
+    "handstand": "Handstand",
+    "pistol": "Pistol squat",
+    "l_sit": "L-sit",
+    "v_sit": "V-sit",
+    "dragon_flag": "Dragon flag",
+    "nordic": "Nordic curl",
+    "one_arm_pull_up": "Traction à une main"
+  },
+  "criteres": [
+    { "skill": "planche", "step": 1, "exerciceId": "sa_planche_lean", "critere": { "type": "hold", "valeur": 30 } },
+    { "skill": "planche", "step": 2, "exerciceId": "sa_planche_tuck", "critere": { "type": "hold", "valeur": 20 } },
+    { "skill": "planche", "step": 3, "exerciceId": "sa_planche_tuck_avancee", "critere": { "type": "hold", "valeur": 15 } },
+    { "skill": "planche", "step": 4, "exerciceId": "sa_planche_straddle", "critere": { "type": "hold", "valeur": 10 } },
+    { "skill": "planche", "step": 5, "exerciceId": "sa_planche_complete", "critere": { "type": "hold", "valeur": 5 } },
+
+    { "skill": "front_lever", "step": 1, "exerciceId": "sa_front_lever_tuck", "critere": { "type": "hold", "valeur": 20 } },
+    { "skill": "front_lever", "step": 2, "exerciceId": "sa_front_lever_tuck_avance", "critere": { "type": "hold", "valeur": 15 } },
+    { "skill": "front_lever", "step": 3, "exerciceId": "sa_front_lever_straddle", "critere": { "type": "hold", "valeur": 10 } },
+    { "skill": "front_lever", "step": 4, "exerciceId": "sa_front_lever_complet", "critere": { "type": "hold", "valeur": 5 } },
+
+    { "skill": "back_lever", "step": 1, "exerciceId": "sa_back_lever_tuck", "critere": { "type": "hold", "valeur": 20 } },
+    { "skill": "back_lever", "step": 2, "exerciceId": "sa_back_lever_straddle", "critere": { "type": "hold", "valeur": 10 } },
+    { "skill": "back_lever", "step": 3, "exerciceId": "sa_back_lever_complet", "critere": { "type": "hold", "valeur": 5 } },
+
+    { "skill": "muscle_up", "step": 1, "exerciceId": "vt_muscle_up", "critere": { "type": "reps", "valeur": 1 } },
+
+    { "skill": "handstand", "step": 1, "exerciceId": "vp_atr_mur_tenue", "critere": { "type": "hold", "valeur": 60 } },
+    { "skill": "handstand", "step": 2, "exerciceId": "vp_atr_mur_pompes", "critere": { "type": "reps", "valeur": 5 } },
+    { "skill": "handstand", "step": 3, "exerciceId": "vp_atr_libre", "critere": { "type": "hold", "valeur": 15 } },
+
+    { "skill": "pistol", "step": 1, "exerciceId": "sq_pistol_boite", "critere": { "type": "reps", "valeur": 5 } },
+    { "skill": "pistol", "step": 2, "exerciceId": "sq_pistol", "critere": { "type": "reps", "valeur": 5 } },
+
+    { "skill": "l_sit", "step": 1, "exerciceId": "ax_l_sit_tuck", "critere": { "type": "hold", "valeur": 20 } },
+    { "skill": "l_sit", "step": 2, "exerciceId": "ax_l_sit_une_jambe", "critere": { "type": "hold", "valeur": 15 } },
+    { "skill": "l_sit", "step": 3, "exerciceId": "ax_l_sit", "critere": { "type": "hold", "valeur": 15 } },
+
+    { "skill": "v_sit", "step": 1, "exerciceId": "ax_v_sit", "critere": { "type": "hold", "valeur": 5 } },
+
+    { "skill": "dragon_flag", "step": 1, "exerciceId": "ax_dragon_flag_negatif", "critere": { "type": "reps", "valeur": 5 } },
+    { "skill": "dragon_flag", "step": 2, "exerciceId": "ax_dragon_flag", "critere": { "type": "reps", "valeur": 3 } },
+
+    { "skill": "nordic", "step": 1, "exerciceId": "hg_nordic_negatif", "critere": { "type": "reps", "valeur": 5 } },
+    { "skill": "nordic", "step": 2, "exerciceId": "hg_nordic", "critere": { "type": "reps", "valeur": 3 } },
+
+    { "skill": "one_arm_pull_up", "step": 1, "exerciceId": "vt_traction_une_main", "critere": { "type": "reps", "valeur": 1 } }
+  ]
+}

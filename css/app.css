@@ -1,0 +1,384 @@
+/* app.css — mobile-first, dark par défaut, une seule couleur d'accent. */
+
+:root {
+  --fond: #0e1318;
+  --fond-2: #161d25;
+  --fond-3: #1f2833;
+  --texte: #e8edf2;
+  --texte-2: #8a94a3;
+  --accent: #3ddc97;
+  --accent-texte: #06251a; /* texte posé sur fond accent */
+  --danger: #e05656;
+  --bord: #232d38;
+  --rayon: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+#vue {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px calc(90px + env(safe-area-inset-bottom));
+}
+
+h1 { font-size: 1.5rem; margin: 8px 0 16px; }
+h2 { font-size: 1.15rem; margin: 4px 0 10px; }
+h3 {
+  font-size: .78rem;
+  margin: 14px 0 6px;
+  color: var(--texte-2);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+a { color: var(--accent); text-decoration: none; }
+p { line-height: 1.5; margin: 6px 0; }
+ul { margin: 6px 0; padding-left: 20px; }
+li { line-height: 1.5; }
+
+.chargement { text-align: center; padding: 60px 0; color: var(--texte-2); }
+.texte-2 { color: var(--texte-2); font-size: .85rem; }
+.centre { text-align: center; padding: 24px 0; line-height: 1.6; }
+.retour { display: inline-block; margin-bottom: 8px; font-size: .9rem; }
+
+/* --- Navigation basse ------------------------------------------------------ */
+#nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  background: var(--fond-2);
+  border-top: 1px solid var(--bord);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 20;
+}
+#nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 8px;
+  color: var(--texte-2);
+  font-size: .72rem;
+}
+#nav a.actif { color: var(--accent); }
+.nav-ico { font-size: 1.3rem; }
+
+/* --- Cartes et listes -------------------------------------------------------- */
+.liste { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.carte {
+  background: var(--fond-2);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 14px;
+  display: block;
+  color: var(--texte);
+}
+.carte.accent { border-color: var(--accent); }
+.carte.erreur { border-color: var(--danger); }
+.carte-fine { background: var(--fond-2); border: 1px solid var(--bord); border-radius: 10px; padding: 10px 14px; }
+
+.badge {
+  background: var(--fond-3);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: .72rem;
+  color: var(--texte-2);
+  white-space: nowrap;
+}
+.badge-accent { color: var(--accent); }
+
+/* --- Boutons ----------------------------------------------------------------- */
+.btn {
+  background: var(--fond-3);
+  color: var(--texte);
+  border: 1px solid var(--bord);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: .95rem;
+  cursor: pointer;
+}
+.btn-accent { background: var(--accent); border-color: var(--accent); color: var(--accent-texte); font-weight: 600; }
+.btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
+.btn-large { width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px; }
+.btn-x {
+  background: none;
+  border: none;
+  color: var(--texte-2);
+  font-size: 1.25rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn-lien { background: none; border: none; color: var(--accent); padding: 6px 0 0; font-size: .85rem; cursor: pointer; }
+.btn-chrono.actif { color: var(--accent); border-color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* --- Formulaires -------------------------------------------------------------- */
+input, select {
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  color: var(--texte);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 1rem;
+  min-width: 0;
+}
+input:focus, select:focus { outline: 1px solid var(--accent); }
+label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction: column; gap: 4px; }
+.ligne-2 { display: flex; gap: 10px; margin: 10px 0 0; }
+.ligne-2 > * { flex: 1; }
+.filtres { margin-bottom: 12px; }
+.filtres input[type=search] { width: 100%; }
+
+/* --- Chips (toggles + infos) ---------------------------------------------------- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.chip { display: inline-flex; flex-direction: row; }
+.chip input { display: none; }
+.chip span, .chip-info, .chip-lien, .chip-attention {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--bord);
+  background: var(--fond-3);
+  font-size: .85rem;
+  color: var(--texte);
+  cursor: pointer;
+}
+.chip-info { cursor: default; }
+.chip input:checked + span {
+  background: var(--accent);
+  color: var(--accent-texte);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chip-lien { color: var(--accent); border-color: var(--accent); background: none; }
+.chip-attention { color: var(--danger); border-color: var(--danger); background: none; cursor: default; }
+
+/* --- Skills ---------------------------------------------------------------------- */
+.carte-skill-tete { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.barre-prog {
+  height: 6px;
+  background: var(--fond-3);
+  border-radius: 3px;
+  margin: 10px 0 8px;
+  overflow: hidden;
+}
+.barre-prog div { height: 100%; background: var(--accent); border-radius: 3px; }
+
+.echelle { display: flex; flex-direction: column; }
+.etape { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--bord); }
+.etape-pastille {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fond-3);
+  color: var(--texte-2);
+  font-weight: 600;
+}
+.etape-validee .etape-pastille { background: var(--accent); color: var(--accent-texte); }
+.etape-courante .etape-pastille { background: none; border: 2px solid var(--accent); color: var(--accent); }
+.etape-verrouillee { opacity: .55; }
+.etape-corps { flex: 1; }
+.etape-corps a { color: var(--texte); }
+.etape-courante .etape-corps a { color: var(--accent); }
+.form-validation { display: flex; gap: 8px; margin-top: 10px; }
+.form-validation input { flex: 1; }
+
+/* --- Séance ------------------------------------------------------------------------ */
+.entete-seance { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.resume-contraintes { margin: -6px 0 12px; line-height: 1.5; }
+.carte-exo-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px; }
+.set {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--bord);
+  font-size: .92rem;
+}
+.set-meta { flex: 1; }
+.set-echec strong { color: var(--danger); }
+.form-set { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.form-set input[type=number] { width: 78px; }
+.form-set input[type=date] { flex: 1; }
+.form-set select { width: 78px; }
+.chk-echec { flex-direction: row; align-items: center; gap: 5px; }
+.chk-echec input { width: auto; padding: 0; }
+.ligne-repos {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.ligne-repos input { width: 68px; padding: 6px 8px; }
+
+/* --- Chrono de repos ------------------------------------------------------------------ */
+.chrono-repos {
+  position: fixed;
+  bottom: calc(68px + env(safe-area-inset-bottom));
+  left: 12px; right: 12px;
+  max-width: 616px;
+  margin: 0 auto;
+  background: var(--fond-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--rayon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  z-index: 30;
+}
+.chrono-repos button {
+  background: var(--fond-2);
+  border: 1px solid var(--bord);
+  color: var(--texte);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.chrono-repos .chrono-stop { color: var(--accent); }
+.chrono-temps {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 76px;
+  text-align: center;
+}
+
+/* --- Toast --------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--fond-3);
+  border: 1px solid var(--accent);
+  color: var(--texte);
+  padding: 10px 18px;
+  border-radius: 999px;
+  z-index: 40;
+  font-size: .9rem;
+  max-width: 90vw;
+}
+
+/* --- Overlay / picker ------------------------------------------------------------------ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .6);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.feuille {
+  background: var(--fond-2);
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+.feuille-tete { display: flex; gap: 8px; margin-bottom: 10px; }
+.feuille-tete input { flex: 1; }
+.picker-liste { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.picker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--texte);
+  font-size: .95rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* --- Onglets (Suivi) ---------------------------------------------------------------------- */
+.onglets { display: flex; gap: 6px; margin-bottom: 14px; }
+.onglets a {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--fond-2);
+  border: 1px solid var(--bord);
+  color: var(--texte-2);
+}
+.onglets a.actif {
+  color: var(--accent-texte);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* --- Historique ------------------------------------------------------------------------------ */
+.carte-session { cursor: pointer; }
+.carte-session-tete { display: flex; justify-content: space-between; gap: 8px; }
+.carte-session-detail { display: none; margin-top: 10px; }
+.carte-session.ouverte .carte-session-detail { display: block; }
+.ligne-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: .9rem;
+}
+.carte-session-detail .ligne-detail { border-bottom: 1px dashed var(--bord); }
+.carte-pr { cursor: pointer; }
+.carte-pr-tete { display: flex; justify-content: space-between; gap: 8px; }
+
+/* --- Graphiques -------------------------------------------------------------------------------- */
+.graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
+
+/* --- Dashboard ----------------------------------------------------------------------------------- */
+.sous-titre { margin: -10px 0 14px; text-transform: capitalize; }
+.carte-stat { text-align: center; }
+.stat-val { font-size: 1.9rem; font-weight: 700; color: var(--accent); }
+
+/* --- Programmes ------------------------------------------------------------------------------------ */
+.input-titre {
+  font-size: 1.3rem;
+  font-weight: 700;
+  width: 100%;
+  margin: 8px 0 14px;
+}
+.inp-jour { flex: 1; font-weight: 600; padding: 8px 10px; }
+.inp-cible { width: 58px; padding: 6px 8px; text-align: center; }
+
+/* --- Avertissements et filtre du picker --------------------------------------------------------------- */
+.texte-attention { color: var(--danger); font-size: .8rem; }
+.chip-filtre { margin-bottom: 10px; align-self: flex-start; }
+.carte-template { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.chips button.chip-lien { cursor: pointer; font-family: inherit; }
+.chip-actif { background: var(--accent); color: var(--accent-texte); border-color: var(--accent); font-weight: 600; }
+
+/* --- Bannières du moteur (ajustements suggérés, jamais imposés) ---------------------------------- */
+.banniere {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-color: var(--accent);
+  margin-bottom: 10px;
+  font-size: .9rem;
+}
+.banniere-actions { display: flex; gap: 6px; flex-shrink: 0; }
