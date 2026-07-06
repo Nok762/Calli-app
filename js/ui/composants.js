@@ -19,77 +19,43 @@ export function toast(message, duree = 2800) {
   setTimeout(() => el.remove(), duree);
 }
 
-// --- Son + vibration ----------------------------------------------------------
-// Bip généré en WebAudio : aucun fichier audio à embarquer (donc rien à cacher
+// --- Sons + vibration -----------------------------------------------------------
+// Générés en WebAudio : aucun fichier audio à embarquer (donc rien à cacher
 // dans le service worker). La vibration prend le relais si l'audio est bloqué.
 let audioCtx = null;
-export function bip(nb = 3) {
+
+function jouer(freq, duree, gain, delai = 0) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    for (let i = 0; i < nb; i++) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.frequency.value = 880;
-      const t = audioCtx.currentTime + i * 0.35;
-      gain.gain.setValueAtTime(0.4, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      osc.start(t);
-      osc.stop(t + 0.3);
-    }
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    const t = audioCtx.currentTime + delai;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + duree);
+    osc.start(t);
+    osc.stop(t + duree + 0.05);
   } catch { /* audio indisponible */ }
+}
+
+// Fin de repos : triple bip appuyé.
+export function bip(nb = 3) {
+  for (let i = 0; i < nb; i++) jouer(880, 0.25, 0.4, i * 0.35);
   navigator.vibrate?.([200, 100, 200, 100, 400]);
 }
 
-// --- Chrono de repos -----------------------------------------------------------
-// Bandeau fixé au-dessus de la nav : compte à rebours ajustable (±15 s),
-// son + vibration à la fin. Un seul chrono actif à la fois.
-let chronoInterval = null;
-
-export function chronoRepos(secondes) {
-  arreterChrono();
-  let restant = secondes;
-
-  const el = document.createElement('div');
-  el.className = 'chrono-repos';
-  el.innerHTML = `
-    <button data-act="-15">−15s</button>
-    <span class="chrono-temps"></span>
-    <button data-act="+15">+15s</button>
-    <button data-act="stop" class="chrono-stop">Passer</button>`;
-  document.body.appendChild(el);
-
-  const affiche = () => {
-    const m = Math.floor(restant / 60);
-    const s = restant % 60;
-    el.querySelector('.chrono-temps').textContent = `${m}:${String(s).padStart(2, '0')}`;
-  };
-  affiche();
-
-  el.addEventListener('click', (e) => {
-    const act = e.target.dataset.act;
-    if (act === '+15') { restant += 15; affiche(); }
-    if (act === '-15') { restant = Math.max(0, restant - 15); affiche(); }
-    if (act === 'stop') arreterChrono();
-  });
-
-  chronoInterval = setInterval(() => {
-    restant--;
-    if (restant <= 0) {
-      arreterChrono();
-      bip();
-      toast('Repos terminé — au boulot 💪');
-    } else {
-      affiche();
-    }
-  }, 1000);
+// Décompte de préparation (3… 2… 1…) : bip bref et grave.
+export function tick() {
+  jouer(660, 0.12, 0.3);
+  navigator.vibrate?.(60);
 }
 
-export function arreterChrono() {
-  clearInterval(chronoInterval);
-  chronoInterval = null;
-  document.querySelector('.chrono-repos')?.remove();
+// Signal de départ d'une tenue : bip haut et long, impossible à confondre.
+export function go() {
+  jouer(990, 0.4, 0.5);
+  navigator.vibrate?.([120, 60, 240]);
 }
 
 // --- Graphique en ligne (canvas) -----------------------------------------------

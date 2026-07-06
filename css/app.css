@@ -8,6 +8,7 @@
   --texte-2: #8a94a3;
   --accent: #3ddc97;
   --accent-texte: #06251a; /* texte posé sur fond accent */
+  --accent-voile: rgba(61, 220, 151, .14); /* accent très transparent (jauges) */
   --danger: #e05656;
   --bord: #232d38;
   --rayon: 14px;
@@ -224,39 +225,103 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 }
 .ligne-repos input { width: 68px; padding: 6px 8px; }
 
-/* --- Chrono de repos ------------------------------------------------------------------ */
-.chrono-repos {
+/* --- Barre de chrono de séance (repos / prépa / tenue) ---------------------------------- */
+.barre-chrono {
   position: fixed;
   bottom: calc(68px + env(safe-area-inset-bottom));
   left: 12px; right: 12px;
   max-width: 616px;
   margin: 0 auto;
   background: var(--fond-3);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--bord);
   border-radius: var(--rayon);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px 12px;
   z-index: 30;
+  overflow: hidden; /* contient la ligne de progression */
 }
-.chrono-repos button {
+.barre-chrono.barre-active { border-color: var(--accent); }
+.barre-chrono.barre-tenue { border-color: var(--accent); background: var(--fond-2); }
+.barre-ligne {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--accent-voile);
+  transition: width .2s linear;
+}
+.barre-chrono > * { position: relative; } /* au-dessus de la ligne */
+.barre-chrono button {
   background: var(--fond-2);
   border: 1px solid var(--bord);
   color: var(--texte);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   cursor: pointer;
+  font-size: .95rem;
 }
-.chrono-repos .chrono-stop { color: var(--accent); }
-.chrono-temps {
-  font-size: 1.6rem;
+.barre-chip { min-width: 58px; font-variant-numeric: tabular-nums; }
+.barre-label {
+  color: var(--texte-2);
+  font-size: .85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+}
+.barre-temps {
+  font-size: 1.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  min-width: 76px;
+  min-width: 64px;
   text-align: center;
 }
+.barre-temps.grand { font-size: 1.9rem; }
+.btn-stop-tenue {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-texte) !important;
+  font-weight: 700;
+  padding: 12px 18px !important;
+}
+.espace-barre { height: 76px; }
+
+/* --- Saisie rapide en séance --------------------------------------------------------------- */
+.btn-step { width: 46px; font-size: 1.25rem; padding: 8px 0; }
+.ligne-rpe { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.rpe-btn {
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  color: var(--texte-2);
+  border-radius: 8px;
+  padding: 8px 0;
+  width: 42px;
+  cursor: pointer;
+  font-size: .95rem;
+}
+.rpe-btn.actif {
+  background: var(--accent);
+  color: var(--accent-texte);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chip-echec { width: auto; padding: 8px 12px; }
+.chip-echec.actif { background: var(--danger); border-color: var(--danger); color: #fff; }
+.lien-nom {
+  background: none;
+  border: none;
+  color: var(--texte);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline dotted var(--texte-2);
+  text-underline-offset: 3px;
+}
+.fiche-express { overflow-y: auto; padding-bottom: 8px; }
 
 /* --- Toast --------------------------------------------------------------------------- */
 .toast {
