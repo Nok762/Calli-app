@@ -425,8 +425,8 @@ function carteEntree(entree, i) {
           <button class="btn-x" data-suppr-exo="${i}">×</button>
         </div>
       </div>
-      ${prevu ? `<div class="texte-2">⇄ remplace ${prevu.nom} — ${entree.remplace.raison}</div>` : ''}
-      ${verif.ok ? '' : `<div class="texte-attention">⚠ ${verif.raisons.join(' · ')} — touche ⇄ pour une alternative</div>`}
+      ${prevu ? `<div class="texte-2">⇄ remplace ${prevu.nom} · ${entree.remplace.raison}</div>` : ''}
+      ${verif.ok ? '' : `<div class="texte-attention">⚠ ${verif.raisons.join(' · ')} · touche ⇄ pour une alternative</div>`}
       ${sets}
       <div class="form-set" data-i="${i}">
         <button class="btn btn-step" data-step="${i}:-1">−</button>
@@ -480,7 +480,7 @@ function arreterTenueEtRemplir() {
   const form = document.querySelector(`.form-set[data-i="${chrono.exoIndex}"]`);
   form?.querySelector('.inp-valeur') && (form.querySelector('.inp-valeur').value = secondes);
   stopChrono();
-  toast(`Tenue : ${secondes} s — valide le set avec OK`);
+  toast(`Tenue : ${secondes} s · valide le set avec OK`);
 }
 
 function stopChrono() {
@@ -514,7 +514,7 @@ function lancerTick() {
     if (chrono.mode === 'repos' && chrono.pause === null && Date.now() >= chrono.fin) {
       stopChrono();
       bip();
-      toast('Repos terminé — au boulot 💪');
+      toast('Repos terminé, au boulot 💪');
       return;
     }
     if (chrono.mode === 'prepa') {
@@ -564,14 +564,15 @@ function majBarre() {
     } else if (chrono.mode === 'prepa') {
       barre.className = 'barre-chrono barre-active';
       barre.innerHTML = `
-        <span class="barre-label">Prépa — ${nomExo}</span>
+        <span class="barre-label">Prépa · ${nomExo}</span>
         <span class="barre-temps grand"></span>
         <button data-chrono-act="go">GO direct</button>
         <button data-chrono-act="stop">✕</button>`;
     } else if (chrono.mode === 'tenue') {
       barre.className = 'barre-chrono barre-tenue';
       barre.innerHTML = `
-        <span class="barre-label">Tenue — ${nomExo}</span>
+        <div class="barre-ligne"></div>
+        <span class="barre-label">Tenue · ${nomExo}</span>
         <span class="barre-temps grand"></span>
         <button class="btn-stop-tenue" data-chrono-act="stopTenue">■ Stop</button>`;
     }
@@ -588,7 +589,12 @@ function majBarre() {
   } else if (chrono.mode === 'prepa') {
     temps.textContent = Math.max(0, Math.ceil((chrono.fin - Date.now()) / 1000));
   } else if (chrono.mode === 'tenue') {
-    temps.textContent = fmt(Math.max(0, Math.round((Date.now() - chrono.debut) / 1000)));
+    const ecoule = Math.max(0, Math.round((Date.now() - chrono.debut) / 1000));
+    temps.textContent = fmt(ecoule);
+    // La Ligne se remplit vers la cible de tenue du programme (si connue).
+    const cible = seance?.entrees[chrono.exoIndex]?.cible;
+    const ligne = barre.querySelector('.barre-ligne');
+    if (ligne) ligne.style.width = cible ? `${Math.min(100, (ecoule / cible.valeur) * 100)}%` : '0';
   }
 }
 
@@ -769,7 +775,7 @@ async function terminer() {
     + suggestionsDeload(sessions, ctx.exercices).length;
 
   let message = nouveauxPR.length
-    ? `Séance enregistrée — ${nouveauxPR.length} nouveau${nouveauxPR.length > 1 ? 'x' : ''} PR 🎉`
+    ? `Séance enregistrée · ${nouveauxPR.length} nouveau${nouveauxPR.length > 1 ? 'x' : ''} PR 🎉`
     : 'Séance enregistrée ✓';
   if (nbEvolutions) message += ` · ${nbEvolutions} cible${nbEvolutions > 1 ? 's' : ''} du programme ajustée${nbEvolutions > 1 ? 's' : ''}`;
   if (nbSuggestions) message += ' · 💡 suggestions sur l\'Accueil';

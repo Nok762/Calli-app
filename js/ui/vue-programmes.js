@@ -230,7 +230,7 @@ function carteGenere(prog) {
   const noms = g.objectifs.map((id) => ctx.config.noms[id] || id).join(', ');
   return `
     <div class="carte accent">
-      <strong>✨ Programme généré — semaine ${semaineCourante(prog)}</strong>
+      <strong>✨ Programme généré · semaine ${semaineCourante(prog)}</strong>
       <div class="texte-2">Objectifs : ${noms} · ${g.frequence} séances/sem · deload 1 semaine sur ${REGLES.SEMAINE_DELOAD}.
         Les cibles évoluent seules après chaque séance (double progression) et restent modifiables ici.</div>
       ${g.journal?.length ? `

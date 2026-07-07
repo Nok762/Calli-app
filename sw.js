@@ -6,7 +6,7 @@
 //
 // Pour déployer une mise à jour : incrémenter VERSION. Le nouveau worker
 // s'installe avec un cache neuf, et l'ancien cache est purgé à l'activation.
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = `callisthenie-${VERSION}`;
 
 const ASSETS = [
@@ -34,6 +34,8 @@ const ASSETS = [
   './data/skills.config.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './fonts/barlow-condensed-600.woff2',
+  './fonts/barlow-condensed-700.woff2',
 ];
 
 self.addEventListener('install', (e) => {

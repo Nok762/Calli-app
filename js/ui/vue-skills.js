@@ -55,6 +55,7 @@ async function detailSkill(el, skillId) {
         <div class="etape-corps">
           <a href="#/exercices/${etape.exercice.id}"><strong>${etape.exercice.nom}</strong></a>
           <div class="texte-2">Objectif : ${texteCritere(etape.critere)}${record ? ` · record : ${record.valeur} ${unite}` : ''}</div>
+          ${courante && etape.critere ? `<div class="ligne"><div style="width:${Math.min(100, ((record?.valeur || 0) / etape.critere.valeur) * 100)}%"></div></div>` : ''}
           ${validation ? `<div class="texte-2">Validée le ${new Date(validation.date).toLocaleDateString('fr-FR')} (${validation.perf.valeur} ${unite})</div>` : ''}
           ${courante ? formulaireValidation(etape, record) : ''}
           ${!courante ? `<button class="btn-lien" data-reprendre="${etape.step}">Reprendre ici</button>` : ''}

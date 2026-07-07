@@ -1,17 +1,39 @@
-/* app.css — mobile-first, dark par défaut, une seule couleur d'accent. */
+/* app.css — identité "graphite & ambre".
+   Univers : magnésie, acier, la ligne du corps à l'horizontale.
+   Règles : dark par défaut, UNE couleur d'accent (ambre), grandes zones
+   tactiles, motif signature unique — « la Ligne » (toute progression est une
+   ligne horizontale qui se remplit : chrono, jauges, paliers de skills).
+   Rayons : 14px cartes / 10px contrôles / 999px pilules. */
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/barlow-condensed-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/barlow-condensed-700.woff2') format('woff2');
+}
 
 :root {
-  --fond: #0e1318;
-  --fond-2: #161d25;
-  --fond-3: #1f2833;
-  --texte: #e8edf2;
-  --texte-2: #8a94a3;
-  --accent: #3ddc97;
-  --accent-texte: #06251a; /* texte posé sur fond accent */
-  --accent-voile: rgba(61, 220, 151, .14); /* accent très transparent (jauges) */
-  --danger: #e05656;
-  --bord: #232d38;
+  --fond: #14120F;          /* graphite chaud */
+  --fond-2: #1E1A15;        /* surface carte */
+  --fond-3: #29231B;        /* surface contrôle */
+  --texte: #F2EDE4;         /* craie */
+  --texte-2: #9A9184;       /* craie estompée */
+  --accent: #FFA028;        /* ambre — l'unique accent */
+  --accent-texte: #2A1602;  /* texte posé sur fond ambre */
+  --accent-voile: rgba(255, 160, 40, .13);
+  --ligne-fond: #2E2820;    /* rail de la Ligne */
+  --danger: #E25B4A;
+  --bord: #363028;
   --rayon: 14px;
+  --police-titre: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -27,17 +49,34 @@ html, body {
 #vue {
   max-width: 640px;
   margin: 0 auto;
-  padding: 16px 16px calc(90px + env(safe-area-inset-bottom));
+  padding: 16px 16px calc(92px + env(safe-area-inset-bottom));
 }
 
-h1 { font-size: 1.5rem; margin: 8px 0 16px; }
-h2 { font-size: 1.15rem; margin: 4px 0 10px; }
+/* Typographie display : Barlow Condensed, capitales, chiffres tabulaires. */
+h1 {
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  margin: 6px 0 14px;
+  line-height: 1.05;
+}
+h2 {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: .01em;
+  margin: 4px 0 10px;
+}
 h3 {
-  font-size: .78rem;
-  margin: 14px 0 6px;
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .85rem;
+  margin: 16px 0 8px;
   color: var(--texte-2);
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .13em;
 }
 a { color: var(--accent); text-decoration: none; }
 p { line-height: 1.5; margin: 6px 0; }
@@ -47,9 +86,31 @@ li { line-height: 1.5; }
 .chargement { text-align: center; padding: 60px 0; color: var(--texte-2); }
 .texte-2 { color: var(--texte-2); font-size: .85rem; }
 .centre { text-align: center; padding: 24px 0; line-height: 1.6; }
-.retour { display: inline-block; margin-bottom: 8px; font-size: .9rem; }
+.retour {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .9rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
 
-/* --- Navigation basse ------------------------------------------------------ */
+/* --- La Ligne : LE motif de l'app --------------------------------------------- */
+.ligne, .barre-prog {
+  height: 4px;
+  background: var(--ligne-fond);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ligne > div, .barre-prog > div {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+/* --- Navigation basse ----------------------------------------------------------- */
 #nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -65,14 +126,18 @@ li { line-height: 1.5; }
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 10px 0 8px;
+  padding: 9px 0 8px;
   color: var(--texte-2);
-  font-size: .72rem;
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
 }
 #nav a.actif { color: var(--accent); }
-.nav-ico { font-size: 1.3rem; }
+.nav-ico { font-size: 1.25rem; }
 
-/* --- Cartes et listes -------------------------------------------------------- */
+/* --- Cartes et listes -------------------------------------------------------------- */
 .liste { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
 .carte {
   background: var(--fond-2);
@@ -93,10 +158,11 @@ li { line-height: 1.5; }
   font-size: .72rem;
   color: var(--texte-2);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .badge-accent { color: var(--accent); }
 
-/* --- Boutons ----------------------------------------------------------------- */
+/* --- Boutons -------------------------------------------------------------------------- */
 .btn {
   background: var(--fond-3);
   color: var(--texte);
@@ -104,11 +170,21 @@ li { line-height: 1.5; }
   border-radius: 10px;
   padding: 10px 14px;
   font-size: .95rem;
+  font-family: inherit;
   cursor: pointer;
 }
-.btn-accent { background: var(--accent); border-color: var(--accent); color: var(--accent-texte); font-weight: 600; }
+.btn:active { transform: scale(.98); }
+.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-texte);
+  font-family: var(--police-titre);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
 .btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
-.btn-large { width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px; }
+.btn-large { width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px; }
 .btn-x {
   background: none;
   border: none;
@@ -121,7 +197,7 @@ li { line-height: 1.5; }
 .btn-lien { background: none; border: none; color: var(--accent); padding: 6px 0 0; font-size: .85rem; cursor: pointer; }
 .btn-chrono.actif { color: var(--accent); border-color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* --- Formulaires -------------------------------------------------------------- */
+/* --- Formulaires ----------------------------------------------------------------------- */
 input, select {
   background: var(--fond-3);
   border: 1px solid var(--bord);
@@ -129,7 +205,9 @@ input, select {
   border-radius: 10px;
   padding: 10px;
   font-size: 1rem;
+  font-family: inherit;
   min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 input:focus, select:focus { outline: 1px solid var(--accent); }
 label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction: column; gap: 4px; }
@@ -138,7 +216,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 .filtres { margin-bottom: 12px; }
 .filtres input[type=search] { width: 100%; }
 
-/* --- Chips (toggles + infos) ---------------------------------------------------- */
+/* --- Chips (toggles + infos) ---------------------------------------------------------------- */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .chip { display: inline-flex; flex-direction: row; }
 .chip input { display: none; }
@@ -161,18 +239,71 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 }
 .chip-lien { color: var(--accent); border-color: var(--accent); background: none; }
 .chip-attention { color: var(--danger); border-color: var(--danger); background: none; cursor: default; }
+.chip-actif { background: var(--accent); color: var(--accent-texte); border-color: var(--accent); font-weight: 600; }
+.chip-filtre { margin-bottom: 10px; align-self: flex-start; }
+.chips button.chip-lien { cursor: pointer; font-family: inherit; }
 
-/* --- Skills ---------------------------------------------------------------------- */
-.carte-skill-tete { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.barre-prog {
-  height: 6px;
-  background: var(--fond-3);
-  border-radius: 3px;
-  margin: 10px 0 8px;
-  overflow: hidden;
+/* --- Accueil (dashboard) ------------------------------------------------------------------------ */
+.accueil-date {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  color: var(--texte-2);
+  margin-top: 6px;
 }
-.barre-prog div { height: 100%; background: var(--accent); border-radius: 3px; }
+.accueil-date + h1 { margin-top: 2px; }
+.hero-label {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  color: var(--accent);
+}
+.hero-titre {
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  line-height: 1.1;
+  margin: 2px 0;
+}
+.carte-stat { text-align: center; }
+.stat-val {
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 2.1rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.jauge-tete { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.jauge-val { font-variant-numeric: tabular-nums; font-size: .85rem; color: var(--texte-2); }
+.cal-grille {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+}
+.cal-jour {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: var(--ligne-fond);
+}
+.cal-jour.fait { background: var(--accent); }
+.cal-jour.aujourdhui { outline: 1px solid var(--texte-2); outline-offset: 1px; }
+.cal-jour.futur { background: none; border: 1px dashed var(--bord); }
+.objectif-item { display: block; color: var(--texte); padding: 10px 0; border-bottom: 1px solid var(--bord); }
+.objectif-item:last-child { border-bottom: none; }
+.objectif-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.objectif-tete strong { font-size: .95rem; }
 
+/* --- Skills -------------------------------------------------------------------------------------- */
+.carte-skill-tete { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.barre-prog { margin: 10px 0 8px; }
 .echelle { display: flex; flex-direction: column; }
 .etape { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--bord); }
 .etape-pastille {
@@ -184,7 +315,8 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   justify-content: center;
   background: var(--fond-3);
   color: var(--texte-2);
-  font-weight: 600;
+  font-family: var(--police-titre);
+  font-weight: 700;
 }
 .etape-validee .etape-pastille { background: var(--accent); color: var(--accent-texte); }
 .etape-courante .etape-pastille { background: none; border: 2px solid var(--accent); color: var(--accent); }
@@ -192,10 +324,11 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 .etape-corps { flex: 1; }
 .etape-corps a { color: var(--texte); }
 .etape-courante .etape-corps a { color: var(--accent); }
+.etape-corps .ligne { margin-top: 8px; }
 .form-validation { display: flex; gap: 8px; margin-top: 10px; }
 .form-validation input { flex: 1; }
 
-/* --- Séance ------------------------------------------------------------------------ */
+/* --- Séance ---------------------------------------------------------------------------------------- */
 .entete-seance { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .resume-contraintes { margin: -6px 0 12px; line-height: 1.5; }
 .carte-exo-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px; }
@@ -204,17 +337,50 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   align-items: center;
   gap: 10px;
   padding: 7px 0;
-  border-bottom: 1px dashed var(--bord);
+  border-bottom: 1px solid var(--bord);
   font-size: .92rem;
+  font-variant-numeric: tabular-nums;
 }
 .set-meta { flex: 1; }
 .set-echec strong { color: var(--danger); }
 .form-set { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
-.form-set input[type=number] { width: 78px; }
+.form-set input[type=number] { width: 74px; text-align: center; }
 .form-set input[type=date] { flex: 1; }
-.form-set select { width: 78px; }
-.chk-echec { flex-direction: row; align-items: center; gap: 5px; }
-.chk-echec input { width: auto; padding: 0; }
+.btn-step { width: 46px; font-size: 1.25rem; padding: 8px 0; }
+.ligne-rpe { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.rpe-btn {
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  color: var(--texte-2);
+  border-radius: 8px;
+  padding: 8px 0;
+  width: 42px;
+  cursor: pointer;
+  font-size: .95rem;
+  font-variant-numeric: tabular-nums;
+}
+.rpe-btn.actif {
+  background: var(--accent);
+  color: var(--accent-texte);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chip-echec { width: auto; padding: 8px 12px; }
+.chip-echec.actif { background: var(--danger); border-color: var(--danger); color: #fff; }
+.lien-nom {
+  background: none;
+  border: none;
+  color: var(--texte);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  text-decoration: underline dotted var(--texte-2);
+  text-underline-offset: 3px;
+}
+.fiche-express { overflow-y: auto; padding-bottom: 8px; }
 .ligne-repos {
   flex-direction: row;
   align-items: center;
@@ -223,9 +389,9 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   margin-top: 16px;
   flex-wrap: wrap;
 }
-.ligne-repos input { width: 68px; padding: 6px 8px; }
+.ligne-repos input { width: 64px; padding: 6px 8px; text-align: center; }
 
-/* --- Barre de chrono de séance (repos / prépa / tenue) ---------------------------------- */
+/* --- Barre de chrono (repos / prépa / tenue) ------------------------------------------------------------ */
 .barre-chrono {
   position: fixed;
   bottom: calc(68px + env(safe-area-inset-bottom));
@@ -252,78 +418,67 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   background: var(--accent-voile);
   transition: width .2s linear;
 }
-.barre-chrono > * { position: relative; } /* au-dessus de la ligne */
+.barre-chrono > * { position: relative; }
 .barre-chrono button {
   background: var(--fond-2);
   border: 1px solid var(--bord);
   color: var(--texte);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 12px;
   cursor: pointer;
   font-size: .95rem;
+  font-family: inherit;
 }
 .barre-chip { min-width: 58px; font-variant-numeric: tabular-nums; }
 .barre-label {
   color: var(--texte-2);
-  font-size: .85rem;
+  font-family: var(--police-titre);
+  font-weight: 600;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 40%;
+  max-width: 42%;
 }
 .barre-temps {
-  font-size: 1.5rem;
+  font-family: var(--police-titre);
   font-weight: 700;
+  font-size: 1.7rem;
   font-variant-numeric: tabular-nums;
   min-width: 64px;
   text-align: center;
+  line-height: 1;
 }
-.barre-temps.grand { font-size: 1.9rem; }
+.barre-temps.grand { font-size: 2.1rem; }
 .btn-stop-tenue {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
   color: var(--accent-texte) !important;
+  font-family: var(--police-titre) !important;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
   padding: 12px 18px !important;
 }
 .espace-barre { height: 76px; }
 
-/* --- Saisie rapide en séance --------------------------------------------------------------- */
-.btn-step { width: 46px; font-size: 1.25rem; padding: 8px 0; }
-.ligne-rpe { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-.rpe-btn {
-  background: var(--fond-3);
-  border: 1px solid var(--bord);
-  color: var(--texte-2);
-  border-radius: 8px;
-  padding: 8px 0;
-  width: 42px;
-  cursor: pointer;
-  font-size: .95rem;
-}
-.rpe-btn.actif {
-  background: var(--accent);
-  color: var(--accent-texte);
+/* --- Bannières du moteur (suggestions, jamais imposées) --------------------------------------------------- */
+.banniere {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   border-color: var(--accent);
-  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: .9rem;
 }
-.chip-echec { width: auto; padding: 8px 12px; }
-.chip-echec.actif { background: var(--danger); border-color: var(--danger); color: #fff; }
-.lien-nom {
-  background: none;
-  border: none;
-  color: var(--texte);
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  text-decoration: underline dotted var(--texte-2);
-  text-underline-offset: 3px;
-}
-.fiche-express { overflow-y: auto; padding-bottom: 8px; }
+.banniere-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.texte-attention { color: var(--danger); font-size: .8rem; }
+.carte-template { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
-/* --- Toast --------------------------------------------------------------------------- */
+/* --- Toast --------------------------------------------------------------------------------------------- */
 .toast {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom));
@@ -339,11 +494,11 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   max-width: 90vw;
 }
 
-/* --- Overlay / picker ------------------------------------------------------------------ */
+/* --- Overlay / feuilles ------------------------------------------------------------------------------------ */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .6);
+  background: rgba(10, 8, 5, .65);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -359,8 +514,9 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   flex-direction: column;
   padding: 14px;
 }
-.feuille-tete { display: flex; gap: 8px; margin-bottom: 10px; }
+.feuille-tete { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
 .feuille-tete input { flex: 1; }
+.feuille-tete strong { flex: 1; font-family: var(--police-titre); font-weight: 600; font-size: 1.15rem; }
 .picker-liste { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .picker-item {
   display: flex;
@@ -373,11 +529,12 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   padding: 12px;
   color: var(--texte);
   font-size: .95rem;
+  font-family: inherit;
   cursor: pointer;
   text-align: left;
 }
 
-/* --- Onglets (Suivi) ---------------------------------------------------------------------- */
+/* --- Onglets (Suivi) ----------------------------------------------------------------------------------------- */
 .onglets { display: flex; gap: 6px; margin-bottom: 14px; }
 .onglets a {
   flex: 1;
@@ -387,15 +544,19 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   background: var(--fond-2);
   border: 1px solid var(--bord);
   color: var(--texte-2);
+  font-family: var(--police-titre);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: .9rem;
 }
 .onglets a.actif {
   color: var(--accent-texte);
   background: var(--accent);
   border-color: var(--accent);
-  font-weight: 600;
 }
 
-/* --- Historique ------------------------------------------------------------------------------ */
+/* --- Historique ------------------------------------------------------------------------------------------------ */
 .carte-session { cursor: pointer; }
 .carte-session-tete { display: flex; justify-content: space-between; gap: 8px; }
 .carte-session-detail { display: none; margin-top: 10px; }
@@ -406,44 +567,23 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   gap: 10px;
   padding: 5px 0;
   font-size: .9rem;
+  font-variant-numeric: tabular-nums;
 }
 .carte-session-detail .ligne-detail { border-bottom: 1px dashed var(--bord); }
 .carte-pr { cursor: pointer; }
 .carte-pr-tete { display: flex; justify-content: space-between; gap: 8px; }
 
-/* --- Graphiques -------------------------------------------------------------------------------- */
-.graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
-
-/* --- Dashboard ----------------------------------------------------------------------------------- */
-.sous-titre { margin: -10px 0 14px; text-transform: capitalize; }
-.carte-stat { text-align: center; }
-.stat-val { font-size: 1.9rem; font-weight: 700; color: var(--accent); }
-
-/* --- Programmes ------------------------------------------------------------------------------------ */
+/* --- Programmes ---------------------------------------------------------------------------------------------------- */
 .input-titre {
-  font-size: 1.3rem;
+  font-family: var(--police-titre);
   font-weight: 700;
+  font-size: 1.5rem;
   width: 100%;
   margin: 8px 0 14px;
 }
 .inp-jour { flex: 1; font-weight: 600; padding: 8px 10px; }
-.inp-cible { width: 58px; padding: 6px 8px; text-align: center; }
+.inp-cible { width: 56px; padding: 6px 8px; text-align: center; }
+.sous-titre { margin: -10px 0 14px; text-transform: capitalize; }
 
-/* --- Avertissements et filtre du picker --------------------------------------------------------------- */
-.texte-attention { color: var(--danger); font-size: .8rem; }
-.chip-filtre { margin-bottom: 10px; align-self: flex-start; }
-.carte-template { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.chips button.chip-lien { cursor: pointer; font-family: inherit; }
-.chip-actif { background: var(--accent); color: var(--accent-texte); border-color: var(--accent); font-weight: 600; }
-
-/* --- Bannières du moteur (ajustements suggérés, jamais imposés) ---------------------------------- */
-.banniere {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  border-color: var(--accent);
-  margin-bottom: 10px;
-  font-size: .9rem;
-}
-.banniere-actions { display: flex; gap: 6px; flex-shrink: 0; }
+/* --- Graphiques -------------------------------------------------------------------------------------------------------- */
+.graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
