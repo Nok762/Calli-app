@@ -462,7 +462,123 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   letter-spacing: .05em;
   padding: 12px 18px !important;
 }
+.btn-demarrer-repos { color: var(--accent); font-size: 1.05rem; }
 .espace-barre { height: 76px; }
+
+/* --- Mode Focus : séance immersive, un exercice par écran ------------------------------------------------ */
+body.mode-seance #nav { display: none; }
+body.mode-seance #vue { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+body.mode-seance .barre-chrono { padding: 14px 12px; }
+body.mode-seance .barre-temps { font-size: 2rem; }
+body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
+
+.player { display: flex; flex-direction: column; min-height: calc(100dvh - 32px); }
+.player-tete { display: flex; align-items: center; gap: 6px; }
+.player-tete .btn-x { font-size: 1.4rem; }
+.player-tete .btn-x[disabled] { opacity: .3; }
+.player-prog { flex: 1; padding: 0 4px; }
+.player-prog-txt {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: .8rem;
+  color: var(--texte-2);
+  text-align: center;
+}
+.player-prog .ligne { margin-top: 5px; }
+
+.player-corps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+.player-nom {
+  background: none;
+  border: none;
+  color: var(--texte);
+  font-family: var(--police-titre);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 2.1rem;
+  line-height: 1.05;
+  letter-spacing: .01em;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.chips-mini { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.player-dots { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+.player-dots .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ligne-fond); }
+.player-dots .dot.faite { background: var(--accent); }
+.player-serie-num {
+  font-family: var(--police-titre);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--texte-2);
+  font-size: .85rem;
+}
+.player-recap { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.mini-set {
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+}
+.mini-set.echec { color: var(--danger); border-color: var(--danger); }
+
+.player-saisie { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.player-saisie .btn-step { width: 56px; height: 56px; font-size: 1.6rem; }
+.player-val { display: flex; align-items: baseline; gap: 6px; }
+.player-val .inp-valeur {
+  width: 120px;
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 2.6rem;
+  text-align: center;
+  padding: 6px;
+}
+.player-unite { color: var(--texte-2); font-size: 1rem; }
+.btn-chrono-grand { width: 100%; max-width: 320px; }
+.player-corps .ligne-rpe { justify-content: center; }
+
+.player-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.player-primary { width: 100%; font-size: 1.15rem; padding: 16px; }
+
+/* Décompte de démarrage 3·2·1·GO */
+.demarrage-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--fond);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+.demarrage-num {
+  font-family: var(--police-titre);
+  font-weight: 700;
+  font-size: 7rem;
+  color: var(--accent);
+  line-height: 1;
+  animation: demarrage-pop .32s ease;
+}
+@keyframes demarrage-pop {
+  from { transform: scale(.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demarrage-num { animation: none; }
+}
 
 /* --- Bannières du moteur (suggestions, jamais imposées) --------------------------------------------------- */
 .banniere {

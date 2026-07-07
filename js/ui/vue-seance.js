@@ -24,10 +24,14 @@ const EQUIPEMENT_DEFAUT = ['barre', 'anneaux', 'parallettes', 'elastiques', 'sur
 const ZONES_DEFAUT = ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
 const TEMPS_COURT = 30;    // minutes en dessous desquelles on propose de prioriser
 const PREPA_DEFAUT = 5;    // secondes de mise en place avant le chrono de tenue
-const REPOS_RAPIDES = [60, 90, 120, 180]; // durées à un tap dans la barre
 
 let seance = null;   // séance en cours (miroir du brouillon persisté en base)
 let chargee = false; // le brouillon a-t-il déjà été lu depuis IndexedDB ?
+let focusIndex = 0;  // exercice affiché en mode Focus (player)
+let modeListe = false; // false = player plein écran (défaut), true = vue d'ensemble
+let animerProchainRendu = false; // joue le décompte de démarrage au prochain player
+let reposDefaut = 90;  // durée de repos imposée par défaut (réglable)
+let prepaDefaut = PREPA_DEFAUT;
 
 export async function vueSeance(el) {
   if (!chargee) {
@@ -146,6 +150,12 @@ async function formulaireDemarrage(el) {
     };
     await setReglage('template_a_demarrer', null);
     await persister();
+    // « Quelque chose se lance » : plein écran (best-effort, geste utilisateur)
+    // + décompte 3·2·1·GO au premier rendu du player.
+    focusIndex = 0;
+    modeListe = false;
+    animerProchainRendu = true;
+    demanderFullscreen();
     vueSeance(el);
   });
 }
@@ -156,11 +166,271 @@ const chip = (valeur) =>
 const cochees = (sel) =>
   [...document.querySelectorAll(`${sel} input:checked`)].map((i) => i.value);
 
-// --- Séance en cours -----------------------------------------------------------
+// --- Séance en cours : dispatcher player (défaut) / vue liste --------------------
 
 async function seanceEnCours(el) {
-  const dureeRepos = await getReglage('dureeRepos', 90);
-  const dureePrepa = await getReglage('dureePrepa', PREPA_DEFAUT);
+  reposDefaut = await getReglage('dureeRepos', 90);
+  prepaDefaut = await getReglage('dureePrepa', PREPA_DEFAUT);
+  if (chrono.mode === 'idle') chrono.pending = chrono.pending || reposDefaut;
+  return modeListe ? rendreListe(el) : rendrePlayer(el);
+}
+
+// --- Mode Focus : un exercice par écran, plein écran, gros timer en bas -----------
+
+function rendrePlayer(el) {
+  document.body.classList.add('mode-seance');
+  initSeanceGlobalListeners();
+  const n = seance.entrees.length;
+
+  // Séance libre sans exercice : inviter à en ajouter.
+  if (!n) {
+    el.innerHTML = `
+      <div class="player">
+        <div class="player-tete">
+          <div class="player-prog"><div class="player-prog-txt">${seance.programme ? seance.programme.jour : 'Séance libre'}</div></div>
+          <button class="btn-x" data-liste title="Vue liste">☰</button>
+        </div>
+        <div class="player-corps">
+          <p class="texte-2 centre">Aucun exercice.<br>Ajoute ton premier mouvement 👇</p>
+          <button class="btn btn-accent btn-large" data-ajouter>+ Ajouter un exercice</button>
+        </div>
+      </div>`;
+    el.querySelector('[data-liste]').addEventListener('click', () => { modeListe = true; seanceEnCours(el); });
+    el.querySelector('[data-ajouter]').addEventListener('click', () => ajouterExercice(el));
+    return;
+  }
+
+  focusIndex = Math.max(0, Math.min(focusIndex, n - 1));
+  const i = focusIndex;
+  const entree = seance.entrees[i];
+  const ex = ctx.exercices.get(entree.exerciceId);
+  const estHold = ex.type === 'hold';
+  const unite = estHold ? 's' : 'reps';
+  const target = entree.cible?.sets || 1;
+  const faits = entree.sets.length;
+  const atteint = faits >= target;
+  const estDernier = i === n - 1;
+  const verif = verifierExercice(ex, seance.contraintes);
+  const prevu = entree.remplace ? ctx.exercices.get(entree.remplace.exerciceIdPrevu) : null;
+  const dernier = entree.sets[entree.sets.length - 1];
+  const valeurDefaut = dernier?.valeur ?? entree.cible?.valeur ?? '';
+
+  const nbDots = Math.max(target, faits);
+  const dots = Array.from({ length: nbDots }, (_, k) =>
+    `<span class="dot ${k < faits ? 'faite' : ''}"></span>`).join('');
+  const recap = entree.sets.map((s) =>
+    `<span class="mini-set ${s.echec ? 'echec' : ''}">${s.valeur}${estHold ? 's' : ''}${s.rpe ? '·' + s.rpe : ''}</span>`).join('');
+
+  // Le gros bouton s'adapte : valider tant que la cible n'est pas atteinte,
+  // puis passer à l'exercice suivant (ou terminer sur le dernier).
+  let grosLabel;
+  let grosAct;
+  if (faits < target) { grosLabel = 'Valider la série'; grosAct = 'valider'; }
+  else if (!estDernier) { grosLabel = 'Exercice suivant ▶'; grosAct = 'suivant'; }
+  else { grosLabel = 'Terminer ▶'; grosAct = 'terminer'; }
+
+  el.innerHTML = `
+    <div class="player">
+      <div class="player-tete">
+        <button class="btn-x" data-nav="prec" ${i === 0 ? 'disabled' : ''}>←</button>
+        <div class="player-prog">
+          <div class="player-prog-txt">Exercice ${i + 1} / ${n}</div>
+          <div class="ligne"><div style="width:${((i + 1) / n) * 100}%"></div></div>
+        </div>
+        <button class="btn-x" data-nav="suiv" ${estDernier ? 'disabled' : ''}>→</button>
+        <button class="btn-x" data-liste title="Vue liste">☰</button>
+      </div>
+
+      <div class="player-corps">
+        <button class="player-nom" data-fiche>${ex.nom}</button>
+        <div class="chips-mini">
+          <span class="badge">${estHold ? 'tenue' : 'reps'}</span>
+          ${entree.cible ? `<span class="badge badge-accent">objectif ${entree.cible.sets}×${entree.cible.valeur}${estHold ? ' s' : ''}</span>` : ''}
+        </div>
+        ${prevu ? `<div class="texte-2">⇄ remplace ${prevu.nom} · ${entree.remplace.raison}</div>` : ''}
+        ${verif.ok ? '' : `<div class="texte-attention">⚠ ${verif.raisons.join(' · ')}</div>`}
+        <div class="player-dots">${dots}</div>
+        <div class="player-serie-num">${atteint ? `${faits} série${faits > 1 ? 's' : ''} ✓` : `Série ${faits + 1} / ${target}`}</div>
+        <div class="player-recap">${recap}</div>
+
+        <div class="player-saisie">
+          <button class="btn btn-step" data-step="-1">−</button>
+          <div class="player-val">
+            <input type="number" min="1" inputmode="numeric" class="inp-valeur" value="${valeurDefaut}">
+            <span class="player-unite">${unite}</span>
+          </div>
+          <button class="btn btn-step" data-step="1">+</button>
+        </div>
+        ${estHold ? '<button class="btn btn-chrono-grand" data-chrono>⏱ Chrono de tenue</button>' : ''}
+        <div class="ligne-rpe">
+          <span class="texte-2">RPE</span>
+          ${[6, 7, 8, 9, 10].map((v) => `<button class="rpe-btn" data-rpe="${v}">${v}</button>`).join('')}
+          <button class="rpe-btn chip-echec" data-echec>échec</button>
+        </div>
+      </div>
+
+      <div class="player-actions">
+        <button class="btn btn-accent btn-large player-primary" data-gros="${grosAct}">${grosLabel}</button>
+        ${atteint ? '<button class="btn-lien" data-plus-serie>+ une série</button>' : ''}
+        <button class="btn-lien" data-remplacer>⇄ Remplacer l'exercice</button>
+      </div>
+
+      <div class="espace-barre"></div>
+      <div id="barre-chrono" class="barre-chrono"></div>
+    </div>`;
+
+  // Navigation entre exercices.
+  el.querySelectorAll('[data-nav]').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      focusIndex += btn.dataset.nav === 'suiv' ? 1 : -1;
+      rendrePlayer(el);
+    }));
+  el.querySelector('[data-liste]').addEventListener('click', () => { modeListe = true; seanceEnCours(el); });
+  el.querySelector('[data-fiche]').addEventListener('click', () => ouvrirFiche(ex));
+  el.querySelector('[data-remplacer]').addEventListener('click', () => ouvrirRemplacement(el, i));
+
+  // Steppers ±.
+  el.querySelectorAll('[data-step]').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const inp = el.querySelector('.inp-valeur');
+      inp.value = Math.max(1, (Number(inp.value) || 0) + Number(btn.dataset.step));
+    }));
+
+  // RPE + échec (toggles).
+  el.querySelectorAll('[data-rpe]').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const actif = btn.classList.contains('actif');
+      el.querySelectorAll('[data-rpe]').forEach((x) => x.classList.remove('actif'));
+      if (!actif) btn.classList.add('actif');
+    }));
+  el.querySelector('[data-echec]').addEventListener('click', (e) => e.target.classList.toggle('actif'));
+
+  // Chrono de tenue : prépa → GO → compte, re-tap = stop + remplit.
+  el.querySelector('[data-chrono]')?.addEventListener('click', () => {
+    if (chrono.mode === 'tenue' && chrono.exoIndex === i) arreterTenueEtRemplir();
+    else if (chrono.mode === 'idle' || chrono.mode === 'repos') demarrerPrepa(i, prepaDefaut);
+  });
+
+  // Gros bouton + « une série ».
+  el.querySelector('[data-gros]').addEventListener('click', async () => {
+    const act = el.querySelector('[data-gros]').dataset.gros;
+    if (act === 'valider') return validerSerie(el, i);
+    if (act === 'suivant') { focusIndex++; return rendrePlayer(el); }
+    if (act === 'terminer') {
+      if (!seance.entrees.some((e) => e.sets.length)) { toast('Logge au moins une série avant de terminer.'); return; }
+      if (confirm('Terminer et enregistrer la séance ?')) await terminer();
+    }
+  });
+  el.querySelector('[data-plus-serie]')?.addEventListener('click', () => validerSerie(el, i));
+
+  // Swipe gauche/droite pour changer d'exercice.
+  brancherSwipe(el.querySelector('.player-corps'), (dir) => {
+    const cible = focusIndex + (dir === 'gauche' ? 1 : -1);
+    if (cible >= 0 && cible < n) { focusIndex = cible; rendrePlayer(el); }
+  });
+
+  brancherBarre(el);
+  barreEtat = '';
+  majBarre();
+  verrouillerEcran();
+
+  if (animerProchainRendu) {
+    animerProchainRendu = false;
+    animerDemarrage();
+  }
+}
+
+// Valide la série courante depuis le player : lit la saisie, enregistre, relance
+// la vue, et lance le repos imposé automatiquement.
+async function validerSerie(el, i) {
+  const valeur = Number(el.querySelector('.inp-valeur').value);
+  if (!valeur || valeur <= 0) { toast('Renseigne une valeur (reps ou secondes).'); return; }
+  const rpeBtn = el.querySelector('[data-rpe].actif');
+  seance.entrees[i].sets.push({
+    valeur,
+    rpe: rpeBtn ? Number(rpeBtn.dataset.rpe) : null,
+    echec: el.querySelector('[data-echec]').classList.contains('actif'),
+  });
+  await persister();
+  await seanceEnCours(el);
+  demarrerRepos(seance.entrees[i].cible?.repos || reposDefaut);
+}
+
+function ajouterExercice(el) {
+  choisirExercice({
+    exercices: ctx.exercices,
+    contraintes: seance.contraintes,
+    onChoisi: async (id) => {
+      seance.entrees.push({ exerciceId: id, sets: [] });
+      focusIndex = seance.entrees.length - 1;
+      await persister();
+      seanceEnCours(el);
+    },
+  });
+}
+
+// Détecte un balayage horizontal net (et pas un scroll vertical).
+function brancherSwipe(zone, onSwipe) {
+  if (!zone) return;
+  let x0 = null;
+  let y0 = null;
+  zone.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  zone.addEventListener('touchend', (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    const dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) onSwipe(dx < 0 ? 'gauche' : 'droite');
+    x0 = null;
+  }, { passive: true });
+}
+
+// Décompte de démarrage 3·2·1·GO (sons réutilisés) — l'impression que « ça part ».
+function animerDemarrage() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ov = document.createElement('div');
+  ov.className = 'demarrage-overlay';
+  document.body.appendChild(ov);
+  const etapes = ['3', '2', '1', 'GO'];
+  let k = 0;
+  const fin = () => { clearInterval(timer); ov.remove(); };
+  const montre = () => {
+    ov.innerHTML = `<div class="demarrage-num">${etapes[k]}</div><button class="btn demarrage-skip">Passer</button>`;
+    ov.querySelector('.demarrage-skip').addEventListener('click', fin);
+    etapes[k] === 'GO' ? go() : tick();
+    k++;
+  };
+  montre();
+  const timer = setInterval(() => {
+    if (k >= etapes.length) { clearInterval(timer); setTimeout(fin, 350); return; }
+    montre();
+  }, 750);
+}
+
+function demanderFullscreen() {
+  document.documentElement.requestFullscreen?.().catch(() => {});
+}
+function quitterFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+}
+
+// Filet de sécurité : si l'utilisateur quitte la route séance autrement que par
+// Terminer/Abandonner, on rétablit la nav et on sort du plein écran.
+let seanceListenersInit = false;
+function initSeanceGlobalListeners() {
+  if (seanceListenersInit) return;
+  seanceListenersInit = true;
+  window.addEventListener('hashchange', () => {
+    if (!location.hash.startsWith('#/seance')) {
+      document.body.classList.remove('mode-seance');
+      quitterFullscreen();
+    }
+  });
+}
+
+// --- Vue liste (repli) : vue d'ensemble de toute la séance -------------------------
+
+function rendreListe(el) {
+  document.body.classList.remove('mode-seance'); // la nav réapparaît
   const heure = new Date(seance.dateDebut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   el.innerHTML = `
@@ -170,6 +440,7 @@ async function seanceEnCours(el) {
     </div>
     ${resumeContraintes()}
     ${bannieresAjustement()}
+    <button class="btn btn-accent btn-large" id="btn-plein-ecran">▶ Reprendre en plein écran</button>
     <div class="liste">${seance.entrees.map(carteEntree).join('') ||
       '<p class="texte-2 centre">Ajoute un premier exercice 👇</p>'}</div>
     <button class="btn btn-large" id="btn-ajouter-exo">+ Ajouter un exercice</button>
@@ -178,22 +449,19 @@ async function seanceEnCours(el) {
       <button class="btn btn-danger btn-large" id="btn-abandonner">Abandonner</button>
     </div>
     <label class="ligne-repos">Repos auto
-      <input id="inp-repos" type="number" inputmode="numeric" value="${dureeRepos}"> s ·
-      Prépa tenue <input id="inp-prepa" type="number" inputmode="numeric" value="${dureePrepa}"> s
+      <input id="inp-repos" type="number" inputmode="numeric" value="${reposDefaut}"> s ·
+      Prépa tenue <input id="inp-prepa" type="number" inputmode="numeric" value="${prepaDefaut}"> s
     </label>
     <div class="espace-barre"></div>
     <div id="barre-chrono" class="barre-chrono"></div>`;
 
-  el.querySelector('#btn-ajouter-exo').addEventListener('click', () =>
-    choisirExercice({
-      exercices: ctx.exercices,
-      contraintes: seance.contraintes,
-      onChoisi: async (id) => {
-        seance.entrees.push({ exerciceId: id, sets: [] });
-        await persister();
-        seanceEnCours(el);
-      },
-    }));
+  el.querySelector('#btn-plein-ecran').addEventListener('click', () => {
+    modeListe = false;
+    demanderFullscreen();
+    seanceEnCours(el);
+  });
+
+  el.querySelector('#btn-ajouter-exo').addEventListener('click', () => ajouterExercice(el));
 
   el.querySelector('#btn-terminer').addEventListener('click', async () => {
     if (!seance.entrees.some((e) => e.sets.length)) {
@@ -209,6 +477,7 @@ async function seanceEnCours(el) {
     await setReglage('seance_en_cours', null);
     stopChrono();
     libererEcran();
+    quitterFullscreen();
     vueSeance(el);
   });
 
@@ -232,7 +501,6 @@ async function seanceEnCours(el) {
         toast('Cibles réduites d\'un set ✓');
       }
       if (type === 'temps' && action === 'appliquer') {
-        // Les exercices liés à un skill passent en premier (tri stable).
         seance.entrees.sort((a, b) =>
           (ctx.exercices.get(b.exerciceId)?.skill ? 1 : 0)
           - (ctx.exercices.get(a.exerciceId)?.skill ? 1 : 0));
@@ -243,16 +511,13 @@ async function seanceEnCours(el) {
       seanceEnCours(el);
     }));
 
-  // Remplacement d'un exercice par une alternative du moteur.
   el.querySelectorAll('[data-remplacer]').forEach((btn) =>
     btn.addEventListener('click', () => ouvrirRemplacement(el, Number(btn.dataset.remplacer))));
 
-  // Fiche express : consignes et erreurs sans quitter la séance.
   el.querySelectorAll('[data-fiche]').forEach((btn) =>
     btn.addEventListener('click', () =>
       ouvrirFiche(ctx.exercices.get(seance.entrees[Number(btn.dataset.fiche)].exerciceId))));
 
-  // Steppers ± autour du champ valeur.
   el.querySelectorAll('[data-step]').forEach((btn) =>
     btn.addEventListener('click', () => {
       const [i, delta] = btn.dataset.step.split(':').map(Number);
@@ -260,7 +525,6 @@ async function seanceEnCours(el) {
       inp.value = Math.max(1, (Number(inp.value) || 0) + delta);
     }));
 
-  // RPE en boutons (tap pour sélectionner, re-tap pour désélectionner) + échec.
   el.querySelectorAll('[data-rpe]').forEach((btn) =>
     btn.addEventListener('click', () => {
       const actif = btn.classList.contains('actif');
@@ -270,7 +534,6 @@ async function seanceEnCours(el) {
   el.querySelectorAll('[data-echec]').forEach((btn) =>
     btn.addEventListener('click', () => btn.classList.toggle('actif')));
 
-  // Ajout d'un set → recharge la vue puis lance le repos automatiquement.
   el.querySelectorAll('[data-add-set]').forEach((btn) =>
     btn.addEventListener('click', async () => {
       const i = Number(btn.dataset.addSet);
@@ -287,22 +550,16 @@ async function seanceEnCours(el) {
       });
       await persister();
       await seanceEnCours(el);
-      // Repos suggéré par le programme pour cet exercice, sinon réglage global.
-      demarrerRepos(seance.entrees[i].cible?.repos || (await getReglage('dureeRepos', 90)));
+      demarrerRepos(seance.entrees[i].cible?.repos || reposDefaut);
     }));
 
-  // Chrono de tenue : prépa (mise en place) → GO → compte, tap = stop + remplit.
   el.querySelectorAll('[data-chrono]').forEach((btn) =>
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const i = Number(btn.dataset.chrono);
-      if (chrono.mode === 'tenue' && chrono.exoIndex === i) {
-        arreterTenueEtRemplir();
-      } else if (chrono.mode === 'idle' || chrono.mode === 'repos') {
-        demarrerPrepa(i, await getReglage('dureePrepa', PREPA_DEFAUT));
-      }
+      if (chrono.mode === 'tenue' && chrono.exoIndex === i) arreterTenueEtRemplir();
+      else if (chrono.mode === 'idle' || chrono.mode === 'repos') demarrerPrepa(i, prepaDefaut);
     }));
 
-  // Suppression d'un set ou d'un exercice.
   el.querySelectorAll('[data-suppr-set]').forEach((btn) =>
     btn.addEventListener('click', async () => {
       const [i, j] = btn.dataset.supprSet.split(':').map(Number);
@@ -321,22 +578,25 @@ async function seanceEnCours(el) {
       seanceEnCours(el);
     }));
 
-  // Barre de chrono : délégation (le contenu est re-rendu par majBarre).
-  el.querySelector('#barre-chrono').addEventListener('click', (e) => {
-    const d = e.target.dataset;
-    if (d.repos) { demarrerRepos(Number(d.repos)); return; }
-    if (!d.chronoAct) return;
-    if (d.chronoAct === 'moins') ajusterRepos(-15);
-    if (d.chronoAct === 'plus') ajusterRepos(15);
-    if (d.chronoAct === 'pause') basculerPause();
-    if (d.chronoAct === 'stop') stopChrono();
-    if (d.chronoAct === 'go') demarrerTenue(chrono.exoIndex);
-    if (d.chronoAct === 'stopTenue') arreterTenueEtRemplir();
-  });
-
+  brancherBarre(el);
   barreEtat = '';
   majBarre();
-  verrouillerEcran(); // l'écran reste allumé pendant toute la séance
+  verrouillerEcran();
+}
+
+// Câble la barre de chrono (délégation ; contenu re-rendu par majBarre).
+function brancherBarre(el) {
+  el.querySelector('#barre-chrono').addEventListener('click', (e) => {
+    const act = e.target.dataset.chronoAct;
+    if (!act) return;
+    if (act === 'moins') ajusterOuPending(-15);
+    else if (act === 'plus') ajusterOuPending(15);
+    else if (act === 'demarrer') demarrerRepos(chrono.pending || reposDefaut);
+    else if (act === 'pause') basculerPause();
+    else if (act === 'stop') stopChrono();
+    else if (act === 'go') demarrerTenue(chrono.exoIndex);
+    else if (act === 'stopTenue') arreterTenueEtRemplir();
+  });
 }
 
 function resumeContraintes() {
@@ -477,17 +737,29 @@ function demarrerTenue(i) {
 
 function arreterTenueEtRemplir() {
   const secondes = Math.max(1, Math.round((Date.now() - chrono.debut) / 1000));
-  const form = document.querySelector(`.form-set[data-i="${chrono.exoIndex}"]`);
-  form?.querySelector('.inp-valeur') && (form.querySelector('.inp-valeur').value = secondes);
+  // En player il n'y a qu'un champ ; en liste, celui de l'exercice concerné.
+  const champ = document.querySelector('.player .inp-valeur')
+    || document.querySelector(`.form-set[data-i="${chrono.exoIndex}"] .inp-valeur`);
+  if (champ) champ.value = secondes;
   stopChrono();
-  toast(`Tenue : ${secondes} s · valide le set avec OK`);
+  toast(`Tenue : ${secondes} s · valide la série`);
 }
 
 function stopChrono() {
-  chrono = { mode: 'idle' };
+  chrono = { mode: 'idle', pending: reposDefaut };
   clearInterval(chronoTimer);
   chronoTimer = null;
   majBarre();
+}
+
+// −15/+15 : ajuste le repos en cours, ou la durée « prête » quand on est à l'arrêt.
+function ajusterOuPending(delta) {
+  if (chrono.mode === 'idle') {
+    chrono.pending = Math.max(15, (chrono.pending || reposDefaut) + delta);
+    majBarre();
+  } else if (chrono.mode === 'repos') {
+    ajusterRepos(delta);
+  }
 }
 
 function ajusterRepos(delta) {
@@ -548,10 +820,14 @@ function majBarre() {
   if (cle !== barreEtat) {
     barreEtat = cle;
     if (chrono.mode === 'idle') {
+      // Repos imposé par défaut, ajustable −15/+15, lancé au ▶.
       barre.className = 'barre-chrono';
       barre.innerHTML = `
         <span class="barre-label">Repos</span>
-        ${REPOS_RAPIDES.map((s) => `<button class="barre-chip" data-repos="${s}">${fmt(s)}</button>`).join('')}`;
+        <button data-chrono-act="moins">−15</button>
+        <span class="barre-temps"></span>
+        <button data-chrono-act="plus">+15</button>
+        <button class="btn-demarrer-repos" data-chrono-act="demarrer">▶</button>`;
     } else if (chrono.mode === 'repos') {
       barre.className = 'barre-chrono barre-active';
       barre.innerHTML = `
@@ -580,7 +856,9 @@ function majBarre() {
 
   // Mise à jour légère (temps + ligne de progression) sans reconstruire le DOM.
   const temps = barre.querySelector('.barre-temps');
-  if (chrono.mode === 'repos') {
+  if (chrono.mode === 'idle') {
+    if (temps) temps.textContent = fmt(chrono.pending || reposDefaut);
+  } else if (chrono.mode === 'repos') {
     const restantMs = chrono.pause !== null ? chrono.pause : chrono.fin - Date.now();
     const restant = Math.max(0, Math.ceil(restantMs / 1000));
     temps.textContent = fmt(restant);
@@ -744,6 +1022,8 @@ async function remplacer(i, altId, raison) {
 async function terminer() {
   stopChrono();
   libererEcran();
+  document.body.classList.remove('mode-seance');
+  quitterFullscreen();
   seance.dateFin = new Date().toISOString();
   // On ne garde que les entrées réellement travaillées.
   seance.entrees = seance.entrees.filter((e) => e.sets.length);
