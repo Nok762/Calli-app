@@ -12,9 +12,11 @@ import { libelle } from '../libelles.js';
 export const SEUILS = {
   SEANCES_STABLES: 2,      // séances avec critère atteint → suggérer de valider l'étape
   RPE_DELOAD: 9,           // RPE moyen à partir duquel une séance compte comme « difficile »
+  RPE_FRAIS: 7,            // RPE moyen en dessous duquel les séances récentes sont « confortables »
   SEANCES_DELOAD: 2,       // apparitions difficiles consécutives → suggérer une régression
   DECALAGE_DIFFICULTE: 2,  // décalage de difficulté cible pour « trop dur » / « trop facile »
   MAX_ALTERNATIVES: 3,     // nombre d'alternatives proposées
+  REPOS_COURT_H: 18,       // moins de repos que ça depuis la dernière séance → récup incomplète
 };
 
 // --- Faisabilité ---------------------------------------------------------------
@@ -166,4 +168,41 @@ export function suggestionsDeload(sessions, exercices) {
     });
   }
   return out;
+}
+
+// --- Autorégulation : « forme du jour » -------------------------------------------
+//
+// Évalue si l'utilisateur est frais ou fatigué pour MODULER LE VOLUME du jour,
+// à partir de trois signaux (aucune intégration santé externe) :
+//   1. l'énergie auto-déclarée (le signal le plus direct) ;
+//   2. la tendance RPE de la dernière séance (RPE élevé = fatigue résiduelle) ;
+//   3. le repos écoulé depuis la dernière séance (trop court = récup incomplète).
+// Retourne { niveau: 'basse'|'normale'|'haute', score, raisons[] } — les raisons
+// sont des textes affichables tels quels. La décision reste à l'utilisateur.
+export function evaluerReadiness(contraintes, sessions = []) {
+  const facteurs = []; // { texte, delta } — delta > 0 : frais ; < 0 : fatigué
+
+  const e = contraintes?.energie;
+  if (e === 'haute') facteurs.push({ texte: 'énergie haute', delta: 2 });
+  else if (e === 'faible') facteurs.push({ texte: 'énergie faible', delta: -2 });
+
+  const derniere = [...sessions].sort((a, b) => b.dateDebut.localeCompare(a.dateDebut))[0];
+  if (derniere) {
+    const rpes = derniere.entrees.flatMap((en) => en.sets.map((s) => s.rpe).filter(Boolean));
+    if (rpes.length) {
+      const moyen = rpes.reduce((a, b) => a + b, 0) / rpes.length;
+      if (moyen >= SEUILS.RPE_DELOAD) facteurs.push({ texte: `RPE ${Math.round(moyen)} la dernière séance`, delta: -1 });
+      else if (moyen <= SEUILS.RPE_FRAIS) facteurs.push({ texte: 'séances récentes confortables', delta: 1 });
+    }
+    const heures = (Date.now() - new Date(derniere.dateDebut)) / 3600000;
+    if (heures < SEUILS.REPOS_COURT_H) facteurs.push({ texte: 'peu de repos depuis la dernière séance', delta: -1 });
+  }
+
+  const score = facteurs.reduce((t, f) => t + f.delta, 0);
+  const niveau = score >= 2 ? 'haute' : score <= -2 ? 'basse' : 'normale';
+  // N'afficher que les raisons cohérentes avec le verdict (pas « bonne forme
+  // parce que… peu de repos »).
+  const signe = niveau === 'haute' ? 1 : -1;
+  const raisons = facteurs.filter((f) => Math.sign(f.delta) === signe).map((f) => f.texte);
+  return { niveau, score, raisons };
 }

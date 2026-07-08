@@ -15,7 +15,7 @@ import { majPRDepuisSession, getPR } from '../pr.js';
 import { getEtatSkill } from '../skills.js';
 import {
   verifierExercice, proposerAlternatives, texteCause,
-  suggestionsPalier, suggestionsDeload,
+  suggestionsPalier, suggestionsDeload, evaluerReadiness,
 } from '../moteur/adaptation.js';
 import { evoluerCibles, modulationSeance } from '../moteur/generateur.js';
 import { toast, bip, tick, go, libelle, choisirExercice } from './composants.js';
@@ -116,12 +116,20 @@ async function formulaireDemarrage(el) {
     }));
 
   el.querySelector('#btn-demarrer').addEventListener('click', async () => {
+    const sessions = await dbGetAll('sessions');
     // Modulation (deload planifié / reprise après pause) pour un programme
     // généré : appliquée à la SÉANCE uniquement — le programme garde ses
     // cibles canoniques, et la bannière permet de rétablir.
-    const modulation = template?.prog.genere
-      ? modulationSeance(template.prog, await dbGetAll('sessions'))
-      : null;
+    const modulation = template?.prog.genere ? modulationSeance(template.prog, sessions) : null;
+    const contraintes = {
+      materiel: cochees('#chips-materiel'),
+      douleurs: cochees('#chips-douleurs'),
+      tempsDispo: Number(el.querySelector('#inp-temps').value) || null,
+      energie: el.querySelector('#sel-energie').value,
+    };
+    // Autorégulation « forme du jour » : verdict figé au démarrage (comme la
+    // modulation), consommé ensuite par la bannière readiness.
+    const readiness = evaluerReadiness(contraintes, sessions);
     const entrees = template
       ? template.jour.exercices.map((e) => {
           const entree = { exerciceId: e.exerciceId, sets: [], cible: { ...e.cible } };
@@ -138,14 +146,10 @@ async function formulaireDemarrage(el) {
       programme: template
         ? { id: template.prog.id, nom: template.prog.nom, jour: template.jour.nom, jourIdx: template.jourIdx }
         : null,
-      contraintes: {
-        materiel: cochees('#chips-materiel'),
-        douleurs: cochees('#chips-douleurs'),
-        tempsDispo: Number(el.querySelector('#inp-temps').value) || null,
-        energie: el.querySelector('#sel-energie').value,
-      },
+      contraintes,
       entrees,
       modulation,
+      readiness,
       ajustements: {},
     };
     await setReglage('template_a_demarrer', null);
@@ -496,9 +500,16 @@ function rendreListe(el) {
         for (const e of seance.entrees) if (e.cibleOrigine) e.cible = { ...e.cibleOrigine };
         toast('Cibles normales rétablies ✓');
       }
-      if (type === 'energie' && action === 'appliquer') {
-        for (const e of seance.entrees) if (e.cible) e.cible.sets = Math.max(1, e.cible.sets - 1);
-        toast('Cibles réduites d\'un set ✓');
+      if (type === 'readiness' && action === 'moins') {
+        for (const e of seance.entrees) if (e.cible && e.cible.sets > 1) e.cible.sets -= 1;
+        toast('Cibles allégées d\'un set ✓');
+      }
+      if (type === 'readiness' && action === 'plus') {
+        for (const e of seance.entrees) {
+          const ex = ctx.exercices.get(e.exerciceId);
+          if (e.cible && !ex?.skill && e.cible.sets < 5) e.cible.sets += 1;
+        }
+        toast('Un set ajouté sur la force ✓');
       }
       if (type === 'temps' && action === 'appliquer') {
         seance.entrees.sort((a, b) =>
@@ -627,16 +638,31 @@ function bannieresAjustement() {
       </div>`);
   }
 
-  if (c.energie === 'faible' && !seance.ajustements.energie) {
-    const aCibles = seance.entrees.some((e) => e.cible && e.cible.sets > 1);
-    bans.push(`
-      <div class="carte banniere">
-        <span>💡 Énergie faible → ${aCibles ? 'réduire les cibles d\'un set ?' : 'vise un set de moins que d\'habitude.'}</span>
-        <span class="banniere-actions">
-          ${aCibles ? '<button class="btn btn-accent" data-ajust="energie-appliquer">−1 set</button>' : ''}
-          <button class="btn" data-ajust="energie-ignorer">OK</button>
-        </span>
-      </div>`);
+  // Autorégulation « forme du jour » : module le VOLUME dans les deux sens.
+  const r = seance.readiness;
+  if (r && r.niveau !== 'normale' && !seance.ajustements.readiness) {
+    const pourquoi = r.raisons.join(' + ');
+    if (r.niveau === 'basse') {
+      const aCibles = seance.entrees.some((e) => e.cible && e.cible.sets > 1);
+      bans.push(`
+        <div class="carte banniere">
+          <span>💡 Forme en baisse (${pourquoi}) → ${aCibles ? 'alléger d\'un set et viser RPE ≤ 8 ?' : 'vise un set de moins et RPE ≤ 8.'}</span>
+          <span class="banniere-actions">
+            ${aCibles ? '<button class="btn btn-accent" data-ajust="readiness-moins">−1 set</button>' : ''}
+            <button class="btn" data-ajust="readiness-ignorer">OK</button>
+          </span>
+        </div>`);
+    } else {
+      const aForce = seance.entrees.some((e) => e.cible && !ctx.exercices.get(e.exerciceId)?.skill);
+      bans.push(`
+        <div class="carte banniere">
+          <span>💡 Bonne forme (${pourquoi}) → ${aForce ? 'ajouter un set sur le travail de force ?' : 'tu peux pousser un peu plus que d\'habitude.'}</span>
+          <span class="banniere-actions">
+            ${aForce ? '<button class="btn btn-accent" data-ajust="readiness-plus">+1 set</button>' : ''}
+            <button class="btn" data-ajust="readiness-ignorer">OK</button>
+          </span>
+        </div>`);
+    }
   }
 
   if (c.tempsDispo && c.tempsDispo <= TEMPS_COURT && !seance.ajustements.temps && seance.entrees.length > 1) {
