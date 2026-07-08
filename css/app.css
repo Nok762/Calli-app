@@ -25,7 +25,7 @@
   --fond-2: #1E1A15;        /* surface carte */
   --fond-3: #29231B;        /* surface contrôle */
   --texte: #F2EDE4;         /* craie */
-  --texte-2: #9A9184;       /* craie estompée */
+  --texte-2: #B4AB99;       /* craie estompée — assez claire pour porter de l'info (cibles, dates, résumés) */
   --accent: #FFA028;        /* ambre — l'unique accent */
   --accent-texte: #2A1602;  /* texte posé sur fond ambre */
   --accent-voile: rgba(255, 160, 40, .13);
@@ -44,6 +44,8 @@ html, body {
   background: var(--fond);
   color: var(--texte);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 #vue {
@@ -72,11 +74,11 @@ h2 {
 h3 {
   font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .85rem;
+  font-size: .92rem;
   margin: 16px 0 8px;
   color: var(--texte-2);
   text-transform: uppercase;
-  letter-spacing: .13em;
+  letter-spacing: .09em;
 }
 a { color: var(--accent); text-decoration: none; }
 p { line-height: 1.5; margin: 6px 0; }
@@ -84,7 +86,7 @@ ul { margin: 6px 0; padding-left: 20px; }
 li { line-height: 1.5; }
 
 .chargement { text-align: center; padding: 60px 0; color: var(--texte-2); }
-.texte-2 { color: var(--texte-2); font-size: .85rem; }
+.texte-2 { color: var(--texte-2); font-size: .9rem; line-height: 1.5; }
 .centre { text-align: center; padding: 24px 0; line-height: 1.6; }
 .retour {
   display: inline-block;
@@ -110,40 +112,59 @@ li { line-height: 1.5; }
   transition: width .3s ease;
 }
 
-/* --- Navigation basse ----------------------------------------------------------- */
+/* --- Navigation basse : barre légère, flottante, monochrome ----------------------
+   Translucide + léger flou (l'app respire dessous), hairline plutôt qu'un bord
+   franc, icônes de trait qui héritent de currentColor. L'onglet actif est marqué
+   par « la Ligne » — un court trait ambre, cohérent avec le motif signature. */
 #nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   display: flex;
-  background: var(--fond-2);
-  border-top: 1px solid var(--bord);
+  justify-content: center;
+  background: rgba(20, 18, 15, .72);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border-top: 1px solid rgba(242, 237, 228, .06);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 20;
 }
 #nav a {
+  position: relative;
   flex: 1;
+  max-width: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 9px 0 8px;
+  gap: 4px;
+  padding: 11px 0 9px;
   color: var(--texte-2);
   font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .74rem;
+  font-size: .68rem;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .09em;
+  transition: color .18s ease;
 }
 #nav a.actif { color: var(--accent); }
-.nav-ico { font-size: 1.25rem; }
+/* « la Ligne » de l'onglet actif : fin trait ambre, aligné sur le bord haut. */
+#nav a.actif::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  width: 20px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--accent);
+}
+.nav-ico { width: 22px; height: 22px; display: block; }
 
 /* --- Cartes et listes -------------------------------------------------------------- */
-.liste { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.liste { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
 .carte {
   background: var(--fond-2);
-  border: 1px solid var(--bord);
+  border: 1px solid #2E2921; /* hairline plus douce que --bord : moins « encadré », plus posé */
   border-radius: var(--rayon);
-  padding: 14px;
+  padding: 15px;
   display: block;
   color: var(--texte);
 }
@@ -154,8 +175,8 @@ li { line-height: 1.5; }
 .badge {
   background: var(--fond-3);
   border-radius: 999px;
-  padding: 2px 10px;
-  font-size: .72rem;
+  padding: 3px 10px;
+  font-size: .78rem;
   color: var(--texte-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -172,6 +193,7 @@ li { line-height: 1.5; }
   font-size: .95rem;
   font-family: inherit;
   cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .06s ease;
 }
 .btn:active { transform: scale(.98); }
 .btn-accent {
@@ -181,7 +203,7 @@ li { line-height: 1.5; }
   font-family: var(--police-titre);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .03em;
 }
 .btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
 .btn-large { width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px; }
@@ -276,7 +298,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   font-family: var(--police-titre);
   font-weight: 700;
   font-size: 2.1rem;
-  color: var(--accent);
+  color: var(--texte); /* craie plutôt qu'ambre : l'accent est réservé à l'actif/actionnable */
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
@@ -411,14 +433,21 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 }
 .barre-chrono.barre-active { border-color: var(--accent); }
 .barre-chrono.barre-tenue { border-color: var(--accent); background: var(--fond-2); }
+/* Remplissage de progression : fond ambre qui grandit gauche→droite, avec un
+   bord d'attaque ambre net (« la Ligne ») qui avance. Absolu → n'entre PAS dans
+   le flux flex, donc ne pousse jamais le texte (bug corrigé). */
 .barre-ligne {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 0;
   background: var(--accent-voile);
+  border-right: 2px solid var(--accent);
   transition: width .2s linear;
+  pointer-events: none;
 }
-.barre-chrono > * { position: relative; }
+/* Le contenu (temps, boutons) passe au-dessus du remplissage — mais surtout PAS
+   la ligne elle-même, qui doit rester absolue. */
+.barre-chrono > *:not(.barre-ligne) { position: relative; }
 .barre-chrono button {
   background: var(--fond-2);
   border: 1px solid var(--bord);
@@ -680,9 +709,11 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .ligne-detail {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 10px;
-  padding: 5px 0;
-  font-size: .9rem;
+  padding: 6px 0;
+  font-size: .92rem;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
 .carte-session-detail .ligne-detail { border-bottom: 1px dashed var(--bord); }

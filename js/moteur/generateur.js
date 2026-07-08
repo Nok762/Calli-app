@@ -42,21 +42,27 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 // Splits par fréquence. Full-body jusqu'à 3 j/sem et haut/bas à 4 j/sem :
 // chaque pattern est ainsi travaillé au moins 2×/semaine.
+//
+// Les noms sont ÉVOCATEURS (pas « Full body A/B ») — vocabulaire d'architecture
+// du corps, cohérent avec l'identité graphite/acier. La logique ne dépend jamais
+// du `nom` (elle lit `patterns`), donc ces libellés sont libres et modifiables.
+// Full-body → socle / charpente / aplomb ; 4 j/sem : Cime = haut poussée,
+// Suspension = haut tirage, Piliers = bas dominante squat, Ancrage = bas hinge.
 const SPLITS = {
   2: [
-    { nom: 'Full body A', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
-    { nom: 'Full body B', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
+    { nom: 'Socle', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
+    { nom: 'Charpente', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
   ],
   3: [
-    { nom: 'Full body A', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
-    { nom: 'Full body B', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
-    { nom: 'Full body C', patterns: ['poussee_horizontale', 'tirage_horizontal', 'squat', 'gainage_anti_extension'] },
+    { nom: 'Socle', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
+    { nom: 'Charpente', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
+    { nom: 'Aplomb', patterns: ['poussee_horizontale', 'tirage_horizontal', 'squat', 'gainage_anti_extension'] },
   ],
   4: [
-    { nom: 'Haut du corps A', patterns: ['poussee_horizontale', 'tirage_vertical', 'poussee_verticale', 'gainage_anti_extension'] },
-    { nom: 'Bas du corps A', patterns: ['squat', 'hinge', 'gainage_anti_rotation', 'gainage_anti_extension'] },
-    { nom: 'Haut du corps B', patterns: ['tirage_horizontal', 'poussee_verticale', 'tirage_vertical', 'gainage_anti_rotation'] },
-    { nom: 'Bas du corps B', patterns: ['hinge', 'squat', 'gainage_anti_extension', 'gainage_anti_rotation'] },
+    { nom: 'Cime', patterns: ['poussee_horizontale', 'tirage_vertical', 'poussee_verticale', 'gainage_anti_extension'] },
+    { nom: 'Piliers', patterns: ['squat', 'hinge', 'gainage_anti_rotation', 'gainage_anti_extension'] },
+    { nom: 'Suspension', patterns: ['tirage_horizontal', 'poussee_verticale', 'tirage_vertical', 'gainage_anti_rotation'] },
+    { nom: 'Ancrage', patterns: ['hinge', 'squat', 'gainage_anti_extension', 'gainage_anti_rotation'] },
   ],
 };
 
