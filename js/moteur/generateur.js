@@ -78,7 +78,7 @@ export function genererProgramme(params, donnees) {
   const { exercices, skills, etats, prs } = donnees;
 
   const objSkills = objectifs.map((id) => skills.find((s) => s.id === id)).filter(Boolean);
-  const niveau = estimerNiveau(prs, exercices);
+  const niveaux = estimerNiveaux(prs, exercices);
   const nbExos = clamp(Math.round(dureeMin / REGLES.MIN_PAR_EXO), REGLES.MIN_EXOS, REGLES.MAX_EXOS);
   const split = SPLITS[frequence] || SPLITS[3];
   const usage = new Map(); // variété : pénalise un exercice déjà utilisé un autre jour
@@ -121,7 +121,7 @@ export function genererProgramme(params, donnees) {
     const exosForce = [];
     for (const pattern of defJour.patterns) {
       if (exosForce.length >= budget) break;
-      const ex = choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pris, usage });
+      const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage });
       if (!ex) continue;
       pris.add(ex.id);
       usage.set(ex.id, (usage.get(ex.id) || 0) + 1);
@@ -143,16 +143,27 @@ export function genererProgramme(params, donnees) {
   };
 }
 
-// Niveau force estimé depuis les PR existants (difficulté moyenne des
-// exercices maîtrisés). Sans historique : difficulté 3 (débutant/intermédiaire).
-function estimerNiveau(prs, exercices) {
-  const diffs = [];
+// Niveau force estimé depuis les PR existants (difficulté moyenne des exercices
+// maîtrisés). Estimé PAR PATTERN : on peut être avancé en tirage et débutant en
+// jambes, et le générateur doit choisir en conséquence. Sans historique sur un
+// pattern → repli sur le niveau global ; sans aucun historique → 3 (débutant/inter).
+function estimerNiveaux(prs, exercices) {
+  const global = [];
+  const parPattern = new Map(); // pattern -> [difficultés maîtrisées]
   for (const [id, pr] of prs) {
     const ex = exercices.get(id);
     if (!ex) continue;
-    if ((pr.maxReps?.valeur ?? 0) >= 5 || (pr.maxHold?.valeur ?? 0) >= 15) diffs.push(ex.difficulte);
+    if ((pr.maxReps?.valeur ?? 0) >= 5 || (pr.maxHold?.valeur ?? 0) >= 15) {
+      global.push(ex.difficulte);
+      if (!parPattern.has(ex.pattern)) parPattern.set(ex.pattern, []);
+      parPattern.get(ex.pattern).push(ex.difficulte);
+    }
   }
-  return diffs.length ? Math.round(diffs.reduce((a, b) => a + b, 0) / diffs.length) : 3;
+  const moyenne = (a) => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+  const niveauGlobal = global.length ? moyenne(global) : 3;
+  const niveaux = new Map();
+  for (const [p, ds] of parPattern) niveaux.set(p, moyenne(ds));
+  return { niveauGlobal, niveauPattern: (pattern) => niveaux.get(pattern) ?? niveauGlobal };
 }
 
 // Cible d'un exercice de skill : ~60 % du critère par série, plusieurs séries,
