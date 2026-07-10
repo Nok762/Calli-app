@@ -62,6 +62,11 @@ async function editerProgramme(el, id) {
             <input class="inp-jour" data-j="${j}" value="${jour.nom}">
             <button class="btn-x" data-suppr-jour="${j}">×</button>
           </div>
+          ${jour.echauffement?.length ? `
+            <details class="echauffement">
+              <summary>🔥 Échauffement · ${jour.echauffement.length} étapes</summary>
+              <ul>${jour.echauffement.map((e) => `<li>${e}</li>`).join('')}</ul>
+            </details>` : ''}
           ${jour.exercices.map((e, k) => ligneExo(e, j, k)).join('') ||
             '<p class="texte-2">Aucun exercice pour l\'instant.</p>'}
           <div class="ligne-2">

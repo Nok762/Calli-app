@@ -76,7 +76,12 @@ async function formulaireDemarrage(el) {
         <div><strong>📋 ${template.prog.nom} — ${template.jour.nom}</strong>
           <div class="texte-2">${template.jour.exercices.length} exercices pré-remplis</div></div>
         <button class="btn-x" id="btn-annuler-template">×</button>
-      </div>` : ''}
+      </div>
+      ${template.jour.echauffement?.length ? `
+        <details class="echauffement">
+          <summary>🔥 Échauffement · ${template.jour.echauffement.length} étapes</summary>
+          <ul>${template.jour.echauffement.map((e) => `<li>${e}</li>`).join('')}</ul>
+        </details>` : ''}` : ''}
     ${jours.length ? `
       <h3>Depuis un programme</h3>
       <div class="chips">

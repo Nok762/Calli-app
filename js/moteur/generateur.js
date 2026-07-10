@@ -131,6 +131,23 @@ function repartirPatterns(split, capacites) {
   return parJour.map((pats) => pats.sort((a, b) => prio(a) - prio(b) || poids(b) - poids(a)));
 }
 
+// Échauffement adapté aux patterns du jour : cardio léger + mobilité articulaire
+// (universels, cruciaux pour les tissus conjonctifs en callisthénie), activation
+// scapulaire si haut du corps, activation bas si jambes, puis prépa mouvement.
+// Standard proche de la r/bwf Recommended Routine. Renvoie des étapes affichables.
+function genererEchauffement(patterns) {
+  const haut = patterns.some((p) => p.startsWith('poussee') || p.startsWith('tirage'));
+  const bas = patterns.some((p) => p === 'squat' || p === 'hinge');
+  const etapes = [
+    '2-3 min de cardio léger (corde à sauter, montées de genoux)',
+    'Mobilité articulaire : poignets, coudes, épaules, hanches, genoux — 5 cercles par sens',
+  ];
+  if (haut) etapes.push('Activation scapulaire : 10 tractions scapulaires + 10 pompes scapulaires');
+  if (bas) etapes.push('Activation bas du corps : 10 ponts fessiers + 10 squats à vide');
+  etapes.push('Prépa : 5 répétitions faciles de chaque exercice principal avant la 1re série lourde');
+  return etapes;
+}
+
 // --- Génération ------------------------------------------------------------------
 
 // params : { objectifs: [skillId], frequence: 2|3|4, materiel: [...], dureeMin }
@@ -203,7 +220,11 @@ export function genererProgramme(params, donnees) {
       exosForce.push({ exerciceId: ex.id, cible: cibleForce(ex, prs) });
     }
 
-    return { nom: defJour.nom, exercices: [...exosSkill, ...exosForce] };
+    return {
+      nom: defJour.nom,
+      echauffement: genererEchauffement(patternsParJour[j]),
+      exercices: [...exosSkill, ...exosForce],
+    };
   });
 
   return {
