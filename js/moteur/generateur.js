@@ -39,35 +39,97 @@ export const REGLES = {
   TRANSITION_EXO: 45, // secondes de mise en place entre deux exercices
   SEC_PAR_REP: 3,     // durée approximative d'une répétition (tempo contrôlé)
   MARGE_TEMPS: 3,     // tolérance (min) avant de proposer de raccourcir
+  MIN_FORCE: 2,       // au moins 2 exercices de force par séance, même très courte
+  SKILL_FREQ_MAX: 3,  // pratique d'un skill : ≤ 3×/sem (tissus conjonctifs, fraîcheur)
+  SKILL_PAR_JOUR_MAX: 2, // ≤ 2 skills par séance (le travail de qualité se fait frais)
 };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-// Splits par fréquence. Full-body jusqu'à 3 j/sem et haut/bas à 4 j/sem :
-// chaque pattern est ainsi travaillé au moins 2×/semaine.
-//
-// Les noms sont ÉVOCATEURS (pas « Full body A/B ») — vocabulaire d'architecture
-// du corps, cohérent avec l'identité graphite/acier. La logique ne dépend jamais
-// du `nom` (elle lit `patterns`), donc ces libellés sont libres et modifiables.
-// Full-body → socle / charpente / aplomb ; 4 j/sem : Cime = haut poussée,
-// Suspension = haut tirage, Piliers = bas dominante squat, Ancrage = bas hinge.
+// Patterns éligibles par TYPE de jour. Full-body : tout est possible chaque jour
+// (la répartition hebdo équilibre). Haut/bas (4 j) : les jours hauts n'accueillent
+// que poussées/tirages, les jours bas que jambes ; le gainage va partout.
+const PATTERNS_HAUT = ['tirage_vertical', 'tirage_horizontal', 'poussee_horizontale', 'poussee_verticale', 'gainage_anti_extension', 'gainage_anti_rotation'];
+const PATTERNS_BAS = ['squat', 'hinge', 'gainage_anti_rotation', 'gainage_anti_extension'];
+const PATTERNS_TOUS = [...PATTERNS_HAUT, 'squat', 'hinge'];
+
+// Splits par fréquence : full-body jusqu'à 3 j/sem, haut/bas à 4 j/sem (chaque
+// muscle ~2×/sem). Le champ `patterns` liste ce qu'un jour PEUT accueillir ; le
+// VOLUME réel est réparti par repartirPatterns (poids ci-dessous), pas par cette
+// liste. La logique ne lit jamais le `nom` (libellés évocateurs, modifiables).
 const SPLITS = {
   2: [
-    { nom: 'Socle', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
-    { nom: 'Charpente', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
+    { nom: 'Socle', patterns: PATTERNS_TOUS },
+    { nom: 'Charpente', patterns: PATTERNS_TOUS },
   ],
   3: [
-    { nom: 'Socle', patterns: ['poussee_horizontale', 'tirage_vertical', 'squat', 'gainage_anti_extension'] },
-    { nom: 'Charpente', patterns: ['poussee_verticale', 'tirage_horizontal', 'hinge', 'gainage_anti_rotation'] },
-    { nom: 'Aplomb', patterns: ['poussee_horizontale', 'tirage_horizontal', 'squat', 'gainage_anti_extension'] },
+    { nom: 'Socle', patterns: PATTERNS_TOUS },
+    { nom: 'Charpente', patterns: PATTERNS_TOUS },
+    { nom: 'Aplomb', patterns: PATTERNS_TOUS },
   ],
   4: [
-    { nom: 'Cime', patterns: ['poussee_horizontale', 'tirage_vertical', 'poussee_verticale', 'gainage_anti_extension'] },
-    { nom: 'Piliers', patterns: ['squat', 'hinge', 'gainage_anti_rotation', 'gainage_anti_extension'] },
-    { nom: 'Suspension', patterns: ['tirage_horizontal', 'poussee_verticale', 'tirage_vertical', 'gainage_anti_rotation'] },
-    { nom: 'Ancrage', patterns: ['hinge', 'squat', 'gainage_anti_extension', 'gainage_anti_rotation'] },
+    { nom: 'Cime', patterns: PATTERNS_HAUT },
+    { nom: 'Piliers', patterns: PATTERNS_BAS },
+    { nom: 'Suspension', patterns: PATTERNS_HAUT },
+    { nom: 'Ancrage', patterns: PATTERNS_BAS },
   ],
 };
+
+// Poids de VOLUME hebdomadaire par pattern (relatifs). Encodent les partis pris
+// étayés : léger biais TIRAGE (santé d'épaule ; les skills de poussée type planche
+// ajoutent déjà du volume de poussée), jambes équilibrées squat≈hinge (l'ancien
+// 3 jours ne travaillait le hinge qu'1×/sem, sous le seuil), gainage modéré.
+const POIDS_VOLUME = {
+  tirage_vertical: 2, tirage_horizontal: 2,          // tirage = 4
+  poussee_horizontale: 2, poussee_verticale: 1.5,    // poussée = 3,5 → léger biais tirage
+  squat: 2, hinge: 2,                                // jambes équilibrées
+  gainage_anti_extension: 1, gainage_anti_rotation: 1,
+};
+const COMPOUNDS = ['tirage_vertical', 'tirage_horizontal', 'poussee_horizontale', 'poussee_verticale', 'squat', 'hinge'];
+
+// Répartit le budget hebdomadaire de créneaux de force sur les jours, selon les
+// poids de volume, le type de chaque jour (un pattern ne va que sur un jour qui
+// le liste) et la CAPACITÉ de chaque jour (temps dispo). Vise ainsi ~le volume
+// efficace par muscle plutôt que « un exercice par pattern ». Retourne, pour
+// chaque jour, la liste ORDONNÉE des patterns à remplir (compounds d'abord).
+function repartirPatterns(split, capacites) {
+  const joursPat = split.map((d) => new Set(d.patterns));
+  const tous = [...new Set(split.flatMap((d) => d.patterns))];
+  const poids = (p) => POIDS_VOLUME[p] || 1;
+  const budgetSem = capacites.reduce((a, b) => a + b, 0);
+  const poidsTotal = tous.reduce((t, p) => t + poids(p), 0);
+
+  // Créneaux hebdo par pattern ∝ poids, avec un plancher de 1 aux compounds.
+  const cible = {}, slots = {};
+  for (const p of tous) {
+    cible[p] = (poids(p) / poidsTotal) * budgetSem;
+    slots[p] = Math.max(COMPOUNDS.includes(p) ? 1 : 0, Math.floor(cible[p]));
+  }
+  // Distribuer le reste du budget aux plus gros écarts (cible − attribué).
+  let reste = budgetSem - tous.reduce((t, p) => t + slots[p], 0);
+  while (reste > 0) {
+    const p = tous.reduce((b, x) => (cible[x] - slots[x] > cible[b] - slots[b] ? x : b), tous[0]);
+    slots[p] += 1; reste -= 1;
+  }
+
+  // Poser chaque créneau sur le jour éligible le moins chargé (≤ capacité, ≤ 2×/jour).
+  const parJour = split.map(() => []);
+  const compte = split.map(() => ({}));
+  for (const p of tous.slice().sort((a, b) => poids(b) - poids(a))) {
+    for (let n = 0; n < slots[p]; n++) {
+      let best = -1, charge = Infinity;
+      for (let j = 0; j < split.length; j++) {
+        if (!joursPat[j].has(p) || parJour[j].length >= capacites[j] || (compte[j][p] || 0) >= 2) continue;
+        if (parJour[j].length < charge) { charge = parJour[j].length; best = j; }
+      }
+      if (best < 0) break;
+      parJour[best].push(p);
+      compte[best][p] = (compte[best][p] || 0) + 1;
+    }
+  }
+  const prio = (p) => (COMPOUNDS.includes(p) ? 0 : 1);
+  return parJour.map((pats) => pats.sort((a, b) => prio(a) - prio(b) || poids(b) - poids(a)));
+}
 
 // --- Génération ------------------------------------------------------------------
 
@@ -101,26 +163,39 @@ export function genererProgramme(params, donnees) {
     return { skill, etape: skill.etapes.find((e) => e.step === step) };
   }).filter(({ etape }) => etape);
 
-  const jours = split.map((defJour) => {
-    // À 4 j/sem, les skills de jambes (pistol, nordic) vont sur les jours bas,
-    // les autres sur les jours haut. En full-body : pratique à chaque séance.
+  // 1) Skills par jour : rotation + bornes (≤ SKILL_FREQ_MAX/sem par skill,
+  // ≤ SKILL_PAR_JOUR_MAX par séance — fraîcheur + tissus conjonctifs). Plusieurs
+  // objectifs tournent (le moins pratiqué passe en premier) au lieu de s'entasser.
+  const skillSem = new Map(); // skillId -> apparitions cette semaine
+  const skillParJour = split.map((defJour) => {
+    // À 4 j/sem, les skills de jambes (pistol, nordic) vont sur les jours bas.
     const estJourBas = defJour.patterns.filter((p) => p === 'squat' || p === 'hinge').length >= 2;
-    const skillsDuJour = frequence <= 3 ? etapesCourantes
+    const candidats = (frequence <= 3 ? etapesCourantes
       : etapesCourantes.filter(({ etape }) =>
-          ['squat', 'hinge'].includes(etape.exercice.pattern) === estJourBas);
+          ['squat', 'hinge'].includes(etape.exercice.pattern) === estJourBas))
+      .filter(({ skill }) => (skillSem.get(skill.id) || 0) < REGLES.SKILL_FREQ_MAX)
+      .sort((a, b) => (skillSem.get(a.skill.id) || 0) - (skillSem.get(b.skill.id) || 0))
+      .slice(0, REGLES.SKILL_PAR_JOUR_MAX);
+    for (const { skill } of candidats) skillSem.set(skill.id, (skillSem.get(skill.id) || 0) + 1);
+    return candidats;
+  });
 
-    // Bloc skill en premier (travail de qualité, système nerveux frais).
-    const exosSkill = skillsDuJour.map(({ etape }) => ({
+  // 2) Répartition du VOLUME de force sur la semaine : capacité de chaque jour =
+  // créneaux restants après les skills, puis répartition par pattern (poids +
+  // type de jour + capacité).
+  const capacites = split.map((_defJour, j) => Math.max(REGLES.MIN_FORCE, nbExos - skillParJour[j].length));
+  const patternsParJour = repartirPatterns(split, capacites);
+
+  // 3) Construire chaque jour : skill en premier (frais), puis la force répartie.
+  const jours = split.map((defJour, j) => {
+    const exosSkill = skillParJour[j].map(({ etape }) => ({
       exerciceId: etape.exercice.id,
       cible: cibleSkill(etape),
     }));
     const pris = new Set(exosSkill.map((e) => e.exerciceId));
 
-    // Bloc force : un exercice par pattern, dans la limite du temps dispo.
-    const budget = Math.max(2, nbExos - exosSkill.length);
     const exosForce = [];
-    for (const pattern of defJour.patterns) {
-      if (exosForce.length >= budget) break;
+    for (const pattern of patternsParJour[j]) {
       const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage });
       if (!ex) continue;
       pris.add(ex.id);
