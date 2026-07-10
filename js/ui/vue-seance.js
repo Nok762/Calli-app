@@ -973,11 +973,13 @@ async function ouvrirFiche(ex) {
 
 // --- Remplacement par une alternative du moteur ----------------------------------
 
-function ouvrirRemplacement(el, i) {
+async function ouvrirRemplacement(el, i) {
   const entree = seance.entrees[i];
   const ex = ctx.exercices.get(entree.exerciceId);
   const verif = verifierExercice(ex, seance.contraintes);
   let cause = verif.ok ? 'trop_dur' : 'contrainte';
+  // PR connus → le moteur préfère un remplaçant déjà calibré (tie-breaker).
+  const prs = new Map((await dbGetAll('pr')).map((p) => [p.exerciceId, p]));
 
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -986,7 +988,7 @@ function ouvrirRemplacement(el, i) {
 
   const rendre = () => {
     const causeTxt = texteCause(cause, ex, seance.contraintes);
-    const alts = proposerAlternatives(ex, ctx.exercices, seance.contraintes, cause);
+    const alts = proposerAlternatives(ex, ctx.exercices, seance.contraintes, cause, prs);
 
     overlay.innerHTML = `
       <div class="feuille">

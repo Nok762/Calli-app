@@ -71,8 +71,11 @@ export function texteCause(cause, exercice, contraintes) {
 // même pattern avec muscles primaires recouvrants.
 // Filtres durs : matériel du jour compatible, aucune zone douloureuse sollicitée.
 // Score : bonus du vivier + même pattern (+2) + muscles primaires communs (+1
-// chacun) − 0,5 par point d'écart avec la difficulté cible.
-export function proposerAlternatives(exercice, exercices, contraintes, cause = 'contrainte') {
+// chacun) − 0,5 par point d'écart avec la difficulté cible. Affiné par des
+// tie-breakers : même modalité reps/tenue (+1), muscles secondaires communs
+// (+0,5), même latéralité (+0,5), et PR déjà connu sur le candidat (+0,5 :
+// mieux calibré). `prs` (Map exerciceId→pr) est optionnel.
+export function proposerAlternatives(exercice, exercices, contraintes, cause = 'contrainte', prs = null) {
   const cibleDiff = exercice.difficulte
     + (cause === 'trop_dur' ? -SEUILS.DECALAGE_DIFFICULTE : 0)
     + (cause === 'trop_facile' ? SEUILS.DECALAGE_DIFFICULTE : 0);
@@ -88,6 +91,11 @@ export function proposerAlternatives(exercice, exercices, contraintes, cause = '
     let score = bonus - 0.5 * Math.abs(ex.difficulte - cibleDiff);
     if (ex.pattern === exercice.pattern) score += 2;
     score += ex.muscles_primaires.filter((m) => exercice.muscles_primaires.includes(m)).length;
+    // Tie-breakers : garder une substitution « qui se joue pareil ».
+    if (ex.type === exercice.type) score += 1;
+    if (ex.lateralite === exercice.lateralite) score += 0.5;
+    score += 0.5 * ex.muscles_secondaires.filter((m) => exercice.muscles_secondaires.includes(m)).length;
+    if (prs && prs.has(ex.id)) score += 0.5;
 
     const existant = candidats.get(id);
     if (!existant || existant.score < score) candidats.set(id, { exercice: ex, score, lien });
