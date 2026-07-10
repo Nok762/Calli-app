@@ -36,6 +36,9 @@ export const REGLES = {
   JOURS_REPRISE: 14, FACTEUR_REPRISE: 0.8,
   REPOS_COMPOSE: 150, REPOS_ACCESSOIRE: 90, // secondes
   MIN_EXOS: 3, MAX_EXOS: 7, MIN_PAR_EXO: 9, // ~9 min par exercice (séries + repos)
+  TRANSITION_EXO: 45, // secondes de mise en place entre deux exercices
+  SEC_PAR_REP: 3,     // durée approximative d'une répétition (tempo contrôlé)
+  MARGE_TEMPS: 3,     // tolérance (min) avant de proposer de raccourcir
 };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -297,4 +300,54 @@ export function evoluerCibles(programme, session, exercices) {
     ].slice(0, 20);
   }
   return changements;
+}
+
+// --- Durée estimée / séance raccourcie ---------------------------------------------
+
+// Durée estimée d'une séance (minutes), à partir des cibles et du type d'exo.
+// Par exercice : sets × (travail + repos), moins le dernier repos (inutile),
+// plus une transition de mise en place. Tolère les entrées sans cible (défauts).
+export function estimerDureeSeance(entrees, exercices) {
+  let sec = 0;
+  for (const e of entrees) {
+    const ex = exercices.get(e.exerciceId);
+    const c = e.cible || {};
+    const sets = c.sets || REGLES.SETS_FORCE;
+    const repos = c.repos || (ex && ex.difficulte >= 5 ? REGLES.REPOS_COMPOSE : REGLES.REPOS_ACCESSOIRE);
+    // Travail par série : une tenue dure ses secondes ; des reps ≈ SEC_PAR_REP chacune.
+    const travail = ex?.type === 'hold' ? (c.valeur || 20) : (c.valeur || 10) * REGLES.SEC_PAR_REP;
+    sec += sets * travail + Math.max(0, sets - 1) * repos + REGLES.TRANSITION_EXO;
+  }
+  return Math.round(sec / 60);
+}
+
+// Sélectionne les exercices à garder pour tenir dans le temps dispo :
+// priorité au skill (le but de la séance), puis aux compounds (difficulté haute),
+// on retire les accessoires les moins prioritaires jusqu'à rentrer. Le skill
+// n'est jamais retiré, même s'il dépasse à lui seul. Retourne null si ça rentre déjà.
+export function proposerSeanceRaccourcie(entrees, exercices, tempsDispoMin) {
+  const dureeAvant = estimerDureeSeance(entrees, exercices);
+  if (!tempsDispoMin || dureeAvant <= tempsDispoMin + REGLES.MARGE_TEMPS) return null;
+
+  const estSkill = (i) => !!exercices.get(entrees[i].exerciceId)?.skill;
+  const diff = (i) => exercices.get(entrees[i].exerciceId)?.difficulte ?? 0;
+  const ordre = entrees.map((_, i) => i)
+    .sort((a, b) => (estSkill(b) - estSkill(a)) || (diff(b) - diff(a)));
+
+  const garder = [];
+  for (const i of ordre) {
+    const duree = estimerDureeSeance([...garder, i].map((k) => entrees[k]), exercices);
+    if (duree <= tempsDispoMin || estSkill(i)) garder.push(i);
+  }
+  garder.sort((a, b) => a - b); // rétablir l'ordre d'origine
+  const garderSet = new Set(garder);
+  const retirer = entrees.map((_, i) => i).filter((i) => !garderSet.has(i));
+  if (!retirer.length) return null;
+
+  return {
+    garder, retirer,
+    dureeAvant,
+    dureeApres: estimerDureeSeance(garder.map((k) => entrees[k]), exercices),
+    nomsRetires: retirer.map((i) => exercices.get(entrees[i].exerciceId)?.nom || '').filter(Boolean),
+  };
 }

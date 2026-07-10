@@ -6,7 +6,7 @@
 //
 // Pour déployer une mise à jour : incrémenter VERSION. Le nouveau worker
 // s'installe avec un cache neuf, et l'ancien cache est purgé à l'activation.
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE = `callisthenie-${VERSION}`;
 
 const ASSETS = [

@@ -17,12 +17,13 @@ import {
   verifierExercice, proposerAlternatives, texteCause,
   suggestionsPalier, suggestionsDeload, evaluerReadiness,
 } from '../moteur/adaptation.js';
-import { evoluerCibles, modulationSeance } from '../moteur/generateur.js';
+import {
+  evoluerCibles, modulationSeance, proposerSeanceRaccourcie,
+} from '../moteur/generateur.js';
 import { toast, bip, tick, go, libelle, choisirExercice } from './composants.js';
 
 const EQUIPEMENT_DEFAUT = ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'];
 const ZONES_DEFAUT = ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
-const TEMPS_COURT = 30;    // minutes en dessous desquelles on propose de prioriser
 const PREPA_DEFAUT = 5;    // secondes de mise en place avant le chrono de tenue
 
 let seance = null;   // séance en cours (miroir du brouillon persisté en base)
@@ -512,10 +513,12 @@ function rendreListe(el) {
         toast('Un set ajouté sur la force ✓');
       }
       if (type === 'temps' && action === 'appliquer') {
-        seance.entrees.sort((a, b) =>
-          (ctx.exercices.get(b.exerciceId)?.skill ? 1 : 0)
-          - (ctx.exercices.get(a.exerciceId)?.skill ? 1 : 0));
-        toast('Exercices de skill priorisés ✓');
+        const plan = proposerSeanceRaccourcie(seance.entrees, ctx.exercices, seance.contraintes.tempsDispo);
+        if (plan) {
+          const garder = new Set(plan.garder);
+          seance.entrees = seance.entrees.filter((_, i) => garder.has(i));
+          toast(`Séance raccourcie · ${plan.nomsRetires.length} exo(s) retiré(s) ✓`);
+        }
       }
       seance.ajustements[type] = action;
       await persister();
@@ -665,15 +668,18 @@ function bannieresAjustement() {
     }
   }
 
-  if (c.tempsDispo && c.tempsDispo <= TEMPS_COURT && !seance.ajustements.temps && seance.entrees.length > 1) {
-    bans.push(`
-      <div class="carte banniere">
-        <span>💡 ${c.tempsDispo} min → prioriser les exercices de skill ?</span>
-        <span class="banniere-actions">
-          <button class="btn btn-accent" data-ajust="temps-appliquer">Réordonner</button>
-          <button class="btn" data-ajust="temps-ignorer">OK</button>
-        </span>
-      </div>`);
+  if (c.tempsDispo && !seance.ajustements.temps && seance.entrees.length > 1) {
+    const plan = proposerSeanceRaccourcie(seance.entrees, ctx.exercices, c.tempsDispo);
+    if (plan) {
+      bans.push(`
+        <div class="carte banniere">
+          <span>💡 ~${plan.dureeAvant} min prévues pour ${c.tempsDispo} dispo → retirer ${plan.nomsRetires.join(', ')} et garder le skill + les compounds (~${plan.dureeApres} min) ?</span>
+          <span class="banniere-actions">
+            <button class="btn btn-accent" data-ajust="temps-appliquer">Raccourcir</button>
+            <button class="btn" data-ajust="temps-ignorer">OK</button>
+          </span>
+        </div>`);
+    }
   }
 
   return bans.join('');
