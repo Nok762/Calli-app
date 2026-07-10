@@ -15,7 +15,7 @@ import { majPRDepuisSession, getPR } from '../pr.js';
 import { getEtatSkill } from '../skills.js';
 import {
   verifierExercice, proposerAlternatives, texteCause,
-  suggestionsPalier, suggestionsDeload, evaluerReadiness,
+  suggestionsPalier, suggestionsDeload, suggestionsPlateau, evaluerReadiness,
 } from '../moteur/adaptation.js';
 import {
   evoluerCibles, modulationSeance, proposerSeanceRaccourcie,
@@ -1081,12 +1081,13 @@ async function terminer() {
   seance = null;
   await setReglage('seance_en_cours', null);
 
-  // Le moteur a-t-il des suggestions (palier atteint, deload) à montrer ?
+  // Le moteur a-t-il des suggestions (palier atteint, deload, plateau) à montrer ?
   const sessions = await dbGetAll('sessions');
   const etats = new Map();
   for (const skill of ctx.skills) etats.set(skill.id, await getEtatSkill(skill));
   const nbSuggestions = suggestionsPalier(sessions, ctx.skills, etats).length
-    + suggestionsDeload(sessions, ctx.exercices).length;
+    + suggestionsDeload(sessions, ctx.exercices).length
+    + suggestionsPlateau(sessions, ctx.exercices).length;
 
   let message = nouveauxPR.length
     ? `Séance enregistrée · ${nouveauxPR.length} nouveau${nouveauxPR.length > 1 ? 'x' : ''} PR 🎉`

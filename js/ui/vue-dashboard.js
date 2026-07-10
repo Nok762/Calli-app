@@ -7,7 +7,7 @@ import { ctx } from '../app.js';
 import { dbGetAll, getReglage, setReglage } from '../db.js';
 import { getEtatSkill, texteCritere } from '../skills.js';
 import { getPR } from '../pr.js';
-import { suggestionsPalier, suggestionsDeload } from '../moteur/adaptation.js';
+import { suggestionsPalier, suggestionsDeload, suggestionsPlateau } from '../moteur/adaptation.js';
 import { prochainJour, REGLES } from '../moteur/generateur.js';
 
 // Clé de date en heure LOCALE (toISOString est en UTC : à minuit heure de
@@ -45,6 +45,7 @@ export async function vueAccueil(el) {
   for (const skill of ctx.skills) etats.set(skill.id, await getEtatSkill(skill));
   const suggPaliers = suggestionsPalier(sessions, ctx.skills, etats);
   const suggDeloads = suggestionsDeload(sessions, ctx.exercices);
+  const suggPlateaux = suggestionsPlateau(sessions, ctx.exercices);
 
   const paliers = await prochainsPaliers();
   const recents = prRecents(prs);
@@ -74,7 +75,7 @@ export async function vueAccueil(el) {
       <div class="ligne"><div style="width:${pctSemaine}%"></div></div>
     </div>
 
-    ${suggPaliers.length || suggDeloads.length ? `
+    ${suggPaliers.length || suggDeloads.length || suggPlateaux.length ? `
       <h3>Suggestions du moteur</h3>
       <div class="liste">
         ${suggPaliers.map((s) => `
@@ -89,6 +90,11 @@ export async function vueAccueil(el) {
             <div class="texte-2">${s.regression
               ? `Essaie la régression « ${s.regression.nom} » le temps de récupérer.`
               : 'Réduis le volume le temps de récupérer.'}</div>
+          </a>`).join('')}
+        ${suggPlateaux.map((s) => `
+          <a class="carte" href="#/exercices/${(s.levier.exercice || s.exercice).id}">
+            <strong>💡 ${s.exercice.nom} : plateau</strong>
+            <div class="texte-2">${textePlateau(s)}</div>
           </a>`).join('')}
       </div>` : ''}
 
@@ -130,6 +136,15 @@ export async function vueAccueil(el) {
   el.querySelector('[data-generer]')?.addEventListener('click', () => {
     location.hash = '#/programmes/generer';
   });
+}
+
+// Phrase du levier proposé pour sortir d'un plateau.
+function textePlateau(s) {
+  const u = s.exercice.type === 'hold' ? ' s' : ' reps';
+  const base = `Bloqué à ${s.valeur}${u} depuis ${s.nb} séances sans forcer`;
+  if (s.levier.type === 'progression') return `${base} → passe à « ${s.levier.exercice.nom} » pour relancer.`;
+  if (s.levier.type === 'variation') return `${base} → change pour « ${s.levier.exercice.nom} » ou ajoute une rép.`;
+  return `${base} → ajoute une répétition ou ralentis le tempo.`;
 }
 
 // Carte hero : LA décision du jour, un seul gros bouton.

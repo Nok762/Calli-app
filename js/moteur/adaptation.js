@@ -14,6 +14,7 @@ export const SEUILS = {
   RPE_DELOAD: 9,           // RPE moyen à partir duquel une séance compte comme « difficile »
   RPE_FRAIS: 7,            // RPE moyen en dessous duquel les séances récentes sont « confortables »
   SEANCES_DELOAD: 2,       // apparitions difficiles consécutives → suggérer une régression
+  SEANCES_PLATEAU: 3,      // apparitions sans progression (ni échec) → suggérer de relancer
   DECALAGE_DIFFICULTE: 2,  // décalage de difficulté cible pour « trop dur » / « trop facile »
   MAX_ALTERNATIVES: 3,     // nombre d'alternatives proposées
   REPOS_COURT_H: 18,       // moins de repos que ça depuis la dernière séance → récup incomplète
@@ -174,6 +175,50 @@ export function suggestionsDeload(sessions, exercices) {
       regression,
       motif: difficiles.some((d) => d.echec) ? 'échecs répétés' : 'RPE très élevé',
     });
+  }
+  return out;
+}
+
+// --- Détection de plateau ----------------------------------------------------------
+//
+// Un plateau ≠ un deload. Le deload réagit aux ÉCHECS / RPE très élevé (on force
+// trop). Le plateau, lui, c'est stagner SANS forcer : la meilleure perf n'augmente
+// plus sur plusieurs séances, sans échec et à RPE modéré → l'exercice n'apporte
+// plus assez de stimulus. Levier proposé : passer à la progression (relancer par
+// la difficulté), sinon varier, sinon ajouter du volume. Explicable, jamais imposé.
+export function suggestionsPlateau(sessions, exercices) {
+  const triees = [...sessions].sort((a, b) => b.dateDebut.localeCompare(a.dateDebut));
+  const out = [];
+
+  for (const ex of exercices.values()) {
+    const apps = performancesParSession(triees, ex.id).slice(0, SEUILS.SEANCES_PLATEAU);
+    if (apps.length < SEUILS.SEANCES_PLATEAU) continue;
+
+    // Meilleure valeur (hors échec) par séance ; une séance ratée relève du deload.
+    const bests = apps.map(({ sets }) => {
+      const ok = sets.filter((s) => !s.echec).map((s) => s.valeur);
+      return ok.length ? Math.max(...ok) : null;
+    });
+    if (bests.some((b) => b === null)) continue;
+
+    // Pas de progression : le plus récent n'améliore pas le plus ancien de la fenêtre.
+    if (bests[0] > bests[bests.length - 1]) continue;
+
+    // Échec récent ou RPE ≥ 9 → c'est du deload, pas un plateau.
+    const forceTrop = apps.some(({ sets }) => {
+      const rpes = sets.map((s) => s.rpe).filter(Boolean);
+      const moy = rpes.length ? rpes.reduce((a, b) => a + b, 0) / rpes.length : null;
+      return sets.some((s) => s.echec) || (moy !== null && moy >= SEUILS.RPE_DELOAD);
+    });
+    if (forceTrop) continue;
+
+    const progression = ex.progression.map((p) => exercices.get(p)).find(Boolean) || null;
+    const variation = ex.equivalence.map((e) => exercices.get(e)).find(Boolean) || null;
+    const levier = progression ? { type: 'progression', exercice: progression }
+      : variation ? { type: 'variation', exercice: variation }
+      : { type: 'volume', exercice: null };
+
+    out.push({ exercice: ex, levier, valeur: bests[0], nb: apps.length });
   }
   return out;
 }
