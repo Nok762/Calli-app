@@ -4,7 +4,7 @@
 // mais restent entièrement recalculables depuis l'historique des sessions.
 // Un exercice `reps` alimente maxReps, un exercice `hold` alimente maxHold.
 
-import { dbGet, dbPut } from './db.js';
+import { dbGet, dbPut, dbGetAll, dbVider } from './db.js';
 
 // Met à jour les PR après la sauvegarde d'une séance.
 // Retourne la liste des nouveaux records (pour pouvoir les annoncer).
@@ -30,3 +30,13 @@ export async function majPRDepuisSession(session, exercices) {
 }
 
 export const getPR = (exerciceId) => dbGet('pr', exerciceId);
+
+// Reconstruit TOUS les PR depuis l'historique des sessions (rejoué en ordre
+// chronologique pour dater chaque record de sa première atteinte). À appeler
+// après la suppression/correction d'une séance : les PR redeviennent exacts.
+export async function recalculerTousPR(exercices) {
+  await dbVider('pr');
+  const sessions = (await dbGetAll('sessions')).sort((a, b) => a.dateDebut.localeCompare(b.dateDebut));
+  for (const session of sessions) await majPRDepuisSession(session, exercices);
+  return sessions.length;
+}

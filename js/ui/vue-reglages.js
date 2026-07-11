@@ -4,7 +4,9 @@
 // navigateur. L'export/import JSON est donc la seule assurance-vie de
 // l'historique (téléphone perdu, navigateur réinitialisé, éviction iOS).
 
+import { ctx } from '../app.js';
 import { dbGetAll, dbVider, dbPut, getReglage, setReglage } from '../db.js';
+import { recalculerTousPR } from '../pr.js';
 import { toast, setSonActif } from './composants.js';
 
 // Stores exportés/importés. 'exercices' est exclu : le seed reste la source de
@@ -59,6 +61,7 @@ export async function vueReglages(el) {
         <button class="btn" id="btn-importer">⬆ Importer</button>
       </div>
       <input type="file" id="inp-import" accept="application/json,.json" hidden>
+      <button class="btn btn-lien" id="btn-recalc-pr">Recalculer les PR depuis l'historique</button>
     </div>
 
     <div class="carte erreur">
@@ -128,6 +131,11 @@ export async function vueReglages(el) {
     }
     toast('Import terminé — rechargement…');
     setTimeout(() => location.reload(), 800);
+  });
+
+  el.querySelector('#btn-recalc-pr').addEventListener('click', async () => {
+    const nb = await recalculerTousPR(ctx.exercices);
+    toast(`PR reconstruits depuis ${nb} séance${nb > 1 ? 's' : ''} ✓`);
   });
 
   // --- Reset total ------------------------------------------------------------------

@@ -3,7 +3,8 @@
 // (+ courbe de progression au tap), log de poids de corps (+ courbe).
 
 import { ctx } from '../app.js';
-import { dbGetAll, dbPut } from '../db.js';
+import { dbGetAll, dbPut, dbSupprimer } from '../db.js';
+import { recalculerTousPR } from '../pr.js';
 import { toast, graphiqueLigne } from './composants.js';
 
 export async function vueHistorique(el, params) {
@@ -41,7 +42,23 @@ async function ongletSeances(el) {
 
   graphiqueLigne(el.querySelector('#graphe-volume'), points);
   el.querySelectorAll('.carte-session').forEach((c) =>
-    c.addEventListener('click', () => c.classList.toggle('ouverte')));
+    c.addEventListener('click', (e) => {
+      if (e.target.closest('[data-suppr-session]')) return; // le bouton gère
+      c.classList.toggle('ouverte');
+    }));
+
+  // Suppression d'une séance erronée + recalcul des PR (sinon un record
+  // fantôme resterait et fausserait cibles, paliers et suggestions).
+  el.querySelectorAll('[data-suppr-session]').forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      const s = sessions.find((x) => x.id === btn.dataset.supprSession);
+      const quand = new Date(s.dateDebut).toLocaleDateString('fr-FR');
+      if (!confirm(`Supprimer la séance du ${quand} (${s.entrees.length} exo${s.entrees.length > 1 ? 's' : ''}) ? Les PR seront recalculés.`)) return;
+      await dbSupprimer('sessions', s.id);
+      await recalculerTousPR(ctx.exercices);
+      toast('Séance supprimée · PR recalculés ✓');
+      ongletSeances(el);
+    }));
 }
 
 const volumeSession = (s) =>
@@ -66,7 +83,10 @@ function carteSession(s) {
         <strong>${date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</strong>
         <span class="texte-2">${s.entrees.length} exo${s.entrees.length > 1 ? 's' : ''}${duree ? ' · ' + duree + ' min' : ''}</span>
       </div>
-      <div class="carte-session-detail">${detail}</div>
+      <div class="carte-session-detail">
+        ${detail}
+        <button class="btn btn-danger" data-suppr-session="${s.id}" style="margin-top:10px">Supprimer cette séance</button>
+      </div>
     </div>`;
 }
 
