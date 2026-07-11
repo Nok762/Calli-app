@@ -18,7 +18,7 @@ import {
   suggestionsPalier, suggestionsDeload, suggestionsPlateau, evaluerReadiness,
 } from '../moteur/adaptation.js';
 import {
-  evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements,
+  evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements, cibleSkill,
 } from '../moteur/generateur.js';
 import { toast, bip, tick, go, libelle, choisirExercice } from './composants.js';
 
@@ -56,7 +56,60 @@ async function chargerTemplate() {
     await setReglage('template_a_demarrer', null);
     return null;
   }
+  // Un programme généré doit programmer l'étape COURANTE de chaque skill : si un
+  // palier a été validé depuis la génération, on resynchronise (sinon on
+  // continuerait de programmer l'ancienne étape jusqu'à régénération complète).
+  const changements = await synchroniserEtapesSkills(prog);
+  if (changements.length) {
+    await dbPut('programmes', prog);
+    toast(`Programme suivi : ${changements.join(' · ')}`);
+  }
   return { prog, jour, jourIdx: ref.jourIdx };
+}
+
+// Remplace, dans les blocs skill d'un programme généré (entrées marquées
+// `skill`), l'exercice programmé par celui de l'étape courante, cible
+// recalculée. Idempotent : aucune écriture si tout est déjà à jour.
+// Les programmes générés avant le marquage `skill` sont couverts par un repli :
+// toute entrée dont l'exercice appartient à l'arbre du skill objectif.
+async function synchroniserEtapesSkills(prog) {
+  if (!prog?.genere) return [];
+  const changements = [];
+  // Le repli « programme d'avant le marquage » se décide au niveau du programme
+  // entier : dans un programme neuf, une entrée force jamais marquée ne doit pas
+  // être confondue avec un bloc skill.
+  const aMarquage = prog.jours.some((j) => j.exercices.some((e) => e.skill));
+  for (const skillId of prog.genere.objectifs) {
+    const skill = ctx.skills.find((s) => s.id === skillId);
+    if (!skill) continue;
+    const etat = await getEtatSkill(skill);
+    const step = etat.termine ? skill.etapes[skill.etapes.length - 1].step : etat.etapeCourante;
+    const etape = skill.etapes.find((e) => e.step === step);
+    if (!etape) continue;
+    const idsEtapes = new Set(skill.etapes.map((e) => e.exercice.id));
+
+    let change = false;
+    for (const jour of prog.jours) {
+      for (const exo of jour.exercices) {
+        const estBlocSkill = aMarquage ? exo.skill === skillId
+          : idsEtapes.has(exo.exerciceId); // repli anciens programmes
+        if (!estBlocSkill || exo.exerciceId === etape.exercice.id) continue;
+        exo.exerciceId = etape.exercice.id;
+        exo.cible = cibleSkill(etape);
+        exo.skill = skillId;
+        change = true;
+      }
+    }
+    if (change) changements.push(`${skill.nom} → ${etape.exercice.nom}`);
+  }
+  if (changements.length) {
+    const date = new Date().toISOString().slice(0, 10);
+    prog.genere.journal = [
+      ...changements.map((texte) => ({ date, texte: `étape courante : ${texte}` })),
+      ...(prog.genere.journal || []),
+    ].slice(0, 20);
+  }
+  return changements;
 }
 
 // --- Écran de démarrage : contraintes du jour --------------------------------

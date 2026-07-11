@@ -233,9 +233,13 @@ export function genererProgramme(params, donnees) {
 
   // 3) Construire chaque jour : skill en premier (frais), puis la force répartie.
   const jours = split.map((defJour, j) => {
-    const exosSkill = skillParJour[j].map(({ etape }) => ({
+    // `skill` marque l'entrée comme bloc skill : la resynchronisation d'étape
+    // (vue-seance) ne touche que ces entrées, jamais un exo de force qui serait
+    // par hasard une étape de l'arbre (le bonus de transfert le permet).
+    const exosSkill = skillParJour[j].map(({ skill, etape }) => ({
       exerciceId: etape.exercice.id,
       cible: cibleSkill(etape),
+      skill: skill.id,
     }));
     const pris = new Set(exosSkill.map((e) => e.exerciceId));
 
@@ -299,7 +303,8 @@ function estimerNiveaux(prs, exercices) {
 
 // Cible d'un exercice de skill : ~60 % du critère par série, plusieurs séries,
 // repos long — accumuler du temps de qualité, jamais aller à l'échec technique.
-function cibleSkill(etape) {
+// Exportée : la resynchronisation d'étape (vue-seance) recalcule la cible.
+export function cibleSkill(etape) {
   const critere = etape.critere;
   const estHold = etape.exercice.type === 'hold';
   const base = critere
