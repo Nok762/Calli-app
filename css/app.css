@@ -755,5 +755,33 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .echauffement ul { margin: 4px 0 2px; padding-left: 18px; }
 .echauffement li { font-size: .9rem; line-height: 1.5; color: var(--texte); margin: 3px 0; }
 
+/* Étirements post-séance : lignes cochables de la feuille de récupération. */
+.etirement-item {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--fond-3);
+  border: 1px solid var(--bord);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: .92rem;
+  line-height: 1.45;
+  color: var(--texte);
+  cursor: pointer;
+}
+.etirement-item input {
+  accent-color: var(--accent);
+  width: 18px; height: 18px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+}
+.etirement-item:has(input:checked) {
+  border-color: var(--accent);
+}
+.etirement-item:has(input:checked) span {
+  color: var(--texte-2);
+  text-decoration: line-through;
+}
+
 /* --- Graphiques -------------------------------------------------------------------------------------------------------- */
 .graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }

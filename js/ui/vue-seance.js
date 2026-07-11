@@ -18,7 +18,7 @@ import {
   suggestionsPalier, suggestionsDeload, suggestionsPlateau, evaluerReadiness,
 } from '../moteur/adaptation.js';
 import {
-  evoluerCibles, modulationSeance, proposerSeanceRaccourcie,
+  evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements,
 } from '../moteur/generateur.js';
 import { toast, bip, tick, go, libelle, choisirExercice } from './composants.js';
 
@@ -1066,6 +1066,10 @@ async function terminer() {
   seance.dateFin = new Date().toISOString();
   // On ne garde que les entrées réellement travaillées.
   seance.entrees = seance.entrees.filter((e) => e.sets.length);
+  // Patterns réellement travaillés → étirements post-séance adaptés (capturés
+  // avant que `seance` soit remis à null).
+  const patternsTravailles = [...new Set(
+    seance.entrees.map((e) => ctx.exercices.get(e.exerciceId)?.pattern).filter(Boolean))];
   await dbPut('sessions', seance);
   const nouveauxPR = await majPRDepuisSession(seance, ctx.exercices);
 
@@ -1101,4 +1105,31 @@ async function terminer() {
   if (nbSuggestions) message += ' · 💡 suggestions sur l\'Accueil';
   toast(message, 3600);
   location.hash = '#/accueil';
+  // Feuille d'étirements post-séance (par-dessus l'accueil), cochable, jamais bloquante.
+  const etirements = genererEtirements(patternsTravailles);
+  if (etirements.length) afficherEtirements(etirements);
+}
+
+// Feuille de récupération : étirements adaptés à ce qui a été travaillé.
+// Chaque ligne se coche (satisfaction + suivi visuel) ; « Terminé » ferme.
+function afficherEtirements(etirements) {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = `
+    <div class="feuille">
+      <div class="feuille-tete">
+        <strong>🧘 Étirements · récupération</strong>
+        <button class="btn-x" data-fermer>×</button>
+      </div>
+      <p class="texte-2" style="margin:0 0 10px">Respiration lente, on ne force jamais — juste une tension confortable.</p>
+      <div class="picker-liste">
+        ${etirements.map((e) => `
+          <label class="etirement-item"><input type="checkbox"><span>${e}</span></label>`).join('')}
+      </div>
+      <button class="btn btn-accent btn-large" data-fermer>Terminé</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('[data-fermer]')) overlay.remove();
+  });
 }

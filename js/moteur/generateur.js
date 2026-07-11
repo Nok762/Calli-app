@@ -135,8 +135,9 @@ function repartirPatterns(split, capacites) {
 // (universels, cruciaux pour les tissus conjonctifs en callisthénie), activation
 // scapulaire si haut du corps, activation bas si jambes, puis prépa mouvement.
 // Standard proche de la r/bwf Recommended Routine. Renvoie des étapes affichables.
+// `straight_arm` (planche, front lever…) compte comme haut du corps.
 function genererEchauffement(patterns) {
-  const haut = patterns.some((p) => p.startsWith('poussee') || p.startsWith('tirage'));
+  const haut = patterns.some((p) => p.startsWith('poussee') || p.startsWith('tirage') || p === 'straight_arm');
   const bas = patterns.some((p) => p === 'squat' || p === 'hinge');
   const etapes = [
     '2-3 min de cardio léger (corde à sauter, montées de genoux)',
@@ -146,6 +147,33 @@ function genererEchauffement(patterns) {
   if (bas) etapes.push('Activation bas du corps : 10 ponts fessiers + 10 squats à vide');
   etapes.push('Prépa : 5 répétitions faciles de chaque exercice principal avant la 1re série lourde');
   return etapes;
+}
+
+// Étirements POST-séance adaptés aux patterns travaillés (statiques : à faire
+// après l'effort — avant, ils réduisent la force ; après, ils entretiennent la
+// mobilité, clé en callisthénie). 20-30 s par position, sans forcer. Exporté :
+// la séance les génère depuis les patterns réellement travaillés du jour.
+// `straight_arm` sollicite poignets/biceps/épaules → couvre poussée + tirage.
+export function genererEtirements(patterns) {
+  const pousse = patterns.some((p) => p.startsWith('poussee') || p === 'straight_arm');
+  const tire = patterns.some((p) => p.startsWith('tirage') || p === 'straight_arm');
+  const squat = patterns.includes('squat');
+  const hinge = patterns.includes('hinge');
+
+  const etirements = [];
+  if (pousse || tire) etirements.push('Poignets : fléchisseurs puis extenseurs, à genoux mains au sol — 20 s par sens');
+  if (pousse) etirements.push('Pectoraux + épaules : avant-bras sur l\'encadrement de porte, buste qui avance — 30 s');
+  if (pousse) etirements.push('Triceps : coude au plafond, main entre les omoplates — 20 s par bras');
+  if (tire) etirements.push('Dorsaux : child pose bras tendus, mains loin devant — 30 s');
+  if (tire) etirements.push('Biceps + avant-bras : bras tendu, paume au mur doigts vers le bas — 20 s par bras');
+  if (squat) etirements.push('Quadriceps : debout, talon vers la fesse, genoux serrés — 30 s par jambe');
+  if (squat || hinge) etirements.push('Fessiers : figure 4 allongé (cheville sur le genou opposé) — 30 s par côté');
+  if (hinge) etirements.push('Ischios : penché avant jambes tendues, dos long — 30 s');
+  if (hinge) etirements.push('Fléchisseurs de hanche : fente basse, bassin qui avance, buste haut — 30 s par côté');
+  if (patterns.some((p) => p.startsWith('gainage'))) {
+    etirements.push('Dos + abdos : cobra doux au sol, bassin ancré — 20 s');
+  }
+  return etirements;
 }
 
 // --- Génération ------------------------------------------------------------------
@@ -220,9 +248,16 @@ export function genererProgramme(params, donnees) {
       exosForce.push({ exerciceId: ex.id, cible: cibleForce(ex, prs) });
     }
 
+    // Patterns du jour = skills + force (l'échauffement et les étirements doivent
+    // couvrir aussi le travail de skill, ex. pistol un jour sans force jambes).
+    const patsJour = [...new Set([
+      ...skillParJour[j].map(({ etape }) => etape.exercice.pattern),
+      ...patternsParJour[j],
+    ])];
     return {
       nom: defJour.nom,
-      echauffement: genererEchauffement(patternsParJour[j]),
+      echauffement: genererEchauffement(patsJour),
+      etirements: genererEtirements(patsJour),
       exercices: [...exosSkill, ...exosForce],
     };
   });
