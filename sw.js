@@ -6,7 +6,7 @@
 //
 // Pour déployer une mise à jour : incrémenter VERSION. Le nouveau worker
 // s'installe avec un cache neuf, et l'ancien cache est purgé à l'activation.
-const VERSION = 'v19';
+const VERSION = 'v20';
 const CACHE = `callisthenie-${VERSION}`;
 
 const ASSETS = [
@@ -30,6 +30,7 @@ const ASSETS = [
   './js/ui/vue-historique.js',
   './js/ui/vue-exercices.js',
   './js/ui/vue-programmes.js',
+  './js/ui/vue-reglages.js',
   './data/exercices.seed.json',
   './data/skills.config.json',
   './icons/icon-192.png',

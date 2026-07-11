@@ -7,6 +7,7 @@ import { vueSeance } from './ui/vue-seance.js';
 import { vueHistorique } from './ui/vue-historique.js';
 import { vueExercices } from './ui/vue-exercices.js';
 import { vueProgrammes } from './ui/vue-programmes.js';
+import { vueReglages } from './ui/vue-reglages.js';
 
 const routes = {
   accueil: vueAccueil,
@@ -15,6 +16,7 @@ const routes = {
   historique: vueHistorique,
   exercices: vueExercices,
   programmes: vueProgrammes,
+  reglages: vueReglages,
 };
 
 export function demarrerRouteur() {

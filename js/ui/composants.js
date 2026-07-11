@@ -22,9 +22,14 @@ export function toast(message, duree = 2800) {
 // --- Sons + vibration -----------------------------------------------------------
 // Générés en WebAudio : aucun fichier audio à embarquer (donc rien à cacher
 // dans le service worker). La vibration prend le relais si l'audio est bloqué.
+// Coupables globalement depuis Réglages (flag chargé au boot).
 let audioCtx = null;
+let sonActif = true;
+
+export function setSonActif(actif) { sonActif = actif; }
 
 function jouer(freq, duree, gain, delai = 0) {
+  if (!sonActif) return;
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
@@ -43,19 +48,19 @@ function jouer(freq, duree, gain, delai = 0) {
 // Fin de repos : triple bip appuyé.
 export function bip(nb = 3) {
   for (let i = 0; i < nb; i++) jouer(880, 0.25, 0.4, i * 0.35);
-  navigator.vibrate?.([200, 100, 200, 100, 400]);
+  if (sonActif) navigator.vibrate?.([200, 100, 200, 100, 400]);
 }
 
 // Décompte de préparation (3… 2… 1…) : bip bref et grave.
 export function tick() {
   jouer(660, 0.12, 0.3);
-  navigator.vibrate?.(60);
+  if (sonActif) navigator.vibrate?.(60);
 }
 
 // Signal de départ d'une tenue : bip haut et long, impossible à confondre.
 export function go() {
   jouer(990, 0.4, 0.5);
-  navigator.vibrate?.([120, 60, 240]);
+  if (sonActif) navigator.vibrate?.([120, 60, 240]);
 }
 
 // --- Graphique en ligne (canvas) -----------------------------------------------

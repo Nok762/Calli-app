@@ -5,6 +5,7 @@ import { ouvrirDB, getReglage } from './db.js';
 import { importerSeed, chargerExercices, chargerConfigSkills } from './seed.js';
 import { deriverSkills } from './skills.js';
 import { demarrerRouteur } from './router.js';
+import { setSonActif } from './ui/composants.js';
 
 // Contexte global en lecture, partagé par toutes les vues.
 export const ctx = {
@@ -21,8 +22,14 @@ async function boot() {
   ctx.config = await chargerConfigSkills();
   ctx.meta = await getReglage('seedMeta');
   ctx.skills = deriverSkills(ctx.exercices, ctx.config);
+  setSonActif(await getReglage('son', true));
 
   demarrerRouteur();
+
+  // Stockage persistant : demande au navigateur de ne pas purger l'IndexedDB
+  // (sans ça, iOS/Chrome peuvent évincer les données sous pression disque).
+  // Best-effort : l'état est visible dans Réglages.
+  navigator.storage?.persist?.().catch(() => {});
 
   // Service worker : rend l'app installable et 100 % hors ligne.
   // (Échoue silencieusement en file:// ou navigateur sans support.)
