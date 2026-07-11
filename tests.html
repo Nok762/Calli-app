@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tests du moteur — Callisthénie</title>
+  <!-- Suite de tests SANS outillage : ouvrir http://localhost:8123/tests.html.
+       Teste les fonctions pures du moteur (adaptation + générateur) sur des
+       scénarios synthétiques ET sur le seed réel. Page hors app (non précachée
+       par le service worker) : c'est un outil de développement. -->
+  <style>
+    body { font: 14px/1.5 system-ui, sans-serif; background: #14120F; color: #F2EDE4; padding: 20px; max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 1.25rem; }
+    .ok { color: #8BC34A; }
+    .fail { color: #E25B4A; font-weight: 600; }
+    #synthese { font-size: 1.1rem; margin: 14px 0; padding: 10px 14px; border-radius: 10px; background: #1E1A15; }
+    div { margin: 2px 0; }
+  </style>
+</head>
+<body>
+  <h1>Tests du moteur</h1>
+  <div id="synthese">Exécution…</div>
+  <div id="resultats"></div>
+
+  <script type="module">
+    import {
+      SEUILS, compatibleMateriel, zonesEnConflit, verifierExercice,
+      proposerAlternatives, suggestionsPalier, suggestionsDeload,
+      suggestionsPlateau, evaluerReadiness,
+    } from './js/moteur/adaptation.js';
+    import {
+      REGLES, genererProgramme, cibleSkill, estimerDureeSeance,
+      proposerSeanceRaccourcie, genererEtirements, evoluerCibles, prochainJour,
+    } from './js/moteur/generateur.js';
+
+    const resultats = [];
+    const test = (nom, fn) => {
+      try { fn(); resultats.push([true, nom]); }
+      catch (e) { resultats.push([false, `${nom} — ${e.message}`]); }
+    };
+    const vrai = (cond, msg = 'condition fausse') => { if (!cond) throw new Error(msg); };
+    const egal = (obtenu, attendu, msg = '') => {
+      const o = JSON.stringify(obtenu), a = JSON.stringify(attendu);
+      if (o !== a) throw new Error(`${msg} attendu ${a}, obtenu ${o}`);
+    };
+
+    // --- Données synthétiques partagées ------------------------------------------
+    const ago = (h) => new Date(Date.now() - h * 3600000).toISOString();
+    const sess = (h, rpe, opts = {}) => ({
+      dateDebut: ago(h),
+      entrees: [{ exerciceId: opts.exo || 'x', sets: (opts.valeurs || [8, 8]).map((v) => ({ valeur: v, rpe, echec: !!opts.echec })) }],
+    });
+
+    // --- evaluerReadiness ------------------------------------------------------------
+    test('readiness : énergie faible sans historique → basse', () =>
+      egal(evaluerReadiness({ energie: 'faible' }, []).niveau, 'basse'));
+    test('readiness : énergie haute sans historique → haute', () =>
+      egal(evaluerReadiness({ energie: 'haute' }, []).niveau, 'haute'));
+    test('readiness : RPE 9 + peu de repos → basse', () =>
+      egal(evaluerReadiness({ energie: 'normale' }, [sess(2, 9)]).niveau, 'basse'));
+    test('readiness : RPE 6 il y a 48 h → normale', () =>
+      egal(evaluerReadiness({ energie: 'normale' }, [sess(48, 6)]).niveau, 'normale'));
+    test('readiness : raisons cohérentes avec le verdict', () => {
+      const r = evaluerReadiness({ energie: 'haute' }, [sess(2, 6)]);
+      vrai(r.niveau === 'haute' && !r.raisons.some((x) => x.includes('peu de repos')),
+        'une raison négative apparaît dans un verdict positif');
+    });
+
+    // --- Durée estimée / raccourcissement ------------------------------------------
+    const defsTemps = new Map([
+      ['skillEx', { id: 'skillEx', type: 'hold', difficulte: 6, skill: 'planche' }],
+      ['comp', { id: 'comp', type: 'reps', difficulte: 5 }],
+      ['acc', { id: 'acc', type: 'reps', difficulte: 2 }],
+    ]);
+    const entreesTemps = [
+      { exerciceId: 'skillEx', cible: { sets: 4, valeur: 15, repos: 150 } },
+      { exerciceId: 'comp', cible: { sets: 3, valeur: 8, repos: 150 } },
+      { exerciceId: 'acc', cible: { sets: 3, valeur: 12, repos: 90 } },
+    ];
+    test('durée : estimation > 0 et raisonnable', () => {
+      const d = estimerDureeSeance(entreesTemps, defsTemps);
+      vrai(d >= 15 && d <= 45, `durée ${d} min hors bornes attendues`);
+    });
+    test('raccourcir : rentre déjà → null', () =>
+      egal(proposerSeanceRaccourcie(entreesTemps, defsTemps, 60), null));
+    test('raccourcir : temps court → coupe pour tenir, garde toujours le skill', () => {
+      const p = proposerSeanceRaccourcie(entreesTemps, defsTemps, 15);
+      vrai(p && p.garder.includes(0), 'le skill doit rester');
+      vrai(p.retirer.length >= 1, 'au moins un exercice doit sauter');
+      vrai(p.dureeApres <= 15, `durée après ${p.dureeApres} min > temps dispo`);
+    });
+
+    // --- Plateau / deload ---------------------------------------------------------------
+    const exosPlat = new Map([
+      ['x', { id: 'x', nom: 'X', type: 'reps', progression: ['y'], regression: [], equivalence: [] }],
+      ['y', { id: 'y', nom: 'Y', type: 'reps', progression: [], regression: ['x'], equivalence: [] }],
+    ]);
+    const plat = (vals, rpe, echec = false) => [
+      sess(2, rpe, { valeurs: vals, echec }), sess(50, rpe, { valeurs: vals }), sess(100, rpe, { valeurs: vals }),
+    ];
+    test('plateau : perf plate sans forcer → détecté avec levier progression', () => {
+      const s = suggestionsPlateau(plat([10, 10], 7), exosPlat);
+      vrai(s.length === 1, 'plateau non détecté');
+      egal(s[0].levier.type, 'progression');
+    });
+    test('plateau : progression réelle → rien', () => {
+      const sessions = [sess(2, 7, { valeurs: [12, 12] }), sess(50, 7, { valeurs: [10, 10] }), sess(100, 7, { valeurs: [8, 8] })];
+      egal(suggestionsPlateau(sessions, exosPlat).length, 0);
+    });
+    test('plateau : RPE 9 → relève du deload, pas du plateau', () =>
+      egal(suggestionsPlateau(plat([10, 10], 9), exosPlat).length, 0));
+    test('deload : échecs répétés → suggéré avec régression', () => {
+      const sessions = [sess(2, 9, { exo: 'y', echec: true }), sess(50, 9, { exo: 'y', echec: true })];
+      const s = suggestionsDeload(sessions, exosPlat);
+      vrai(s.length === 1 && s[0].regression?.id === 'x');
+    });
+
+    // --- cibleSkill / evoluerCibles ---------------------------------------------------
+    test('cibleSkill : ~60 % du critère de tenue', () => {
+      const c = cibleSkill({ critere: { type: 'hold', valeur: 20 }, exercice: { type: 'hold' } });
+      egal(c.valeur, 12); egal(c.sets, REGLES.SETS_SKILL);
+    });
+    test('evoluerCibles : cibles atteintes à RPE ≤ 8 → +1', () => {
+      const prog = { jours: [{ exercices: [{ exerciceId: 'x', cible: { sets: 3, valeur: 8 } }] }], genere: { journal: [] } };
+      const session = { dateDebut: ago(1), programme: { jourIdx: 0 },
+        entrees: [{ exerciceId: 'x', sets: [{ valeur: 8, rpe: 7 }, { valeur: 8, rpe: 7 }, { valeur: 8, rpe: 8 }] }] };
+      const ch = evoluerCibles(prog, session, exosPlat);
+      vrai(ch.length === 1, 'une évolution attendue');
+      egal(prog.jours[0].exercices[0].cible.valeur, 9);
+    });
+    test('evoluerCibles : échec → cible réduite', () => {
+      const prog = { jours: [{ exercices: [{ exerciceId: 'x', cible: { sets: 3, valeur: 8 } }] }], genere: { journal: [] } };
+      const session = { dateDebut: ago(1), programme: { jourIdx: 0 },
+        entrees: [{ exerciceId: 'x', sets: [{ valeur: 5, rpe: 10, echec: true }] }] };
+      evoluerCibles(prog, session, exosPlat);
+      egal(prog.jours[0].exercices[0].cible.valeur, 7);
+    });
+
+    // --- prochainJour --------------------------------------------------------------------
+    test('prochainJour : rotation qui glisse sans calendrier', () => {
+      const prog = { id: 'p', jours: [{}, {}, {}] };
+      const sessions = [{ dateDebut: ago(30), programme: { id: 'p', jourIdx: 1 } }];
+      egal(prochainJour(prog, sessions), 2);
+      egal(prochainJour(prog, []), 0);
+    });
+
+    // --- Étirements ------------------------------------------------------------------------
+    test('étirements : jambes seules → pas d\'étirement du haut', () => {
+      const e = genererEtirements(['squat', 'hinge']);
+      vrai(e.length >= 3 && !e.some((x) => x.startsWith('Poignets')));
+    });
+    test('étirements : straight_arm couvre poussée + tirage', () => {
+      const e = genererEtirements(['straight_arm']);
+      vrai(e.some((x) => x.startsWith('Pectoraux')) && e.some((x) => x.startsWith('Dorsaux')));
+    });
+
+    // --- Sur le seed réel : substitution + génération ---------------------------------------
+    const seed = await fetch('data/exercices.seed.json').then((r) => r.json());
+    const exercices = new Map(seed.exercices.map((e) => [e.id, e]));
+    const MAT = ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'];
+
+    test('seed : liens regression/progression/equivalence tous valides', () => {
+      for (const ex of exercices.values()) {
+        for (const id of [...ex.regression, ...ex.progression, ...ex.equivalence]) {
+          vrai(exercices.has(id), `${ex.id} → lien cassé vers ${id}`);
+        }
+      }
+    });
+
+    test('substitution : jamais d\'exercice incompatible matériel/douleur', () => {
+      const cible = seed.exercices.find((e) => e.pattern === 'poussee_horizontale' && e.equipement.includes('aucun'));
+      const alts = proposerAlternatives(cible, exercices, { materiel: [], douleurs: ['epaules'] }, 'contrainte');
+      for (const a of alts) {
+        vrai(compatibleMateriel(a.exercice, []), 'alternative demande du matériel absent');
+        vrai(!zonesEnConflit(a.exercice, ['epaules']).length, 'alternative charge une zone signalée');
+      }
+    });
+
+    const prog = genererProgramme(
+      { objectifs: [], frequence: 3, materiel: MAT, dureeMin: 45 },
+      { exercices, skills: [], etats: new Map(), prs: new Map() });
+
+    test('génération 3j/45 : structure complète', () => {
+      egal(prog.jours.length, 3);
+      for (const j of prog.jours) {
+        vrai(j.exercices.length >= 4 && j.exercices.length <= 7, `${j.nom} : ${j.exercices.length} exos`);
+        vrai(j.echauffement.length >= 3, 'échauffement manquant');
+        vrai(j.etirements.length >= 3, 'étirements manquants');
+        const ids = j.exercices.map((e) => e.exerciceId);
+        egal(ids.length, new Set(ids).size, 'doublon intra-jour');
+      }
+    });
+
+    test('génération 3j/45 : équilibre hebdo (hinge ≥ 2, tirage ≥ poussée)', () => {
+      const freq = {};
+      let push = 0, pull = 0;
+      for (const j of prog.jours) for (const e of j.exercices) {
+        const ex = exercices.get(e.exerciceId);
+        freq[ex.pattern] = (freq[ex.pattern] || 0) + 1;
+        if (ex.pattern.startsWith('poussee')) push += e.cible.sets;
+        if (ex.pattern.startsWith('tirage')) pull += e.cible.sets;
+      }
+      vrai((freq.hinge || 0) >= 2, `hinge ${freq.hinge || 0}×/sem (chaîne postérieure sous-servie)`);
+      vrai(pull >= push, `tirage ${pull} < poussée ${push}`);
+    });
+
+    test('génération : objectif skill → bloc skill marqué, en premier, borné', () => {
+      const skills = [{
+        id: 'planche', nom: 'Planche',
+        etapes: seed.exercices.filter((e) => e.skill === 'planche').sort((a, b) => a.step - b.step)
+          .map((e) => ({ step: e.step, exercice: e, critere: { type: e.type, valeur: 10 } })),
+      }];
+      const p2 = genererProgramme(
+        { objectifs: ['planche'], frequence: 3, materiel: MAT, dureeMin: 45 },
+        { exercices, skills, etats: new Map(), prs: new Map() });
+      let apparitions = 0;
+      for (const j of p2.jours) {
+        const marques = j.exercices.filter((e) => e.skill === 'planche');
+        apparitions += marques.length;
+        if (marques.length) vrai(j.exercices[0].skill === 'planche', 'le skill doit ouvrir la séance');
+      }
+      vrai(apparitions >= 1 && apparitions <= REGLES.SKILL_FREQ_MAX, `skill ${apparitions}×/sem hors bornes`);
+    });
+
+    // --- Rendu -------------------------------------------------------------------------------
+    const ok = resultats.filter(([b]) => b).length;
+    document.getElementById('synthese').innerHTML =
+      `<span class="${ok === resultats.length ? 'ok' : 'fail'}">${ok}/${resultats.length} tests passés</span>`;
+    document.getElementById('resultats').innerHTML = resultats
+      .map(([b, nom]) => `<div class="${b ? 'ok' : 'fail'}">${b ? '✓' : '✗'} ${nom}</div>`)
+      .join('');
+  </script>
+</body>
+</html>

@@ -5,9 +5,9 @@
 
 import { compatibleMateriel, verifierExercice } from '../moteur/adaptation.js';
 
-// Libellés : déplacés dans js/libelles.js (partagés avec le moteur, qui
-// construit des explications lisibles). Ré-exportés ici pour les vues.
-export { libelle } from '../libelles.js';
+// Libellés + échappement : déplacés dans js/libelles.js (partagés avec le
+// moteur, qui construit des explications lisibles). Ré-exportés pour les vues.
+export { libelle, echapper } from '../libelles.js';
 
 // --- Confirmation maison ---------------------------------------------------------
 // Remplace window.confirm : les dialogues natifs sortent du plein écran (mode
@@ -118,7 +118,20 @@ export function go() {
 
 // --- Graphique en ligne (canvas) -----------------------------------------------
 // points : [{ x: Date|string|timestamp, y: Number }] triés par x croissant.
+// Se redessine tout seul quand le canvas change de taille (rotation de l'écran,
+// redimensionnement) : un canvas ne suit pas le layout, il fige ses pixels.
 export function graphiqueLigne(canvas, points) {
+  canvas._ro?.disconnect();
+  canvas._points = points;
+  canvas._ro = new ResizeObserver(() => {
+    if (!canvas.isConnected) { canvas._ro.disconnect(); return; }
+    dessinerGraphique(canvas, canvas._points);
+  });
+  canvas._ro.observe(canvas);
+  dessinerGraphique(canvas, points);
+}
+
+function dessinerGraphique(canvas, points) {
   const dpr = window.devicePixelRatio || 1;
   const larg = canvas.clientWidth || 320;
   const haut = canvas.clientHeight || 170;

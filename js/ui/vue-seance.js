@@ -20,7 +20,7 @@ import {
 import {
   evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements, cibleSkill,
 } from '../moteur/generateur.js';
-import { toast, bip, tick, go, libelle, choisirExercice, confirmer, afficherChecklist } from './composants.js';
+import { toast, bip, tick, go, libelle, choisirExercice, confirmer, afficherChecklist, echapper } from './composants.js';
 
 const EQUIPEMENT_DEFAUT = ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'];
 const ZONES_DEFAUT = ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
@@ -126,7 +126,7 @@ async function formulaireDemarrage(el) {
     <h1>Séance</h1>
     ${template ? `
       <div class="carte accent carte-template">
-        <div><strong>📋 ${template.prog.nom} — ${template.jour.nom}</strong>
+        <div><strong>📋 ${echapper(template.prog.nom)} — ${echapper(template.jour.nom)}</strong>
           <div class="texte-2">${template.jour.exercices.length} exercices pré-remplis</div></div>
         <button class="btn-x" id="btn-annuler-template">×</button>
       </div>
@@ -139,7 +139,7 @@ async function formulaireDemarrage(el) {
       <h3>Depuis un programme</h3>
       <div class="chips">
         ${jours.map(({ prog, jour, j }) =>
-          `<button class="chip-lien" data-template="${prog.id}:${j}">▶ ${prog.nom} · ${jour.nom}</button>`).join('')}
+          `<button class="chip-lien" data-template="${prog.id}:${j}">▶ ${echapper(prog.nom)} · ${echapper(jour.nom)}</button>`).join('')}
       </div>` : ''}
     <div class="carte">
       <h2>Contraintes du jour</h2>
@@ -251,7 +251,7 @@ function rendrePlayer(el) {
     el.innerHTML = `
       <div class="player">
         <div class="player-tete">
-          <div class="player-prog"><div class="player-prog-txt">${seance.programme ? seance.programme.jour : 'Séance libre'}</div></div>
+          <div class="player-prog"><div class="player-prog-txt">${seance.programme ? echapper(seance.programme.jour) : 'Séance libre'}</div></div>
           <button class="btn-x" data-liste title="Vue liste">☰</button>
         </div>
         <div class="player-corps">
@@ -502,7 +502,7 @@ function rendreListe(el) {
 
   el.innerHTML = `
     <div class="entete-seance">
-      <h1>${seance.programme ? seance.programme.nom + ' — ' + seance.programme.jour : 'Séance en cours'}</h1>
+      <h1>${seance.programme ? echapper(seance.programme.nom + ' — ' + seance.programme.jour) : 'Séance en cours'}</h1>
       <span class="texte-2">démarrée à ${heure}</span>
     </div>
     ${resumeContraintes()}

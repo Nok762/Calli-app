@@ -19,6 +19,13 @@ python -m http.server 8123
 puis ouvrir <http://localhost:8123>. (N'importe quel serveur statique convient ;
 le service worker exige HTTPS ou localhost.)
 
+## Tests
+
+Ouvrir <http://localhost:8123/tests.html> : la suite teste les fonctions pures
+du moteur (readiness, plateaux, substitution, génération de programmes…) sur
+des scénarios synthétiques et sur le seed réel. Zéro outillage — elle tourne
+dans le navigateur, comme l'app.
+
 ## Déployer
 
 Contenu 100 % statique : pousser tel quel sur GitHub Pages ou Netlify.

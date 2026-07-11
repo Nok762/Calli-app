@@ -18,3 +18,11 @@ const LIBELLES = {
 export function libelle(valeur) {
   return LIBELLES[valeur] || String(valeur).replace(/_/g, ' ');
 }
+
+// Échappement HTML pour toute valeur SAISIE PAR L'UTILISATEUR injectée dans un
+// template innerHTML (noms de programmes/jours) : un « " » dans un nom cassait
+// l'attribut value, un « < » cassait le balisage.
+const ECHAPPEMENTS = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+export function echapper(valeur) {
+  return String(valeur ?? '').replace(/[&<>"']/g, (c) => ECHAPPEMENTS[c]);
+}

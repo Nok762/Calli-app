@@ -9,7 +9,7 @@ import { getEtatSkill, texteCritere } from '../skills.js';
 import { getPR } from '../pr.js';
 import { suggestionsPalier, suggestionsDeload, suggestionsPlateau } from '../moteur/adaptation.js';
 import { prochainJour, REGLES } from '../moteur/generateur.js';
-import { afficherChecklist } from './composants.js';
+import { afficherChecklist, echapper } from './composants.js';
 
 // Clé de date en heure LOCALE (toISOString est en UTC : à minuit heure de
 // Paris, le jour UTC est encore la veille — faux marquage du calendrier).
@@ -186,11 +186,11 @@ function heroHtml(hero) {
   return `
     <div class="carte accent">
       <div class="hero-label">Prochaine séance</div>
-      <div class="hero-titre">${hero.jour.nom}</div>
-      <div class="texte-2">${hero.prog.nom} · ${hero.jour.exercices.length} exercices · ~${duree} min</div>
+      <div class="hero-titre">${echapper(hero.jour.nom)}</div>
+      <div class="texte-2">${echapper(hero.prog.nom)} · ${hero.jour.exercices.length} exercices · ~${duree} min</div>
       <button class="btn btn-accent btn-large" data-template="${hero.prog.id}:${hero.j}">▶ Démarrer</button>
       <p class="texte-2 centre" style="padding:8px 0 0; margin:0">
-        ${autres.map(({ jour, j }) => `<button class="btn-lien" data-template="${hero.prog.id}:${j}">${jour.nom}</button>`).join(' · ')}${autres.length ? ' · ' : ''}<a href="#/seance">séance libre</a>
+        ${autres.map(({ jour, j }) => `<button class="btn-lien" data-template="${hero.prog.id}:${j}">${echapper(jour.nom)}</button>`).join(' · ')}${autres.length ? ' · ' : ''}<a href="#/seance">séance libre</a>
       </p>
     </div>`;
 }

@@ -6,7 +6,7 @@ import { ctx } from '../app.js';
 import { dbGet, dbGetAll, dbPut, dbSupprimer, setReglage } from '../db.js';
 import { getEtatSkill } from '../skills.js';
 import { genererProgramme, semaineCourante, REGLES } from '../moteur/generateur.js';
-import { toast, choisirExercice, libelle, confirmer } from './composants.js';
+import { toast, choisirExercice, libelle, confirmer, echapper } from './composants.js';
 
 export async function vueProgrammes(el, params) {
   if (params[0] === 'generer') return assistant(el);
@@ -21,8 +21,8 @@ async function listeProgrammes(el) {
     <div class="liste">
       ${programmes.map((p) => `
         <a class="carte" href="#/programmes/${p.id}">
-          <strong>${p.nom}</strong>
-          <div class="texte-2">${p.jours.map((j) => `${j.nom} (${j.exercices.length})`).join(' · ') || 'vide'}</div>
+          <strong>${echapper(p.nom)}</strong>
+          <div class="texte-2">${p.jours.map((j) => `${echapper(j.nom)} (${j.exercices.length})`).join(' · ') || 'vide'}</div>
         </a>`).join('') || '<p class="texte-2 centre">Aucun programme.<br>Crée ton premier template (Push/Pull/Legs, journée skill…) 👇</p>'}
     </div>
     <button class="btn btn-accent btn-large" id="btn-generer">✨ Générer mon programme</button>
@@ -53,13 +53,13 @@ async function editerProgramme(el, id) {
 
   el.innerHTML = `
     <a class="retour" href="#/programmes">← Programmes</a>
-    <input id="prog-nom" class="input-titre" value="${prog.nom}">
+    <input id="prog-nom" class="input-titre" value="${echapper(prog.nom)}">
     ${prog.genere ? carteGenere(prog) : ''}
     <div class="liste">
       ${prog.jours.map((jour, j) => `
         <div class="carte">
           <div class="carte-exo-tete">
-            <input class="inp-jour" data-j="${j}" value="${jour.nom}">
+            <input class="inp-jour" data-j="${j}" value="${echapper(jour.nom)}">
             <button class="btn-x" data-suppr-jour="${j}">×</button>
           </div>
           ${jour.echauffement?.length ? `
