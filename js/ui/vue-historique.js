@@ -5,7 +5,7 @@
 import { ctx } from '../app.js';
 import { dbGetAll, dbPut, dbSupprimer } from '../db.js';
 import { recalculerTousPR } from '../pr.js';
-import { toast, graphiqueLigne } from './composants.js';
+import { toast, graphiqueLigne, confirmer } from './composants.js';
 
 export async function vueHistorique(el, params) {
   const onglet = params[0] || 'seances';
@@ -53,7 +53,7 @@ async function ongletSeances(el) {
     btn.addEventListener('click', async () => {
       const s = sessions.find((x) => x.id === btn.dataset.supprSession);
       const quand = new Date(s.dateDebut).toLocaleDateString('fr-FR');
-      if (!confirm(`Supprimer la séance du ${quand} (${s.entrees.length} exo${s.entrees.length > 1 ? 's' : ''}) ? Les PR seront recalculés.`)) return;
+      if (!(await confirmer(`Supprimer la séance du ${quand} (${s.entrees.length} exo${s.entrees.length > 1 ? 's' : ''}) ? Les PR seront recalculés.`, { oui: 'Supprimer', danger: true }))) return;
       await dbSupprimer('sessions', s.id);
       await recalculerTousPR(ctx.exercices);
       toast('Séance supprimée · PR recalculés ✓');

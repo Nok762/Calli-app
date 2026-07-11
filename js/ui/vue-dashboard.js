@@ -9,6 +9,7 @@ import { getEtatSkill, texteCritere } from '../skills.js';
 import { getPR } from '../pr.js';
 import { suggestionsPalier, suggestionsDeload, suggestionsPlateau } from '../moteur/adaptation.js';
 import { prochainJour, REGLES } from '../moteur/generateur.js';
+import { afficherChecklist } from './composants.js';
 
 // Clé de date en heure LOCALE (toISOString est en UTC : à minuit heure de
 // Paris, le jour UTC est encore la veille — faux marquage du calendrier).
@@ -47,6 +48,11 @@ export async function vueAccueil(el) {
   const suggDeloads = suggestionsDeload(sessions, ctx.exercices);
   const suggPlateaux = suggestionsPlateau(sessions, ctx.exercices);
 
+  // Étirements de la dernière séance : récupérables quelques heures (au cas où
+  // la feuille de fin de séance a été fermée trop vite).
+  const dernEtir = await getReglage('derniersEtirements');
+  const etirRecents = dernEtir && Date.now() - new Date(dernEtir.date) < 6 * 3600000 ? dernEtir : null;
+
   const paliers = await prochainsPaliers();
   const recents = prRecents(prs);
   const nbSemaine = seancesCetteSemaine(sessions);
@@ -71,6 +77,8 @@ export async function vueAccueil(el) {
         <div class="hero-titre">Reprendre</div>
         <div class="texte-2">Là où tu en étais · le chrono t'attend.</div>
       </a>` : heroHtml(hero)}
+
+    ${etirRecents ? '<button class="carte-fine btn-etirements" id="btn-etirements">🧘 Étirements de la dernière séance</button>' : ''}
 
     <div class="carte" style="margin-top:10px">
       <div class="jauge-tete">
@@ -141,6 +149,13 @@ export async function vueAccueil(el) {
   el.querySelector('[data-generer]')?.addEventListener('click', () => {
     location.hash = '#/programmes/generer';
   });
+
+  el.querySelector('#btn-etirements')?.addEventListener('click', () =>
+    afficherChecklist({
+      titre: '🧘 Étirements · récupération',
+      note: 'Respiration lente, on ne force jamais — juste une tension confortable.',
+      items: etirRecents.liste,
+    }));
 }
 
 // Phrase du levier proposé pour sortir d'un plateau.

@@ -7,7 +7,7 @@
 import { ctx } from '../app.js';
 import { dbGetAll, dbVider, dbPut, getReglage, setReglage } from '../db.js';
 import { recalculerTousPR } from '../pr.js';
-import { toast, setSonActif } from './composants.js';
+import { toast, setSonActif, confirmer } from './composants.js';
 
 // Stores exportés/importés. 'exercices' est exclu : le seed reste la source de
 // vérité et se réimporte tout seul. 'reglages' inclut seedVersion : si le seed
@@ -122,7 +122,7 @@ export async function vueReglages(el) {
       return;
     }
     const nb = sauvegarde.stores.sessions?.length ?? 0;
-    if (!confirm(`Remplacer les données actuelles par la sauvegarde du ${new Date(sauvegarde.date).toLocaleDateString('fr-FR')} (${nb} séances) ?`)) return;
+    if (!(await confirmer(`Remplacer les données actuelles par la sauvegarde du ${new Date(sauvegarde.date).toLocaleDateString('fr-FR')} (${nb} séances) ?`, { oui: 'Remplacer', danger: true }))) return;
 
     for (const nom of STORES_DONNEES) {
       if (!Array.isArray(sauvegarde.stores[nom])) continue;
@@ -140,8 +140,8 @@ export async function vueReglages(el) {
 
   // --- Reset total ------------------------------------------------------------------
   el.querySelector('#btn-reset').addEventListener('click', async () => {
-    if (!confirm('Effacer TOUTES les données (séances, PR, skills, programmes) ?')) return;
-    if (!confirm('Vraiment sûr ? Il n\'y a pas de retour en arrière sans export.')) return;
+    if (!(await confirmer('Effacer TOUTES les données (séances, PR, skills, programmes) ?', { oui: 'Effacer', danger: true }))) return;
+    if (!(await confirmer('Vraiment sûr ? Il n\'y a pas de retour en arrière sans export.', { oui: 'Tout effacer', danger: true }))) return;
     for (const nom of STORES_DONNEES) await dbVider(nom);
     toast('Données effacées — rechargement…');
     setTimeout(() => location.reload(), 800);

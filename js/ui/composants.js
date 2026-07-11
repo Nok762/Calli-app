@@ -9,6 +9,59 @@ import { compatibleMateriel, verifierExercice } from '../moteur/adaptation.js';
 // construit des explications lisibles). Ré-exportés ici pour les vues.
 export { libelle } from '../libelles.js';
 
+// --- Confirmation maison ---------------------------------------------------------
+// Remplace window.confirm : les dialogues natifs sortent du plein écran (mode
+// Focus) et cassent l'immersion. Message inséré en textContent (pas d'injection).
+export function confirmer(message, { oui = 'OK', non = 'Annuler', danger = false } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="feuille feuille-confirm">
+        <p></p>
+        <div class="ligne-2">
+          <button class="btn" data-non></button>
+          <button class="btn ${danger ? 'btn-danger' : 'btn-accent'}" data-oui></button>
+        </div>
+      </div>`;
+    overlay.querySelector('p').textContent = message;
+    overlay.querySelector('[data-non]').textContent = non;
+    overlay.querySelector('[data-oui]').textContent = oui;
+    document.body.appendChild(overlay);
+    const fermer = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('[data-non]').addEventListener('click', () => fermer(false));
+    overlay.querySelector('[data-oui]').addEventListener('click', () => fermer(true));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) fermer(false); });
+  });
+}
+
+// --- Checklist en feuille ----------------------------------------------------------
+// Liste cochable (échauffement, étirements) : chaque ligne se coche, « Terminé »
+// ferme. Contenus insérés en textContent.
+export function afficherChecklist({ titre, note = '', items }) {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = `
+    <div class="feuille">
+      <div class="feuille-tete">
+        <strong></strong>
+        <button class="btn-x" data-fermer>×</button>
+      </div>
+      ${note ? '<p class="texte-2" style="margin:0 0 10px"></p>' : ''}
+      <div class="picker-liste">
+        ${items.map(() => '<label class="etirement-item"><input type="checkbox"><span></span></label>').join('')}
+      </div>
+      <button class="btn btn-accent btn-large" data-fermer>Terminé</button>
+    </div>`;
+  overlay.querySelector('strong').textContent = titre;
+  if (note) overlay.querySelector('p.texte-2').textContent = note;
+  [...overlay.querySelectorAll('.etirement-item span')].forEach((sp, i) => { sp.textContent = items[i]; });
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('[data-fermer]')) overlay.remove();
+  });
+}
+
 // --- Toast -------------------------------------------------------------------
 export function toast(message, duree = 2800) {
   document.querySelector('.toast')?.remove();

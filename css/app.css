@@ -763,6 +763,22 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .echauffement ul { margin: 4px 0 2px; padding-left: 18px; }
 .echauffement li { font-size: .9rem; line-height: 1.5; color: var(--texte); margin: 3px 0; }
 
+/* Feuille de confirmation maison (les confirm() natifs sortent du plein écran). */
+.feuille-confirm { max-width: 480px; border-radius: 18px; margin-bottom: 18vh; }
+.feuille-confirm p { font-size: 1rem; line-height: 1.5; margin: 4px 2px 14px; }
+.overlay:has(.feuille-confirm) { align-items: center; }
+
+/* Rappel étirements sur l'accueil (récupérable après fermeture de la feuille). */
+.btn-etirements {
+  width: 100%;
+  margin-top: 10px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--texte);
+  cursor: pointer;
+  text-align: left;
+}
+
 /* Étirements post-séance : lignes cochables de la feuille de récupération. */
 .etirement-item {
   flex-direction: row;

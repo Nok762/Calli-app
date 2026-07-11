@@ -6,7 +6,7 @@ import { ctx } from '../app.js';
 import { dbGet, dbGetAll, dbPut, dbSupprimer, setReglage } from '../db.js';
 import { getEtatSkill } from '../skills.js';
 import { genererProgramme, semaineCourante, REGLES } from '../moteur/generateur.js';
-import { toast, choisirExercice, libelle } from './composants.js';
+import { toast, choisirExercice, libelle, confirmer } from './composants.js';
 
 export async function vueProgrammes(el, params) {
   if (params[0] === 'generer') return assistant(el);
@@ -113,7 +113,7 @@ async function editerProgramme(el, id) {
   el.querySelectorAll('[data-suppr-jour]').forEach((btn) =>
     btn.addEventListener('click', async () => {
       const j = Number(btn.dataset.supprJour);
-      if (prog.jours[j].exercices.length && !confirm(`Supprimer ${prog.jours[j].nom} et ses exercices ?`)) return;
+      if (prog.jours[j].exercices.length && !(await confirmer(`Supprimer ${prog.jours[j].nom} et ses exercices ?`, { oui: 'Supprimer', danger: true }))) return;
       prog.jours.splice(j, 1);
       await sauver();
       editerProgramme(el, id);
@@ -155,7 +155,7 @@ async function editerProgramme(el, id) {
   });
 
   el.querySelector('#btn-suppr-prog').addEventListener('click', async () => {
-    if (!confirm('Supprimer ce programme ?')) return;
+    if (!(await confirmer('Supprimer ce programme ?', { oui: 'Supprimer', danger: true }))) return;
     await dbSupprimer('programmes', id);
     location.hash = '#/programmes';
   });
@@ -225,7 +225,7 @@ async function assistant(el) {
     }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
 
     if (existant) {
-      if (!confirm(`Remplacer « ${existant.nom} » par le nouveau programme ?`)) return;
+      if (!(await confirmer(`Remplacer « ${existant.nom} » par le nouveau programme ?`, { oui: 'Remplacer' }))) return;
       await dbSupprimer('programmes', existant.id);
     }
     await dbPut('programmes', prog);

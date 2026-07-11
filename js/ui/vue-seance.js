@@ -20,7 +20,7 @@ import {
 import {
   evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements, cibleSkill,
 } from '../moteur/generateur.js';
-import { toast, bip, tick, go, libelle, choisirExercice } from './composants.js';
+import { toast, bip, tick, go, libelle, choisirExercice, confirmer, afficherChecklist } from './composants.js';
 
 const EQUIPEMENT_DEFAUT = ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'];
 const ZONES_DEFAUT = ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
@@ -209,6 +209,7 @@ async function formulaireDemarrage(el) {
       entrees,
       modulation,
       readiness,
+      echauffement: template?.jour.echauffement || null,
       ajustements: {},
     };
     await setReglage('template_a_demarrer', null);
@@ -301,6 +302,7 @@ function rendrePlayer(el) {
           <div class="ligne"><div style="width:${((i + 1) / n) * 100}%"></div></div>
         </div>
         <button class="btn-x" data-nav="suiv" ${estDernier ? 'disabled' : ''}>→</button>
+        ${seance.echauffement?.length ? '<button class="btn-x" data-echauffement title="Échauffement">🔥</button>' : ''}
         <button class="btn-x" data-liste title="Vue liste">☰</button>
       </div>
 
@@ -349,6 +351,8 @@ function rendrePlayer(el) {
       rendrePlayer(el);
     }));
   el.querySelector('[data-liste]').addEventListener('click', () => { modeListe = true; seanceEnCours(el); });
+  el.querySelector('[data-echauffement]')?.addEventListener('click', () =>
+    afficherChecklist({ titre: '🔥 Échauffement', items: seance.echauffement }));
   el.querySelector('[data-fiche]').addEventListener('click', () => ouvrirFiche(ex));
   el.querySelector('[data-remplacer]').addEventListener('click', () => ouvrirRemplacement(el, i));
 
@@ -381,7 +385,7 @@ function rendrePlayer(el) {
     if (act === 'suivant') { focusIndex++; return rendrePlayer(el); }
     if (act === 'terminer') {
       if (!seance.entrees.some((e) => e.sets.length)) { toast('Logge au moins une série avant de terminer.'); return; }
-      if (confirm('Terminer et enregistrer la séance ?')) await terminer();
+      if (await confirmer('Terminer et enregistrer la séance ?', { oui: 'Terminer' })) await terminer();
     }
   });
   el.querySelector('[data-plus-serie]')?.addEventListener('click', () => validerSerie(el, i));
@@ -503,6 +507,7 @@ function rendreListe(el) {
     </div>
     ${resumeContraintes()}
     ${bannieresAjustement()}
+    ${seance.echauffement?.length ? '<button class="chip-lien" id="btn-echauffement-liste">🔥 Échauffement</button>' : ''}
     <button class="btn btn-accent btn-large" id="btn-plein-ecran">▶ Reprendre en plein écran</button>
     <div class="liste">${seance.entrees.map(carteEntree).join('') ||
       '<p class="texte-2 centre">Ajoute un premier exercice 👇</p>'}</div>
@@ -526,16 +531,19 @@ function rendreListe(el) {
 
   el.querySelector('#btn-ajouter-exo').addEventListener('click', () => ajouterExercice(el));
 
+  el.querySelector('#btn-echauffement-liste')?.addEventListener('click', () =>
+    afficherChecklist({ titre: '🔥 Échauffement', items: seance.echauffement }));
+
   el.querySelector('#btn-terminer').addEventListener('click', async () => {
     if (!seance.entrees.some((e) => e.sets.length)) {
       toast('Logge au moins un set avant de terminer.');
       return;
     }
-    if (confirm('Terminer et enregistrer la séance ?')) await terminer();
+    if (await confirmer('Terminer et enregistrer la séance ?', { oui: 'Terminer' })) await terminer();
   });
 
   el.querySelector('#btn-abandonner').addEventListener('click', async () => {
-    if (!confirm('Abandonner la séance ? Rien ne sera enregistré.')) return;
+    if (!(await confirmer('Abandonner la séance ? Rien ne sera enregistré.', { oui: 'Abandonner', danger: true }))) return;
     seance = null;
     await setReglage('seance_en_cours', null);
     stopChrono();
@@ -644,7 +652,7 @@ function rendreListe(el) {
     btn.addEventListener('click', async () => {
       const i = Number(btn.dataset.supprExo);
       const ex = ctx.exercices.get(seance.entrees[i].exerciceId);
-      if (seance.entrees[i].sets.length && !confirm(`Retirer ${ex?.nom} et ses sets ?`)) return;
+      if (seance.entrees[i].sets.length && !(await confirmer(`Retirer ${ex?.nom} et ses sets ?`, { oui: 'Retirer', danger: true }))) return;
       seance.entrees.splice(i, 1);
       await persister();
       seanceEnCours(el);
@@ -1157,32 +1165,19 @@ async function terminer() {
   if (nbEvolutions) message += ` · ${nbEvolutions} cible${nbEvolutions > 1 ? 's' : ''} du programme ajustée${nbEvolutions > 1 ? 's' : ''}`;
   if (nbSuggestions) message += ' · 💡 suggestions sur l\'Accueil';
   toast(message, 3600);
-  location.hash = '#/accueil';
-  // Feuille d'étirements post-séance (par-dessus l'accueil), cochable, jamais bloquante.
+  // Étirements post-séance adaptés à ce qui a été travaillé : mémorisés
+  // (récupérables depuis l'accueil si la feuille est fermée trop vite),
+  // puis affichés par-dessus l'accueil. Jamais bloquant.
   const etirements = genererEtirements(patternsTravailles);
-  if (etirements.length) afficherEtirements(etirements);
-}
-
-// Feuille de récupération : étirements adaptés à ce qui a été travaillé.
-// Chaque ligne se coche (satisfaction + suivi visuel) ; « Terminé » ferme.
-function afficherEtirements(etirements) {
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.innerHTML = `
-    <div class="feuille">
-      <div class="feuille-tete">
-        <strong>🧘 Étirements · récupération</strong>
-        <button class="btn-x" data-fermer>×</button>
-      </div>
-      <p class="texte-2" style="margin:0 0 10px">Respiration lente, on ne force jamais — juste une tension confortable.</p>
-      <div class="picker-liste">
-        ${etirements.map((e) => `
-          <label class="etirement-item"><input type="checkbox"><span>${e}</span></label>`).join('')}
-      </div>
-      <button class="btn btn-accent btn-large" data-fermer>Terminé</button>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay || e.target.closest('[data-fermer]')) overlay.remove();
-  });
+  if (etirements.length) {
+    await setReglage('derniersEtirements', { date: new Date().toISOString(), liste: etirements });
+  }
+  location.hash = '#/accueil';
+  if (etirements.length) {
+    afficherChecklist({
+      titre: '🧘 Étirements · récupération',
+      note: 'Respiration lente, on ne force jamais — juste une tension confortable.',
+      items: etirements,
+    });
+  }
 }
