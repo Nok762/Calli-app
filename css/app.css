@@ -34,6 +34,11 @@
   --bord: #363028;
   --rayon: 14px;
   --police-titre: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  /* Motion : deux durées, une sortie décélérée. Tout est transform/opacity. */
+  --vif: .15s;
+  --pose: .3s;
+  --sortie: cubic-bezier(.2, .7, .2, 1);
+  --ombre-flottante: 0 10px 30px rgba(0, 0, 0, .42);
 }
 
 * { box-sizing: border-box; }
@@ -809,3 +814,97 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 
 /* --- Graphiques -------------------------------------------------------------------------------------------------------- */
 .graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
+
+/* --- Motion : « la Ligne se dessine » -----------------------------------------------------------------------------------
+   Une seule idée, déclinée : à l'entrée d'une vue, le contenu se pose et toutes
+   les Lignes (progression, jauges, nav) se tracent de gauche à droite — comme un
+   trait de magnésie. Le reste n'est que feedback bref. Le routeur pose la classe
+   .vue-entree sur #vue le temps de l'entrée (700 ms) puis la retire : les
+   re-rendus internes d'une vue ne rejouent jamais l'orchestration. */
+
+@keyframes fondu-monte {
+  from { opacity: 0; transform: translateY(10px); }
+}
+@keyframes trace-ligne {
+  from { transform: scaleX(0); }
+}
+@keyframes glisse-droite {
+  from { opacity: 0; transform: translateX(26px); }
+}
+@keyframes glisse-gauche {
+  from { opacity: 0; transform: translateX(-26px); }
+}
+@keyframes toast-monte {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+}
+@keyframes feuille-monte {
+  from { transform: translateY(24px); opacity: .4; }
+}
+@keyframes fondu {
+  from { opacity: 0; }
+}
+@keyframes respire {
+  50% { transform: scale(1.04); }
+}
+
+/* Entrée de vue : le contenu se pose, les cartes suivent en léger décalé. */
+#vue.vue-entree > * { animation: fondu-monte .38s var(--sortie) backwards; }
+#vue.vue-entree .liste > *:nth-child(1) { animation: fondu-monte .38s var(--sortie) .04s backwards; }
+#vue.vue-entree .liste > *:nth-child(2) { animation: fondu-monte .38s var(--sortie) .08s backwards; }
+#vue.vue-entree .liste > *:nth-child(3) { animation: fondu-monte .38s var(--sortie) .12s backwards; }
+#vue.vue-entree .liste > *:nth-child(4) { animation: fondu-monte .38s var(--sortie) .16s backwards; }
+#vue.vue-entree .liste > *:nth-child(n+5) { animation: fondu-monte .38s var(--sortie) .2s backwards; }
+
+/* Les Lignes se tracent (transform ne touche pas la largeur finale inline). */
+#vue.vue-entree .ligne > div,
+#vue.vue-entree .barre-prog > div {
+  transform-origin: left;
+  animation: trace-ligne .55s var(--sortie) .12s backwards;
+}
+
+/* Nav : le trait ambre de l'onglet actif se trace à chaque changement. */
+#nav a.actif::before {
+  transform-origin: left;
+  animation: trace-ligne .25s var(--sortie);
+}
+
+/* Mode Focus : l'exercice glisse dans le sens de la navigation. */
+.player-corps.glisse-suiv { animation: glisse-droite .28s var(--sortie); }
+.player-corps.glisse-prec { animation: glisse-gauche .28s var(--sortie); }
+
+/* Feuilles, overlays, toasts : entrées réelles + élévation. */
+.overlay { animation: fondu .22s ease; }
+.feuille { animation: feuille-monte .32s var(--sortie); box-shadow: var(--ombre-flottante); }
+.toast { animation: toast-monte .28s var(--sortie); box-shadow: var(--ombre-flottante); }
+.toast.toast-fin { opacity: 0; transform: translate(-50%, 10px); transition: opacity .2s ease, transform .2s ease; }
+.barre-chrono { box-shadow: var(--ombre-flottante); }
+
+/* Chrono de tenue : le temps respire pendant l'effort. */
+.barre-tenue .barre-temps { animation: respire 2s ease-in-out infinite; }
+
+/* Échauffement/étirements dépliés : le contenu se pose. */
+.echauffement[open] ul { animation: fondu-monte .25s var(--sortie); }
+
+/* Feedback tactile unifié : bref, au doigt. */
+.rpe-btn, .chip span, .picker-item, .etirement-item, .btn-x, a.carte, .carte-session, .carte-pr {
+  transition: transform var(--vif) ease, background var(--vif) ease, border-color var(--vif) ease, color var(--vif) ease;
+}
+.rpe-btn:active, .chip span:active, .picker-item:active, .etirement-item:active { transform: scale(.96); }
+a.carte:active, .carte-session:active, .carte-pr:active { transform: scale(.99); }
+.btn-x:active { transform: scale(.9); }
+
+/* Clavier : focus visible, à l'ambre. */
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Mouvement réduit : tout s'arrête, rien ne casse. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

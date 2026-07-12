@@ -31,6 +31,7 @@ let chargee = false; // le brouillon a-t-il déjà été lu depuis IndexedDB ?
 let focusIndex = 0;  // exercice affiché en mode Focus (player)
 let modeListe = false; // false = player plein écran (défaut), true = vue d'ensemble
 let animerProchainRendu = false; // joue le décompte de démarrage au prochain player
+let dirAnim = null; // 'suiv' | 'prec' : sens du prochain glissement d'exercice (player)
 let reposDefaut = 90;  // durée de repos imposée par défaut (réglable)
 let prepaDefaut = PREPA_DEFAUT;
 
@@ -306,7 +307,7 @@ function rendrePlayer(el) {
         <button class="btn-x" data-liste title="Vue liste">☰</button>
       </div>
 
-      <div class="player-corps">
+      <div class="player-corps ${dirAnim === 'suiv' ? 'glisse-suiv' : dirAnim === 'prec' ? 'glisse-prec' : ''}">
         <button class="player-nom" data-fiche>${ex.nom}</button>
         <div class="chips-mini">
           <span class="badge">${estHold ? 'tenue' : 'reps'}</span>
@@ -344,9 +345,12 @@ function rendrePlayer(el) {
       <div id="barre-chrono" class="barre-chrono"></div>
     </div>`;
 
+  dirAnim = null; // consommé par ce rendu ; les handlers ci-dessous le re-arment
+
   // Navigation entre exercices.
   el.querySelectorAll('[data-nav]').forEach((btn) =>
     btn.addEventListener('click', () => {
+      dirAnim = btn.dataset.nav;
       focusIndex += btn.dataset.nav === 'suiv' ? 1 : -1;
       rendrePlayer(el);
     }));
@@ -382,7 +386,7 @@ function rendrePlayer(el) {
   el.querySelector('[data-gros]').addEventListener('click', async () => {
     const act = el.querySelector('[data-gros]').dataset.gros;
     if (act === 'valider') return validerSerie(el, i);
-    if (act === 'suivant') { focusIndex++; return rendrePlayer(el); }
+    if (act === 'suivant') { dirAnim = 'suiv'; focusIndex++; return rendrePlayer(el); }
     if (act === 'terminer') {
       if (!seance.entrees.some((e) => e.sets.length)) { toast('Logge au moins une série avant de terminer.'); return; }
       if (await confirmer('Terminer et enregistrer la séance ?', { oui: 'Terminer' })) await terminer();
@@ -393,7 +397,11 @@ function rendrePlayer(el) {
   // Swipe gauche/droite pour changer d'exercice.
   brancherSwipe(el.querySelector('.player-corps'), (dir) => {
     const cible = focusIndex + (dir === 'gauche' ? 1 : -1);
-    if (cible >= 0 && cible < n) { focusIndex = cible; rendrePlayer(el); }
+    if (cible >= 0 && cible < n) {
+      dirAnim = dir === 'gauche' ? 'suiv' : 'prec';
+      focusIndex = cible;
+      rendrePlayer(el);
+    }
   });
 
   brancherBarre(el);

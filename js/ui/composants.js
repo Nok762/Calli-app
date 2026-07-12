@@ -69,6 +69,8 @@ export function toast(message, duree = 2800) {
   el.className = 'toast';
   el.textContent = message;
   document.body.appendChild(el);
+  // Sortie douce juste avant le retrait (l'entrée est en CSS).
+  setTimeout(() => el.classList.add('toast-fin'), Math.max(200, duree - 220));
   setTimeout(() => el.remove(), duree);
 }
 
@@ -128,10 +130,25 @@ export function graphiqueLigne(canvas, points) {
     dessinerGraphique(canvas, canvas._points);
   });
   canvas._ro.observe(canvas);
-  dessinerGraphique(canvas, points);
+
+  // « La Ligne se dessine » : au premier rendu, la courbe se trace de gauche à
+  // droite (~550 ms). Les redessins suivants (resize, données) sont directs.
+  const animer = !canvas._dejaTrace
+    && points.length > 1
+    && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  canvas._dejaTrace = true;
+  if (!animer) { dessinerGraphique(canvas, points); return; }
+
+  const debut = performance.now();
+  const pas = (t) => {
+    const p = Math.min(1, (t - debut) / 550);
+    dessinerGraphique(canvas, points, 1 - Math.pow(1 - p, 3)); // sortie cubique
+    if (p < 1 && canvas.isConnected) requestAnimationFrame(pas);
+  };
+  requestAnimationFrame(pas);
 }
 
-function dessinerGraphique(canvas, points) {
+function dessinerGraphique(canvas, points, progres = 1) {
   const dpr = window.devicePixelRatio || 1;
   const larg = canvas.clientWidth || 320;
   const haut = canvas.clientHeight || 170;
@@ -187,7 +204,13 @@ function dessinerGraphique(canvas, points) {
   g.textAlign = 'right';
   g.fillText(dateCourte(Math.max(...xs)), larg - marge.d, haut - 6);
 
-  // Courbe + points.
+  // Courbe + points — masqués à droite pendant le tracé progressif (progres < 1).
+  g.save();
+  if (progres < 1) {
+    g.beginPath();
+    g.rect(0, 0, marge.g + progres * (larg - marge.g - marge.d) + 4, haut);
+    g.clip();
+  }
   g.strokeStyle = accent;
   g.lineWidth = 2;
   g.beginPath();
@@ -202,6 +225,7 @@ function dessinerGraphique(canvas, points) {
     g.arc(X(+new Date(p.x)), Y(p.y), 3, 0, Math.PI * 2);
     g.fill();
   }
+  g.restore();
 }
 
 // --- Picker d'exercice -----------------------------------------------------------

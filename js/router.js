@@ -24,6 +24,8 @@ export function demarrerRouteur() {
   rendre();
 }
 
+let timerEntree = null;
+
 async function rendre() {
   const segments = decodeURIComponent(location.hash.replace(/^#\/?/, ''))
     .split('/')
@@ -33,6 +35,16 @@ async function rendre() {
   document.querySelectorAll('#nav a').forEach((a) =>
     a.classList.toggle('actif', a.dataset.route === nom));
 
-  await routes[nom](document.getElementById('vue'), segments.slice(1));
+  // Orchestration d'entrée (« la Ligne se dessine ») : la classe ne vit que le
+  // temps de l'animation, pour que les re-rendus INTERNES d'une vue (ajout d'un
+  // set, coche d'un chip…) ne rejouent pas l'entrée.
+  const vue = document.getElementById('vue');
+  clearTimeout(timerEntree);
+  vue.classList.remove('vue-entree');
+  void vue.offsetWidth; // force le reflow : les animations peuvent rejouer
+  vue.classList.add('vue-entree');
+  timerEntree = setTimeout(() => vue.classList.remove('vue-entree'), 700);
+
+  await routes[nom](vue, segments.slice(1));
   window.scrollTo(0, 0);
 }
