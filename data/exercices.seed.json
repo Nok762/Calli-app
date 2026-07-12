@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": 1,
+    "version": 2,
     "description": "Bibliotheque d'exercices de callisthenie. Chaque exercice porte les metadonnees necessaires au moteur d'adaptation (substitution par pattern/muscles/materiel, gestion des zones a risque, regression/progression).",
     "echelle_difficulte": "1 (tres facile) a 10 (skill avance)",
     "enums": {
@@ -1517,6 +1517,38 @@
       "step": 3
     },
     {
+      "id": "sq_squat_assiste",
+      "nom": "Squat assiste",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "gainage"
+      ],
+      "equipement": [
+        "aucun",
+        "surface_surelevee"
+      ],
+      "difficulte": 1,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [],
+      "progression": [
+        "sq_squat_libre"
+      ],
+      "equivalence": [],
+      "consignes": "Tenir un support stable (encadrement de porte, dossier) pour aider la remontee. Descendre controle, viser cuisses paralleles.",
+      "erreurs_frequentes": [
+        "Tirer avec les bras au lieu de pousser sur les jambes",
+        "Genoux qui rentrent"
+      ]
+    },
+    {
       "id": "sq_squat_libre",
       "nom": "Squat au poids du corps",
       "type": "reps",
@@ -1537,7 +1569,9 @@
       "zones_a_risque": [
         "genoux"
       ],
-      "regression": [],
+      "regression": [
+        "sq_squat_assiste"
+      ],
       "progression": [
         "sq_squat_fendu",
         "sq_squat_bulgare"
@@ -1581,6 +1615,113 @@
       "erreurs_frequentes": [
         "Buste qui bascule",
         "Genou avant qui depasse trop"
+      ]
+    },
+    {
+      "id": "sq_squat_saute",
+      "nom": "Squat saute",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "mollets",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_libre"
+      ],
+      "progression": [
+        "sq_fentes_sautees"
+      ],
+      "equivalence": [],
+      "consignes": "Squat puis extension explosive et saut vertical, reception amortie genoux flechis. Enchainer a rythme regulier.",
+      "erreurs_frequentes": [
+        "Reception jambes tendues",
+        "Dos qui s'arrondit sous la fatigue"
+      ]
+    },
+    {
+      "id": "sq_fentes_sautees",
+      "nom": "Fentes sautees",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "mollets",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "genoux"
+      ],
+      "regression": [
+        "sq_squat_saute",
+        "sq_squat_fendu"
+      ],
+      "progression": [],
+      "equivalence": [
+        "sq_squat_saute"
+      ],
+      "consignes": "En fente, sauter et changer de jambe en l'air, reception amortie. Buste droit, gainage serre.",
+      "erreurs_frequentes": [
+        "Genou avant qui part vers l interieur",
+        "Reception lourde et bruyante"
+      ]
+    },
+    {
+      "id": "sq_burpees",
+      "nom": "Burpees",
+      "type": "reps",
+      "pattern": "squat",
+      "muscles_primaires": [
+        "quadriceps",
+        "pectoraux"
+      ],
+      "muscles_secondaires": [
+        "gainage",
+        "fessiers",
+        "deltoides"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets",
+        "lombaires"
+      ],
+      "regression": [
+        "sq_squat_saute",
+        "ax_mountain_climbers"
+      ],
+      "progression": [],
+      "equivalence": [
+        "sq_fentes_sautees"
+      ],
+      "consignes": "Squat, mains au sol, jete des pieds en planche, pompe (optionnelle), retour des pieds, saut vertical. Dos gaine du debut a la fin.",
+      "erreurs_frequentes": [
+        "Bassin qui s'affaisse en planche",
+        "Dos rond au retour des pieds"
       ]
     },
     {
@@ -1761,6 +1902,40 @@
       ]
     },
     {
+      "id": "hg_extension_dos",
+      "nom": "Extension du dos au sol (superman)",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "lombaires",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "ischios",
+        "trapezes"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 2,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [],
+      "progression": [
+        "hg_souleve_terre_unilateral"
+      ],
+      "equivalence": [
+        "hg_pont_fessier"
+      ],
+      "consignes": "Allonge sur le ventre, decoller buste et cuisses en meme temps, tenir 1-2 s en haut, redescendre controle. Regard au sol.",
+      "erreurs_frequentes": [
+        "Hyperextension de la nuque",
+        "Mouvement en a-coups"
+      ]
+    },
+    {
       "id": "hg_pont_fessier_une_jambe",
       "nom": "Pont fessier une jambe",
       "type": "reps",
@@ -1785,6 +1960,7 @@
         "hg_pont_fessier"
       ],
       "progression": [
+        "hg_pont_fessier_sureleve",
         "hg_nordic_negatif"
       ],
       "equivalence": [],
@@ -1792,6 +1968,78 @@
       "erreurs_frequentes": [
         "Bassin qui s'incline",
         "Cambrure excessive"
+      ]
+    },
+    {
+      "id": "hg_souleve_terre_unilateral",
+      "nom": "Souleve de terre roumain unilateral (poids du corps)",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "ischios",
+        "fessiers"
+      ],
+      "muscles_secondaires": [
+        "lombaires",
+        "gainage"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [
+        "hg_pont_fessier_une_jambe",
+        "hg_extension_dos"
+      ],
+      "progression": [
+        "hg_pont_fessier_sureleve",
+        "hg_nordic_negatif"
+      ],
+      "equivalence": [],
+      "consignes": "Sur une jambe, basculer le buste vers l'avant en poussant la hanche en arriere, dos plat, jambe arriere dans l'axe. Remonter par les ischios.",
+      "erreurs_frequentes": [
+        "Dos qui s'arrondit",
+        "Bassin qui s'ouvre vers l'exterieur"
+      ]
+    },
+    {
+      "id": "hg_pont_fessier_sureleve",
+      "nom": "Pont fessier pieds sureleves",
+      "type": "reps",
+      "pattern": "hinge",
+      "muscles_primaires": [
+        "fessiers",
+        "ischios"
+      ],
+      "muscles_secondaires": [
+        "lombaires",
+        "gainage"
+      ],
+      "equipement": [
+        "surface_surelevee"
+      ],
+      "difficulte": 4,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "lombaires"
+      ],
+      "regression": [
+        "hg_pont_fessier_une_jambe"
+      ],
+      "progression": [
+        "hg_nordic_negatif"
+      ],
+      "equivalence": [
+        "hg_souleve_terre_unilateral"
+      ],
+      "consignes": "Pieds sur un support (banc, chaise), monter le bassin jusqu'a l'alignement epaules-genoux, serrer fort en haut.",
+      "erreurs_frequentes": [
+        "Cambrure excessive en haut",
+        "Pousser avec les mollets plutot que les fessiers"
       ]
     },
     {
@@ -1960,6 +2208,42 @@
       "erreurs_frequentes": [
         "Perte de la position hollow pendant le rock",
         "Elan par les bras"
+      ]
+    },
+    {
+      "id": "ax_mountain_climbers",
+      "nom": "Mountain climbers",
+      "type": "reps",
+      "pattern": "gainage_anti_extension",
+      "muscles_primaires": [
+        "gainage",
+        "fléchisseurs_hanche"
+      ],
+      "muscles_secondaires": [
+        "deltoides",
+        "quadriceps"
+      ],
+      "equipement": [
+        "aucun"
+      ],
+      "difficulte": 3,
+      "lateralite": "bilateral",
+      "zones_a_risque": [
+        "poignets"
+      ],
+      "regression": [
+        "ax_gainage_planche"
+      ],
+      "progression": [
+        "sq_burpees"
+      ],
+      "equivalence": [
+        "ax_hollow_rocks"
+      ],
+      "consignes": "En planche haute, ramener les genoux vers la poitrine en alternance, bassin stable, epaules au-dessus des mains.",
+      "erreurs_frequentes": [
+        "Bassin qui monte",
+        "Epaules qui reculent derriere les mains"
       ]
     },
     {
@@ -2214,6 +2498,41 @@
       "erreurs_frequentes": [
         "Hanche qui s'affaisse",
         "Rotation du buste"
+      ]
+    },
+    {
+      "id": "ar_presse_pallof",
+      "nom": "Presse Pallof (elastique)",
+      "type": "reps",
+      "pattern": "gainage_anti_rotation",
+      "muscles_primaires": [
+        "gainage",
+        "obliques"
+      ],
+      "muscles_secondaires": [
+        "deltoides"
+      ],
+      "equipement": [
+        "elastiques"
+      ],
+      "difficulte": 3,
+      "lateralite": "unilateral",
+      "zones_a_risque": [
+        "epaules"
+      ],
+      "regression": [
+        "ar_gainage_lateral"
+      ],
+      "progression": [
+        "ar_releve_genoux_suspendu"
+      ],
+      "equivalence": [
+        "ar_gainage_lateral"
+      ],
+      "consignes": "Elastique ancre a hauteur de poitrine, de profil. Tendre les bras devant soi sans laisser le buste tourner, revenir controle. Les deux cotes.",
+      "erreurs_frequentes": [
+        "Buste qui tourne vers l'ancrage",
+        "Epaules qui montent"
       ]
     },
     {

@@ -46,6 +46,47 @@ export const REGLES = {
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
+// --- Profils d'objectif -------------------------------------------------------------
+// L'objectif global de l'utilisateur module la PRESCRIPTION (fourchettes de reps,
+// séries, repos, densité), pas la structure de fond (splits, skill d'abord,
+// équilibre des patterns — valables pour tous) :
+// - muscle : zone hypertrophie 8-15, 4 séries, repos modérés, priorité aux reps ;
+// - skills : identique à forme côté force (le travail spécifique est le bloc
+//   skill, obligatoire dans ce mode) ;
+// - gras : densité (repos courts, plus d'exercices) + un finisher métabolique —
+//   l'entraînement préserve le muscle, le déficit se joue dans l'assiette ;
+// - forme : les valeurs historiques de REGLES.
+export const PROFILS = {
+  forme: {
+    nom: 'Forme générale',
+    repMin: 5, repMax: 12, setsForce: 3,
+    reposCompose: 150, reposAccessoire: 90,
+    minParExo: 9, bonusReps: 0, finisher: false,
+  },
+  muscle: {
+    nom: 'Prise de muscle',
+    repMin: 8, repMax: 15, setsForce: 4,
+    reposCompose: 120, reposAccessoire: 75,
+    minParExo: 10, bonusReps: 1.5, finisher: false,
+  },
+  skills: {
+    nom: 'Skills',
+    repMin: 5, repMax: 12, setsForce: 3,
+    reposCompose: 150, reposAccessoire: 90,
+    minParExo: 9, bonusReps: 0, finisher: false,
+  },
+  gras: {
+    nom: 'Perte de gras',
+    repMin: 10, repMax: 20, setsForce: 3,
+    reposCompose: 75, reposAccessoire: 45,
+    minParExo: 6, bonusReps: .5, finisher: true,
+  },
+};
+
+// Exercices à haute demande métabolique (connaissance moteur, le seed reste pur) :
+// candidats du finisher de fin de séance en mode perte de gras.
+const FINISHERS = ['sq_burpees', 'sq_fentes_sautees', 'sq_squat_saute', 'ax_mountain_climbers', 'ax_hollow_rocks'];
+
 // Patterns éligibles par TYPE de jour. Full-body : tout est possible chaque jour
 // (la répartition hebdo équilibre). Haut/bas (4 j) : les jours hauts n'accueillent
 // que poussées/tirages, les jours bas que jambes ; le gainage va partout.
@@ -178,15 +219,18 @@ export function genererEtirements(patterns) {
 
 // --- Génération ------------------------------------------------------------------
 
-// params : { objectifs: [skillId], frequence: 2|3|4, materiel: [...], dureeMin }
+// params : { objectifs: [skillId], objectifGlobal: 'forme'|'muscle'|'skills'|'gras',
+//            frequence: 2|3|4, materiel: [...], dureeMin }
 // donnees : { exercices: Map, skills: [dérivés], etats: Map skillId→état, prs: Map exerciceId→pr }
 export function genererProgramme(params, donnees) {
   const { objectifs, frequence, materiel, dureeMin } = params;
   const { exercices, skills, etats, prs } = donnees;
+  const profil = PROFILS[params.objectifGlobal] || PROFILS.forme;
 
   const objSkills = objectifs.map((id) => skills.find((s) => s.id === id)).filter(Boolean);
   const niveaux = estimerNiveaux(prs, exercices);
-  const nbExos = clamp(Math.round(dureeMin / REGLES.MIN_PAR_EXO), REGLES.MIN_EXOS, REGLES.MAX_EXOS);
+  // Densité pilotée par le profil : repos courts → plus d'exercices par séance.
+  const nbExos = clamp(Math.round(dureeMin / profil.minParExo), REGLES.MIN_EXOS, REGLES.MAX_EXOS);
   const split = SPLITS[frequence] || SPLITS[3];
   const usage = new Map(); // variété : pénalise un exercice déjà utilisé un autre jour
 
@@ -245,11 +289,28 @@ export function genererProgramme(params, donnees) {
 
     const exosForce = [];
     for (const pattern of patternsParJour[j]) {
-      const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage });
+      const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage, profil });
       if (!ex) continue;
       pris.add(ex.id);
       usage.set(ex.id, (usage.get(ex.id) || 0) + 1);
-      exosForce.push({ exerciceId: ex.id, cible: cibleForce(ex, prs) });
+      exosForce.push({ exerciceId: ex.id, cible: cibleForce(ex, prs, profil) });
+    }
+
+    // Finisher métabolique (perte de gras) : un exercice à haute demande en fin
+    // de séance, repos très court. Rotation entre séances via `usage`.
+    if (profil.finisher) {
+      const exFin = FINISHERS.map((id) => exercices.get(id))
+        .filter((ex) => ex && !pris.has(ex.id) && compatibleMateriel(ex, materiel))
+        .sort((a, b) => (usage.get(a.id) || 0) - (usage.get(b.id) || 0))[0];
+      if (exFin) {
+        pris.add(exFin.id);
+        usage.set(exFin.id, (usage.get(exFin.id) || 0) + 1);
+        exosForce.push({
+          exerciceId: exFin.id,
+          cible: { sets: 3, valeur: exFin.type === 'hold' ? 30 : 15, repos: 30 },
+          finisher: true,
+        });
+      }
     }
 
     // Patterns du jour = skills + force (l'échauffement et les étirements doivent
@@ -268,10 +329,11 @@ export function genererProgramme(params, donnees) {
 
   return {
     id: 'p_' + Date.now().toString(36),
-    nom: '✨ ' + (objSkills.map((s) => s.nom).join(' + ') || 'Programme'),
+    nom: '✨ ' + (objSkills.map((s) => s.nom).join(' + ') || profil.nom),
     jours,
     genere: {
       objectifs, frequence, materiel, dureeMin,
+      objectifGlobal: params.objectifGlobal || 'forme',
       dateDebut: new Date().toISOString(),
       journal: [], // trace des évolutions de cibles, chacune expliquée
     },
@@ -318,21 +380,22 @@ export function cibleSkill(etape) {
 }
 
 // Cible d'un exercice de force : ~75-80 % du record (≈ RPE 7-8), sinon défaut.
-function cibleForce(ex, prs) {
+// Fourchettes, séries et repos viennent du profil d'objectif.
+function cibleForce(ex, prs, profil = PROFILS.forme) {
   const pr = prs.get(ex.id);
-  const repos = ex.difficulte >= 5 ? REGLES.REPOS_COMPOSE : REGLES.REPOS_ACCESSOIRE;
+  const repos = ex.difficulte >= 5 ? profil.reposCompose : profil.reposAccessoire;
   if (ex.type === 'hold') {
     const record = pr?.maxHold?.valeur;
     return {
-      sets: REGLES.SETS_FORCE,
+      sets: profil.setsForce,
       valeur: record ? clamp(Math.round(record * 0.8), REGLES.HOLD_MIN, REGLES.HOLD_MAX) : 20,
       repos,
     };
   }
   const record = pr?.maxReps?.valeur;
   return {
-    sets: REGLES.SETS_FORCE,
-    valeur: record ? clamp(Math.round(record * 0.75), REGLES.REP_MIN, REGLES.REP_MAX) : 8,
+    sets: profil.setsForce,
+    valeur: record ? clamp(Math.round(record * 0.75), profil.repMin, profil.repMax) : clamp(8, profil.repMin, profil.repMax),
     repos,
   };
 }
@@ -340,7 +403,7 @@ function cibleForce(ex, prs) {
 // Meilleur exercice de force pour un pattern : difficulté proche du niveau,
 // bonus s'il transfère vers un objectif ou s'il est déjà calibré par un PR,
 // pénalité s'il est déjà utilisé un autre jour (variété).
-function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pris, usage }) {
+function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pris, usage, profil }) {
   let meilleur = null;
   for (const ex of exercices.values()) {
     if (ex.pattern !== pattern || pris.has(ex.id)) continue;
@@ -348,6 +411,8 @@ function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pri
     let score = -Math.abs(ex.difficulte - niveau);
     if (bonusIds.has(ex.id)) score += 1.5;
     if (prs.has(ex.id)) score += 0.5;
+    // Hypertrophie : les mouvements en reps priment sur les tenues.
+    if (profil?.bonusReps && ex.type === 'reps') score += profil.bonusReps;
     score -= 0.75 * (usage.get(ex.id) || 0);
     if (!meilleur || score > meilleur.score) meilleur = { ex, score };
   }
@@ -400,6 +465,8 @@ export function modulationSeance(programme, sessions) {
 export function evoluerCibles(programme, session, exercices) {
   const jour = programme.jours[session.programme?.jourIdx];
   if (!jour) return [];
+  // Les bornes de progression suivent le profil d'objectif du programme.
+  const profil = PROFILS[programme.genere?.objectifGlobal] || PROFILS.forme;
   const changements = [];
 
   for (const exoProg of jour.exercices) {
@@ -424,7 +491,7 @@ export function evoluerCibles(programme, session, exercices) {
 
     const estHold = ex.type === 'hold';
     const inc = estHold ? REGLES.INC_HOLD : REGLES.INC_REPS;
-    const plafond = estHold ? REGLES.HOLD_MAX : REGLES.REP_MAX;
+    const plafond = estHold ? REGLES.HOLD_MAX : profil.repMax;
 
     if (reussi && cible.valeur < plafond) {
       const avant = cible.valeur;

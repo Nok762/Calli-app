@@ -29,7 +29,7 @@
       suggestionsPlateau, evaluerReadiness,
     } from './js/moteur/adaptation.js';
     import {
-      REGLES, genererProgramme, cibleSkill, estimerDureeSeance,
+      REGLES, PROFILS, genererProgramme, cibleSkill, estimerDureeSeance,
       proposerSeanceRaccourcie, genererEtirements, evoluerCibles, prochainJour,
     } from './js/moteur/generateur.js';
 
@@ -220,6 +220,47 @@
         if (marques.length) vrai(j.exercices[0].skill === 'planche', 'le skill doit ouvrir la séance');
       }
       vrai(apparitions >= 1 && apparitions <= REGLES.SKILL_FREQ_MAX, `skill ${apparitions}×/sem hors bornes`);
+    });
+
+    // --- Profils d'objectif --------------------------------------------------------------------
+    test('profil muscle : 4 séries, 8-15 reps, repos hypertrophie', () => {
+      const p = genererProgramme(
+        { objectifs: [], objectifGlobal: 'muscle', frequence: 3, materiel: MAT, dureeMin: 45 },
+        { exercices, skills: [], etats: new Map(), prs: new Map() });
+      for (const j of p.jours) for (const e of j.exercices) {
+        const ex = exercices.get(e.exerciceId);
+        if (ex.type !== 'reps') continue;
+        egal(e.cible.sets, 4, ex.nom);
+        vrai(e.cible.valeur >= 8 && e.cible.valeur <= 15, `${ex.nom} : ${e.cible.valeur} reps hors zone`);
+        vrai(e.cible.repos <= 120, `${ex.nom} : repos ${e.cible.repos}s trop long`);
+      }
+      egal(p.genere.objectifGlobal, 'muscle');
+    });
+
+    test('profil gras : finisher métabolique + repos courts + plus dense', () => {
+      const p = genererProgramme(
+        { objectifs: [], objectifGlobal: 'gras', frequence: 3, materiel: MAT, dureeMin: 45 },
+        { exercices, skills: [], etats: new Map(), prs: new Map() });
+      vrai(p.jours.every((j) => j.exercices.some((e) => e.finisher)), 'chaque séance doit finir par un finisher');
+      for (const j of p.jours) for (const e of j.exercices) {
+        vrai(e.cible.repos <= PROFILS.gras.reposCompose, `repos ${e.cible.repos}s hors profil`);
+      }
+      const pForme = genererProgramme(
+        { objectifs: [], objectifGlobal: 'forme', frequence: 3, materiel: MAT, dureeMin: 45 },
+        { exercices, skills: [], etats: new Map(), prs: new Map() });
+      vrai(p.jours[0].exercices.length >= pForme.jours[0].exercices.length, 'gras doit être au moins aussi dense que forme');
+    });
+
+    test('evoluerCibles : plafond du profil muscle (15) respecté', () => {
+      const prog = {
+        genere: { objectifGlobal: 'muscle', journal: [] },
+        jours: [{ exercices: [{ exerciceId: 'x', cible: { sets: 4, valeur: 15 } }] }],
+      };
+      const session = { dateDebut: ago(1), programme: { jourIdx: 0 },
+        entrees: [{ exerciceId: 'x', sets: [{ valeur: 15, rpe: 7 }, { valeur: 15, rpe: 7 }, { valeur: 15, rpe: 7 }, { valeur: 15, rpe: 7 }] }] };
+      const ch = evoluerCibles(prog, session, exosPlat);
+      egal(prog.jours[0].exercices[0].cible.valeur, 15, 'ne doit pas dépasser 15');
+      vrai(ch[0]?.includes('plafond'), 'doit suggérer la progression au plafond');
     });
 
     // --- Rendu -------------------------------------------------------------------------------

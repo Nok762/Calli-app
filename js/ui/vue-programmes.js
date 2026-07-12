@@ -5,7 +5,7 @@
 import { ctx } from '../app.js';
 import { dbGet, dbGetAll, dbPut, dbSupprimer, setReglage } from '../db.js';
 import { getEtatSkill } from '../skills.js';
-import { genererProgramme, semaineCourante, REGLES } from '../moteur/generateur.js';
+import { genererProgramme, semaineCourante, REGLES, PROFILS } from '../moteur/generateur.js';
 import { toast, choisirExercice, libelle, confirmer, echapper } from './composants.js';
 
 export async function vueProgrammes(el, params) {
@@ -178,9 +178,15 @@ async function assistant(el) {
     <h1>✨ Générer un programme</h1>
     <p class="texte-2">Un plan long terme construit sur tes objectifs, ton niveau (PR) et ton matériel,
       qui évolue tout seul séance après séance.</p>
-    ${existant ? `<p class="texte-attention">⚠ Remplacera « ${existant.nom} ». Tes programmes créés à la main ne sont pas touchés.</p>` : ''}
+    ${existant ? `<p class="texte-attention">⚠ Remplacera « ${echapper(existant.nom)} ». Tes programmes créés à la main ne sont pas touchés.</p>` : ''}
     <div class="carte">
-      <h3>Objectifs (1 à 3 skills)</h3>
+      <h3>Objectif principal</h3>
+      <div class="chips" id="chips-objectif-global">
+        ${[['muscle', '💪 Prendre du muscle'], ['skills', '🤸 Maîtriser des skills'], ['gras', '🔥 Perdre du gras'], ['forme', '⚖️ Forme générale']]
+          .map(([id, nom]) => `<label class="chip"><input type="radio" name="objectif-global" value="${id}" ${id === 'skills' ? 'checked' : ''}><span>${nom}</span></label>`).join('')}
+      </div>
+      <p class="texte-2" id="note-objectif"></p>
+      <h3 id="titre-skills">Skills à travailler</h3>
       <div class="chips" id="chips-objectifs">
         ${ctx.skills.map((s) => `<label class="chip"><input type="checkbox" value="${s.id}"><span>${s.nom}</span></label>`).join('')}
       </div>
@@ -205,10 +211,31 @@ async function assistant(el) {
       <button class="btn btn-accent btn-large" id="btn-lancer-generation">Générer</button>
     </div>`;
 
+  // Note contextuelle sous l'objectif principal (mise à jour au changement).
+  const NOTES = {
+    muscle: 'Zone hypertrophie : 4 séries de 8-15, repos modérés, priorité aux mouvements en répétitions. Skills en option.',
+    skills: 'Le travail technique ouvre chaque séance, à froid. Choisis 1 à 3 skills ci-dessous.',
+    gras: 'Séances denses (repos courts) + un finisher métabolique. L\'entraînement préserve le muscle — le déficit se joue surtout dans l\'assiette.',
+    forme: 'Équilibre général : force, skills optionnels, volume réparti sur tout le corps.',
+  };
+  const majNote = () => {
+    const val = el.querySelector('input[name="objectif-global"]:checked').value;
+    el.querySelector('#note-objectif').textContent = NOTES[val];
+    el.querySelector('#titre-skills').textContent =
+      val === 'skills' ? 'Skills à travailler (1 à 3)' : 'Skills à travailler (optionnel, 3 max)';
+  };
+  majNote();
+  el.querySelectorAll('input[name="objectif-global"]').forEach((r) => r.addEventListener('change', majNote));
+
   el.querySelector('#btn-lancer-generation').addEventListener('click', async () => {
+    const objectifGlobal = el.querySelector('input[name="objectif-global"]:checked').value;
     const objectifs = [...el.querySelectorAll('#chips-objectifs input:checked')].map((i) => i.value);
-    if (!objectifs.length || objectifs.length > 3) {
-      toast('Choisis 1 à 3 skills objectifs.');
+    if (objectifGlobal === 'skills' && !objectifs.length) {
+      toast('En mode skills, choisis 1 à 3 skills à travailler.');
+      return;
+    }
+    if (objectifs.length > 3) {
+      toast('3 skills maximum — concentre le travail technique.');
       return;
     }
     const materiel = [...el.querySelectorAll('#chips-materiel-gen input:checked')].map((i) => i.value);
@@ -219,6 +246,7 @@ async function assistant(el) {
 
     const prog = genererProgramme({
       objectifs,
+      objectifGlobal,
       frequence: Number(el.querySelector('#sel-frequence').value),
       materiel,
       dureeMin: Number(el.querySelector('#sel-duree').value),
@@ -238,10 +266,11 @@ async function assistant(el) {
 function carteGenere(prog) {
   const g = prog.genere;
   const noms = g.objectifs.map((id) => ctx.config.noms[id] || id).join(', ');
+  const profilNom = PROFILS[g.objectifGlobal]?.nom || PROFILS.forme.nom;
   return `
     <div class="carte accent">
       <strong>✨ Programme généré · semaine ${semaineCourante(prog)}</strong>
-      <div class="texte-2">Objectifs : ${noms} · ${g.frequence} séances/sem · deload 1 semaine sur ${REGLES.SEMAINE_DELOAD}.
+      <div class="texte-2">${profilNom}${noms ? ' · skills : ' + noms : ''} · ${g.frequence} séances/sem · deload 1 semaine sur ${REGLES.SEMAINE_DELOAD}.
         Les cibles évoluent seules après chaque séance (double progression) et restent modifiables ici.</div>
       ${g.journal?.length ? `
         <h3>Dernières évolutions</h3>
