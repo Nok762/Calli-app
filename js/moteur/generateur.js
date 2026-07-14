@@ -146,10 +146,48 @@ function repartirPatterns(split, capacites) {
     cible[p] = (poids(p) / poidsTotal) * budgetSem;
     slots[p] = Math.max(COMPOUNDS.includes(p) ? 1 : 0, Math.floor(cible[p]));
   }
-  // Distribuer le reste du budget aux plus gros écarts (cible − attribué).
+  // Distribuer le reste aux plus gros écarts (cible − attribué), sous deux
+  // contraintes structurelles que la granularité des petits budgets violait :
+  // - équilibre intra-groupe : |horizontal − vertical| ≤ 1 (sinon, à 4 j/sem,
+  //   la poussée horizontale prenait 3 créneaux et la verticale 1) ;
+  // - biais tirage borné : tirage ≤ poussée + 1 exo (le léger biais reste,
+  //   sans dériver à 2:1 comme au split 2 jours).
+  const JUMEAUX = {
+    tirage_vertical: 'tirage_horizontal', tirage_horizontal: 'tirage_vertical',
+    poussee_horizontale: 'poussee_verticale', poussee_verticale: 'poussee_horizontale',
+    squat: 'hinge', hinge: 'squat',
+    gainage_anti_extension: 'gainage_anti_rotation', gainage_anti_rotation: 'gainage_anti_extension',
+  };
+  const total = (prefixe) => tous.filter((p) => p.startsWith(prefixe)).reduce((t, p) => t + slots[p], 0);
+  // Capacité par groupe d'éligibilité : les patterns limités aux MÊMES jours ne
+  // peuvent pas dépasser, ensemble, la capacité de ces jours (à 4 j/sem le haut
+  // n'a que 2 jours — sans ce garde-fou l'allocation déborde et le placement
+  // perd des créneaux, toujours au détriment du poids le plus faible).
+  const cleElig = (p) => split.map((_d, j) => (joursPat[j].has(p) ? j : '')).join(',');
+  const capParCle = {};
+  for (const p of tous) {
+    const cle = cleElig(p);
+    capParCle[cle] = capParCle[cle]
+      ?? split.reduce((t, _d, j) => t + (joursPat[j].has(p) ? capacites[j] : 0), 0);
+  }
+  const groupePlein = (p) => {
+    const cle = cleElig(p);
+    const attribue = tous.filter((x) => cleElig(x) === cle).reduce((t, x) => t + slots[x], 0);
+    return attribue + 1 > capParCle[cle];
+  };
+  const admissible = (p) => {
+    if (groupePlein(p)) return false;
+    const jumeau = JUMEAUX[p];
+    if (jumeau && tous.includes(jumeau) && slots[p] + 1 - slots[jumeau] > 1) return false;
+    if (p.startsWith('tirage') && total('tirage') + 1 - total('poussee') > 1) return false;
+    if (p.startsWith('poussee') && total('poussee') + 1 - total('tirage') > 1) return false;
+    return true;
+  };
   let reste = budgetSem - tous.reduce((t, p) => t + slots[p], 0);
   while (reste > 0) {
-    const p = tous.reduce((b, x) => (cible[x] - slots[x] > cible[b] - slots[b] ? x : b), tous[0]);
+    const candidats = tous.filter(admissible);
+    const pool = candidats.length ? candidats : tous; // jamais bloqué
+    const p = pool.reduce((b, x) => (cible[x] - slots[x] > cible[b] - slots[b] ? x : b), pool[0]);
     slots[p] += 1; reste -= 1;
   }
 

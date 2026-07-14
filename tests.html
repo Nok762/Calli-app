@@ -222,6 +222,26 @@
       vrai(apparitions >= 1 && apparitions <= REGLES.SKILL_FREQ_MAX, `skill ${apparitions}×/sem hors bornes`);
     });
 
+    test('équilibre structurel à 2, 3 et 4 jours (biais tirage borné, jumeaux ±1)', () => {
+      for (const frequence of [2, 3, 4]) {
+        const p = genererProgramme(
+          { objectifs: [], frequence, materiel: MAT, dureeMin: 45 },
+          { exercices, skills: [], etats: new Map(), prs: new Map() });
+        const freq = {};
+        let push = 0, pull = 0;
+        for (const j of p.jours) for (const e of j.exercices) {
+          const ex = exercices.get(e.exerciceId);
+          freq[ex.pattern] = (freq[ex.pattern] || 0) + 1;
+          if (ex.pattern.startsWith('poussee')) push += e.cible.sets;
+          if (ex.pattern.startsWith('tirage')) pull += e.cible.sets;
+        }
+        vrai(pull >= push, `${frequence} j : tirage ${pull} < poussée ${push}`);
+        vrai(pull - push <= 3, `${frequence} j : biais tirage excessif (${pull}:${push})`);
+        vrai(Math.abs((freq.tirage_vertical || 0) - (freq.tirage_horizontal || 0)) <= 1, `${frequence} j : tirages déséquilibrés`);
+        vrai(Math.abs((freq.poussee_horizontale || 0) - (freq.poussee_verticale || 0)) <= 1, `${frequence} j : poussées déséquilibrées`);
+      }
+    });
+
     // --- Profils d'objectif --------------------------------------------------------------------
     test('profil muscle : 4 séries, 8-15 reps, repos hypertrophie', () => {
       const p = genererProgramme(
