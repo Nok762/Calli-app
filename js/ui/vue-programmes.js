@@ -69,6 +69,11 @@ async function editerProgramme(el, id) {
             </details>` : ''}
           ${jour.exercices.map((e, k) => ligneExo(e, j, k)).join('') ||
             '<p class="texte-2">Aucun exercice pour l\'instant.</p>'}
+          ${jour.mobilite?.length ? `
+            <details class="echauffement">
+              <summary>🤸 Mobilité · ${jour.mobilite.length} positions</summary>
+              <ul>${jour.mobilite.map((e) => `<li>${e}</li>`).join('')}</ul>
+            </details>` : ''}
           ${jour.etirements?.length ? `
             <details class="echauffement">
               <summary>🧘 Étirements post-séance · ${jour.etirements.length}</summary>
@@ -208,6 +213,12 @@ async function assistant(el) {
       <div class="chips" id="chips-materiel-gen">
         ${equip.map((e) => `<label class="chip"><input type="checkbox" value="${e}" ${dernierMateriel.includes(e) ? 'checked' : ''}><span>${libelle(e)}</span></label>`).join('')}
       </div>
+      <h3>Options</h3>
+      <div class="chips">
+        <label class="chip"><input type="checkbox" id="chk-mobilite"><span>🧘 + Mobilité (5-8 min/séance)</span></label>
+      </div>
+      <p class="texte-2">Travail de mobilité active en fin de séance, ciblé sur les prérequis de tes
+        skills (épaules/poignets pour la planche et le handstand, hanches/chevilles pour le pistol…).</p>
       <button class="btn btn-accent btn-large" id="btn-lancer-generation">Générer</button>
     </div>`;
 
@@ -250,6 +261,7 @@ async function assistant(el) {
       frequence: Number(el.querySelector('#sel-frequence').value),
       materiel,
       dureeMin: Number(el.querySelector('#sel-duree').value),
+      mobilite: el.querySelector('#chk-mobilite').checked,
     }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
 
     if (existant) {

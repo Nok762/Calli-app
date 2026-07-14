@@ -211,6 +211,7 @@ async function formulaireDemarrage(el) {
       modulation,
       readiness,
       echauffement: template?.jour.echauffement || null,
+      mobilite: template?.jour.mobilite || null,
       ajustements: {},
     };
     await setReglage('template_a_demarrer', null);
@@ -1135,10 +1136,11 @@ async function terminer() {
   seance.dateFin = new Date().toISOString();
   // On ne garde que les entrées réellement travaillées.
   seance.entrees = seance.entrees.filter((e) => e.sets.length);
-  // Patterns réellement travaillés → étirements post-séance adaptés (capturés
-  // avant que `seance` soit remis à null).
+  // Patterns réellement travaillés → étirements post-séance adaptés, et bloc
+  // mobilité du jour s'il existe (capturés avant que `seance` soit remis à null).
   const patternsTravailles = [...new Set(
     seance.entrees.map((e) => ctx.exercices.get(e.exerciceId)?.pattern).filter(Boolean))];
+  const mobiliteDuJour = seance.mobilite || [];
   await dbPut('sessions', seance);
   const nouveauxPR = await majPRDepuisSession(seance, ctx.exercices);
 
@@ -1173,19 +1175,19 @@ async function terminer() {
   if (nbEvolutions) message += ` · ${nbEvolutions} cible${nbEvolutions > 1 ? 's' : ''} du programme ajustée${nbEvolutions > 1 ? 's' : ''}`;
   if (nbSuggestions) message += ' · 💡 suggestions sur l\'Accueil';
   toast(message, 3600);
-  // Étirements post-séance adaptés à ce qui a été travaillé : mémorisés
-  // (récupérables depuis l'accueil si la feuille est fermée trop vite),
-  // puis affichés par-dessus l'accueil. Jamais bloquant.
-  const etirements = genererEtirements(patternsTravailles);
-  if (etirements.length) {
-    await setReglage('derniersEtirements', { date: new Date().toISOString(), liste: etirements });
+  // Fin de séance : mobilité du jour (muscles chauds, travail actif) PUIS
+  // étirements adaptés à ce qui a été travaillé. Mémorisés (récupérables
+  // depuis l'accueil si la feuille est fermée trop vite), jamais bloquant.
+  const items = [...mobiliteDuJour, ...genererEtirements(patternsTravailles)];
+  if (items.length) {
+    await setReglage('derniersEtirements', { date: new Date().toISOString(), liste: items });
   }
   location.hash = '#/accueil';
-  if (etirements.length) {
+  if (items.length) {
     afficherChecklist({
-      titre: '🧘 Étirements · récupération',
+      titre: mobiliteDuJour.length ? '🤸 Mobilité + récupération' : '🧘 Étirements · récupération',
       note: 'Respiration lente, on ne force jamais — juste une tension confortable.',
-      items: etirements,
+      items,
     });
   }
 }

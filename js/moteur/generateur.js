@@ -255,6 +255,74 @@ export function genererEtirements(patterns) {
   return etirements;
 }
 
+// --- Mobilité ------------------------------------------------------------------------
+// Option transversale « + Mobilité » : un bloc de travail de mobilité ACTIVE en
+// fin de séance (muscles chauds), distinct des étirements de récupération —
+// positions tenues plus longtemps, avec intention. Ciblé d'abord sur les
+// besoins des skills objectifs (le handstand bute sur épaules/poignets, le
+// pistol sur hanches/chevilles…), complété par les patterns du jour.
+const DRILLS_MOBILITE = {
+  poignets: [
+    'Poignets : cercles chargés à quatre pattes, paumes puis dos de main — 45 s',
+    'Extension de poignets : doigts vers les genoux, recul progressif du poids — 45 s',
+  ],
+  epaules: [
+    'Épaules : allongé sur le ventre, bras tendus derrière, décoller les mains (ou german hang léger) — 45 s',
+    'Ouverture d\'épaules : mains sur un support, buste qui plonge, dos plat — 45 s',
+  ],
+  hanches: [
+    'Squat profond : tenir en bas, coudes qui écartent les genoux — 60 s',
+    'Pancake : assis jambes écartées, marcher les mains vers l\'avant — 60 s',
+  ],
+  chevilles: [
+    'Chevilles : genou vers le mur, pied à plat, talon au sol — 45 s par côté',
+  ],
+  colonne: [
+    'Extension thoracique : cobra haut ou pont sur les épaules, ouvrir la poitrine — 45 s',
+  ],
+  ischios: [
+    'Pike actif : penché avant jambes tendues, tirer le buste vers les jambes sans rebond — 60 s',
+  ],
+};
+
+// Besoins de mobilité par skill (les prérequis articulaires réels de chaque arbre).
+const MOBILITE_PAR_SKILL = {
+  planche: ['epaules', 'poignets'],
+  handstand: ['epaules', 'poignets'],
+  front_lever: ['epaules'],
+  back_lever: ['epaules'],
+  muscle_up: ['epaules'],
+  one_arm_pull_up: ['epaules'],
+  pistol: ['hanches', 'chevilles'],
+  l_sit: ['ischios', 'hanches'],
+  v_sit: ['ischios', 'hanches'],
+  dragon_flag: ['colonne', 'epaules'],
+  nordic: ['ischios'],
+};
+const MAX_DRILLS_MOBILITE = 5;
+
+export function genererMobilite(patterns, skillIds = []) {
+  const zones = [];
+  const ajouter = (z) => { if (z && !zones.includes(z)) zones.push(z); };
+  // 1) Les besoins des skills objectifs priment.
+  for (const id of skillIds) for (const z of MOBILITE_PAR_SKILL[id] || []) ajouter(z);
+  // 2) Complément selon les patterns du jour.
+  const haut = patterns.some((p) => p.startsWith('poussee') || p.startsWith('tirage') || p === 'straight_arm');
+  const bas = patterns.some((p) => p === 'squat' || p === 'hinge');
+  if (haut) { ajouter('epaules'); ajouter('poignets'); }
+  if (bas) { ajouter('hanches'); ajouter('ischios'); }
+  ajouter('colonne');
+
+  const drills = [];
+  for (const z of zones) {
+    for (const d of DRILLS_MOBILITE[z]) {
+      if (drills.length >= MAX_DRILLS_MOBILITE) return drills;
+      drills.push(d);
+    }
+  }
+  return drills;
+}
+
 // --- Génération ------------------------------------------------------------------
 
 // params : { objectifs: [skillId], objectifGlobal: 'forme'|'muscle'|'skills'|'gras',
@@ -361,6 +429,7 @@ export function genererProgramme(params, donnees) {
       nom: defJour.nom,
       echauffement: genererEchauffement(patsJour),
       etirements: genererEtirements(patsJour),
+      ...(params.mobilite ? { mobilite: genererMobilite(patsJour, objectifs) } : {}),
       exercices: [...exosSkill, ...exosForce],
     };
   });
@@ -372,6 +441,7 @@ export function genererProgramme(params, donnees) {
     genere: {
       objectifs, frequence, materiel, dureeMin,
       objectifGlobal: params.objectifGlobal || 'forme',
+      mobilite: !!params.mobilite,
       dateDebut: new Date().toISOString(),
       journal: [], // trace des évolutions de cibles, chacune expliquée
     },
