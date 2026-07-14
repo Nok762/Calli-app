@@ -5,16 +5,16 @@
 import { ctx } from '../app.js';
 import { dbGetAll, dbPut, dbSupprimer } from '../db.js';
 import { recalculerTousPR } from '../pr.js';
-import { toast, graphiqueLigne, confirmer } from './composants.js';
+import { toast, graphiqueLigne, confirmer, libelle } from './composants.js';
 
 export async function vueHistorique(el, params) {
   const onglet = params[0] || 'seances';
-  const rendu = { seances: ongletSeances, pr: ongletPR, poids: ongletPoids }[onglet] || ongletSeances;
+  const rendu = { seances: ongletSeances, volume: ongletVolume, pr: ongletPR, poids: ongletPoids }[onglet] || ongletSeances;
 
   el.innerHTML = `
     <h1>Suivi</h1>
     <div class="onglets">
-      ${[['seances', 'Séances'], ['pr', 'PR'], ['poids', 'Poids']]
+      ${[['seances', 'Séances'], ['volume', 'Volume'], ['pr', 'PR'], ['poids', 'Poids']]
         .map(([id, nom]) => `<a href="#/historique/${id}" class="${id === onglet ? 'actif' : ''}">${nom}</a>`)
         .join('')}
     </div>
@@ -87,6 +87,85 @@ function carteSession(s) {
         ${detail}
         <button class="btn btn-danger" data-suppr-session="${s.id}" style="margin-top:10px">Supprimer cette séance</button>
       </div>
+    </div>`;
+}
+
+// --- Onglet Volume : séries dures par muscle, semaine en cours -----------------------
+// Rend visible ce que le moteur compte en interne : le volume hebdomadaire par
+// muscle (séries hors échec, muscles PRINCIPAUX des exercices réalisés),
+// comparé à la zone efficace (~10-20 séries dures/muscle/semaine) et à la
+// semaine précédente. C'est de l'auto-coaching : « jambes 3 séries » se voit.
+
+const MUSCLES_MAJEURS = ['dorsaux', 'pectoraux', 'deltoides', 'triceps', 'biceps',
+  'quadriceps', 'fessiers', 'ischios', 'gainage'];
+const ZONE_MIN = 10, ZONE_MAX = 20; // séries/muscle/semaine (dose-réponse)
+
+// Lundi 00:00 local de la semaine contenant `d` (getDay : dimanche = 0).
+function lundiDe(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  x.setDate(x.getDate() - (x.getDay() + 6) % 7);
+  return x;
+}
+
+// Séries (hors échec) par muscle principal sur [de, a[.
+function setsParMuscle(sessions, de, a = null) {
+  const out = {};
+  for (const s of sessions) {
+    const t = new Date(s.dateDebut);
+    if (t < de || (a && t >= a)) continue;
+    for (const e of s.entrees) {
+      const ex = ctx.exercices.get(e.exerciceId);
+      if (!ex) continue;
+      const n = e.sets.filter((x) => !x.echec).length;
+      for (const m of ex.muscles_primaires) out[m] = (out[m] || 0) + n;
+    }
+  }
+  return out;
+}
+
+async function ongletVolume(el) {
+  const sessions = await dbGetAll('sessions');
+  const debut = lundiDe(new Date());
+  const debutPrec = new Date(debut);
+  debutPrec.setDate(debutPrec.getDate() - 7);
+
+  const actuel = setsParMuscle(sessions, debut);
+  const precedent = setsParMuscle(sessions, debutPrec, debut);
+
+  // Majeurs toujours affichés (un 0 est une information), puis tout muscle
+  // secondaire de la semaine (trapèzes, obliques…) s'il a du volume.
+  const muscles = [...MUSCLES_MAJEURS,
+    ...Object.keys(actuel).filter((m) => !MUSCLES_MAJEURS.includes(m))]
+    .sort((a, b) => (actuel[b] || 0) - (actuel[a] || 0));
+
+  if (!sessions.length) {
+    el.innerHTML = '<p class="texte-2 centre">Logge des séances pour voir ton volume par muscle 💪</p>';
+    return;
+  }
+
+  const lignes = muscles.map((m) => {
+    const n = actuel[m] || 0;
+    const p = precedent[m] || 0;
+    const delta = n === p ? '' : n > p ? ` <span class="vol-delta">▲ +${n - p}</span>` : ` <span class="vol-delta">▼ −${p - n}</span>`;
+    const classe = n === 0 ? 'vol-zero' : n < ZONE_MIN ? 'vol-sous' : n <= ZONE_MAX ? '' : 'vol-trop';
+    const statut = n === 0 ? '' : n < ZONE_MIN ? '' : n <= ZONE_MAX ? ' ✓' : ' · beaucoup';
+    return `
+      <div class="vol-ligne">
+        <div class="jauge-tete">
+          <span>${libelle(m)}</span>
+          <span class="jauge-val">${n} série${n > 1 ? 's' : ''}${statut}${delta}</span>
+        </div>
+        <div class="ligne vol-rail"><div class="${classe}" style="width:${Math.min(100, (n / ZONE_MAX) * 100)}%"></div></div>
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="carte">
+      <h3 style="margin-top:0">Semaine du ${debut.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</h3>
+      ${lignes}
+      <p class="texte-2" style="margin-top:14px">Zone efficace : ~${ZONE_MIN} à ${ZONE_MAX} séries dures par muscle et par semaine
+        (le trait vertical marque ${ZONE_MIN}). Séries hors échec, muscles principaux des exercices réalisés.</p>
     </div>`;
 }
 

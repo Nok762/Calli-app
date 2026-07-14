@@ -815,6 +815,23 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 /* --- Graphiques -------------------------------------------------------------------------------------------------------- */
 .graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
 
+/* --- Onglet Volume (Suivi) : séries par muscle vs zone efficace ------------------------------------------------------- */
+.vol-ligne { margin: 12px 0; }
+.vol-rail { position: relative; }
+/* Repère de la zone efficace : trait vertical à ZONE_MIN (50 % du rail = 10/20). */
+.vol-rail::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--texte-2);
+  opacity: .55;
+}
+.vol-rail .vol-sous { opacity: .45; }
+.vol-rail .vol-trop { background: var(--danger); }
+.vol-delta { color: var(--texte-2); font-size: .78rem; }
+
 /* --- Motion : « la Ligne se dessine » -----------------------------------------------------------------------------------
    Une seule idée, déclinée : à l'entrée d'une vue, le contenu se pose et toutes
    les Lignes (progression, jauges, nav) se tracent de gauche à droite — comme un
