@@ -131,6 +131,7 @@ async function formulaireDemarrage(el) {
           <div class="texte-2">${template.jour.exercices.length} exercices pré-remplis</div></div>
         <button class="btn-x" id="btn-annuler-template">×</button>
       </div>
+      <label class="chip chip-filtre"><input type="checkbox" id="chk-varier"><span>🎲 Varier cette séance</span></label>
       ${template.jour.echauffement?.length ? `
         <details class="echauffement">
           <summary>🔥 Échauffement · ${template.jour.echauffement.length} étapes</summary>
@@ -163,6 +164,12 @@ async function formulaireDemarrage(el) {
     </div>
     <p class="centre"><a href="#/programmes">Gérer mes programmes →</a></p>`;
 
+  // Zones chroniquement sensibles (Réglages) : pré-cochées, décochables au jour le jour.
+  const zonesFragiles = await getReglage('zonesFragiles', []);
+  el.querySelectorAll('#chips-douleurs input').forEach((i) => {
+    if (zonesFragiles.includes(i.value)) i.checked = true;
+  });
+
   el.querySelector('#btn-annuler-template')?.addEventListener('click', async () => {
     await setReglage('template_a_demarrer', null);
     formulaireDemarrage(el);
@@ -193,6 +200,7 @@ async function formulaireDemarrage(el) {
     const entrees = template
       ? template.jour.exercices.map((e) => {
           const entree = { exerciceId: e.exerciceId, sets: [], cible: { ...e.cible } };
+          if (e.skill) entree.skill = e.skill;
           if (modulation) {
             entree.cibleOrigine = { ...e.cible };
             entree.cible.valeur = Math.max(1, Math.round(entree.cible.valeur * modulation.facteur));
@@ -200,6 +208,24 @@ async function formulaireDemarrage(el) {
           return entree;
         })
       : [];
+
+    // « Varier cette séance » : 1-2 exos de force remplacés par des équivalents
+    // compatibles avec les contraintes du jour — la SÉANCE seulement, le
+    // programme garde ses exercices. Tracé comme un remplacement (⇄).
+    if (template && el.querySelector('#chk-varier')?.checked) {
+      const candidats = entrees
+        .filter((e) => !e.skill && !ctx.exercices.get(e.exerciceId)?.skill)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 2);
+      for (const entree of candidats) {
+        const ex = ctx.exercices.get(entree.exerciceId);
+        const alt = proposerAlternatives(ex, ctx.exercices, contraintes, 'contrainte')[0];
+        if (alt) {
+          entree.remplace = { exerciceIdPrevu: entree.exerciceId, raison: 'variante du jour' };
+          entree.exerciceId = alt.exercice.id;
+        }
+      }
+    }
     seance = {
       id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       dateDebut: new Date().toISOString(),

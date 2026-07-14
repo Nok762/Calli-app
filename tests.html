@@ -283,6 +283,66 @@
       vrai(ch[0]?.includes('plafond'), 'doit suggérer la progression au plafond');
     });
 
+    // --- Variété : mobilité, zones fragiles, rotation, express ---------------------------------
+    const skillsPlanche = [{
+      id: 'planche', nom: 'Planche',
+      etapes: seed.exercices.filter((e) => e.skill === 'planche').sort((a, b) => a.step - b.step)
+        .map((e) => ({ step: e.step, exercice: e, critere: { type: e.type, valeur: 10 } })),
+    }];
+
+    test('mobilité : bloc ciblé sur les prérequis des skills', () => {
+      const p = genererProgramme(
+        { objectifs: ['planche'], objectifGlobal: 'skills', frequence: 3, materiel: MAT, dureeMin: 45, mobilite: true },
+        { exercices, skills: skillsPlanche, etats: new Map(), prs: new Map() });
+      for (const j of p.jours) {
+        vrai(j.mobilite?.length >= 3 && j.mobilite.length <= 5, `${j.nom} : bloc mobilité ${j.mobilite?.length ?? 0}`);
+        vrai(j.mobilite.some((d) => d.startsWith('Épaules') || d.startsWith('Poignets')),
+          'la planche doit cibler épaules/poignets');
+      }
+      const sans = genererProgramme(
+        { objectifs: [], frequence: 3, materiel: MAT, dureeMin: 45 },
+        { exercices, skills: [], etats: new Map(), prs: new Map() });
+      vrai(!sans.jours[0].mobilite, 'sans option, pas de bloc mobilité');
+    });
+
+    test('zones fragiles : les exercices à risque sont dé-priorisés', () => {
+      const compte = (zones) => {
+        const p = genererProgramme(
+          { objectifs: [], frequence: 3, materiel: MAT, dureeMin: 60, zonesFragiles: zones },
+          { exercices, skills: [], etats: new Map(), prs: new Map() });
+        let n = 0;
+        for (const j of p.jours) for (const e of j.exercices) {
+          if (exercices.get(e.exerciceId).zones_a_risque.includes('poignets')) n += 1;
+        }
+        return n;
+      };
+      const avec = compte(['poignets']);
+      const sans = compte([]);
+      vrai(avec < sans, `poignets à risque : ${avec} (protégé) devrait être < ${sans} (normal)`);
+    });
+
+    test('rotation : eviterIds force le renouvellement des exercices', () => {
+      const params = { objectifs: [], frequence: 3, materiel: MAT, dureeMin: 45 };
+      const donnees = { exercices, skills: [], etats: new Map(), prs: new Map() };
+      const p1 = genererProgramme(params, donnees);
+      const ids1 = new Set(p1.jours.flatMap((j) => j.exercices.map((e) => e.exerciceId)));
+      const p2 = genererProgramme({ ...params, eviterIds: [...ids1] }, donnees);
+      const ids2 = p2.jours.flatMap((j) => j.exercices.map((e) => e.exerciceId));
+      const communs = ids2.filter((id) => ids1.has(id)).length;
+      vrai(communs <= ids2.length / 2, `trop d'exercices communs entre cycles (${communs}/${ids2.length})`);
+    });
+
+    test('express 20 min : séance courte mais complète', () => {
+      const p = genererProgramme(
+        { objectifs: [], frequence: 3, materiel: MAT, dureeMin: 20 },
+        { exercices, skills: [], etats: new Map(), prs: new Map() });
+      for (const j of p.jours) {
+        vrai(j.exercices.length >= 2, `${j.nom} : trop peu d'exercices`);
+        const duree = estimerDureeSeance(j.exercices, exercices);
+        vrai(duree <= 28, `${j.nom} : ~${duree} min pour 20 demandées`);
+      }
+    });
+
     // --- Rendu -------------------------------------------------------------------------------
     const ok = resultats.filter(([b]) => b).length;
     document.getElementById('synthese').innerHTML =

@@ -3,7 +3,7 @@
 // (sets × reps ou secondes). « Démarrer » un jour pré-remplit une séance.
 
 import { ctx } from '../app.js';
-import { dbGet, dbGetAll, dbPut, dbSupprimer, setReglage } from '../db.js';
+import { dbGet, dbGetAll, dbPut, dbSupprimer, setReglage, getReglage } from '../db.js';
 import { getEtatSkill } from '../skills.js';
 import { genererProgramme, semaineCourante, REGLES, PROFILS } from '../moteur/generateur.js';
 import { toast, choisirExercice, libelle, confirmer, echapper } from './composants.js';
@@ -55,6 +55,13 @@ async function editerProgramme(el, id) {
     <a class="retour" href="#/programmes">← Programmes</a>
     <input id="prog-nom" class="input-titre" value="${echapper(prog.nom)}">
     ${prog.genere ? carteGenere(prog) : ''}
+    ${prog.genere && semaineCourante(prog) >= REGLES.SEMAINES_ROTATION ? `
+      <div class="carte banniere">
+        <span>🔄 Semaine ${semaineCourante(prog)} : nouveau cycle ? Mêmes objectifs, exercices variés, cibles recalibrées sur tes PR.</span>
+        <span class="banniere-actions">
+          <button class="btn btn-accent" id="btn-rotation">Régénérer</button>
+        </span>
+      </div>` : ''}
     <div class="liste">
       ${prog.jours.map((jour, j) => `
         <div class="carte">
@@ -91,6 +98,32 @@ async function editerProgramme(el, id) {
   el.querySelector('#prog-nom').addEventListener('change', (e) => {
     prog.nom = e.target.value.trim() || 'Programme';
     sauver();
+  });
+
+  // Rotation de mésocycle : régénère avec les MÊMES paramètres mais en
+  // dé-priorisant les exercices du cycle actuel (variété forcée) ; les cibles
+  // repartent de tes PR, donc recalibrées sur ta progression réelle.
+  el.querySelector('#btn-rotation')?.addEventListener('click', async () => {
+    if (!(await confirmer('Lancer un nouveau cycle ? Le programme actuel sera remplacé (exercices variés, mêmes objectifs).', { oui: 'Nouveau cycle' }))) return;
+    const g = prog.genere;
+    const etats = new Map();
+    for (const skill of ctx.skills) etats.set(skill.id, await getEtatSkill(skill));
+    const prs = new Map((await dbGetAll('pr')).map((p) => [p.exerciceId, p]));
+    const eviterIds = prog.jours.flatMap((j) => j.exercices.filter((e) => !e.skill).map((e) => e.exerciceId));
+    const nouveau = genererProgramme({
+      objectifs: g.objectifs,
+      objectifGlobal: g.objectifGlobal,
+      frequence: g.frequence,
+      materiel: g.materiel,
+      dureeMin: g.dureeMin,
+      mobilite: g.mobilite,
+      zonesFragiles: g.zonesFragiles || [],
+      eviterIds,
+    }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
+    await dbSupprimer('programmes', prog.id);
+    await dbPut('programmes', nouveau);
+    toast('Nouveau cycle généré 🔄');
+    location.hash = '#/programmes/' + nouveau.id;
   });
 
   el.querySelectorAll('.inp-jour').forEach((inp) =>
@@ -175,6 +208,7 @@ async function assistant(el) {
   const sessions = await dbGetAll('sessions');
   const derniere = sessions.sort((a, b) => b.dateDebut.localeCompare(a.dateDebut))[0];
   const dernierMateriel = derniere?.contraintes.materiel || [];
+  const zonesFragiles = await getReglage('zonesFragiles', []);
   const equip = (ctx.meta?.enums.equipement || ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'])
     .filter((e) => e !== 'aucun');
 
@@ -204,6 +238,7 @@ async function assistant(el) {
           </select></label>
         <label>Durée d'une séance
           <select id="sel-duree">
+            <option value="20">20 min (express)</option>
             <option value="30">30 min</option>
             <option value="45" selected>45 min</option>
             <option value="60">60 min</option>
@@ -219,6 +254,9 @@ async function assistant(el) {
       </div>
       <p class="texte-2">Travail de mobilité active en fin de séance, ciblé sur les prérequis de tes
         skills (épaules/poignets pour la planche et le handstand, hanches/chevilles pour le pistol…).</p>
+      ${zonesFragiles.length ? `
+        <p class="texte-2">🩹 Zones sensibles prises en compte : ${zonesFragiles.map(libelle).join(', ')}
+          — les exercices qui les chargent seront évités (modifiable dans Réglages).</p>` : ''}
       <button class="btn btn-accent btn-large" id="btn-lancer-generation">Générer</button>
     </div>`;
 
@@ -262,6 +300,7 @@ async function assistant(el) {
       materiel,
       dureeMin: Number(el.querySelector('#sel-duree').value),
       mobilite: el.querySelector('#chk-mobilite').checked,
+      zonesFragiles,
     }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
 
     if (existant) {

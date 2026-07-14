@@ -23,7 +23,7 @@
 //
 // Tout est en fonctions pures ; les seuils sont regroupés dans REGLES.
 
-import { compatibleMateriel } from './adaptation.js';
+import { compatibleMateriel, zonesEnConflit } from './adaptation.js';
 
 export const REGLES = {
   REP_MIN: 5, REP_MAX: 12,      // fourchette de double progression (reps)
@@ -42,6 +42,7 @@ export const REGLES = {
   MIN_FORCE: 2,       // au moins 2 exercices de force par séance, même très courte
   SKILL_FREQ_MAX: 3,  // pratique d'un skill : ≤ 3×/sem (tissus conjonctifs, fraîcheur)
   SKILL_PAR_JOUR_MAX: 2, // ≤ 2 skills par séance (le travail de qualité se fait frais)
+  SEMAINES_ROTATION: 6, // âge d'un programme au-delà duquel on propose un nouveau cycle
 };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -332,6 +333,12 @@ export function genererProgramme(params, donnees) {
   const { objectifs, frequence, materiel, dureeMin } = params;
   const { exercices, skills, etats, prs } = donnees;
   const profil = PROFILS[params.objectifGlobal] || PROFILS.forme;
+  // Zones chroniquement sensibles (profil) : la sélection dé-priorise les
+  // exercices qui les chargent — sans jamais bloquer si le pattern n'a pas
+  // d'alternative (l'utilisateur garde le dernier mot en séance).
+  const zonesFragiles = params.zonesFragiles || [];
+  // Rotation de mésocycle : exercices du programme précédent à éviter.
+  const eviterIds = new Set(params.eviterIds || []);
 
   const objSkills = objectifs.map((id) => skills.find((s) => s.id === id)).filter(Boolean);
   const niveaux = estimerNiveaux(prs, exercices);
@@ -395,7 +402,7 @@ export function genererProgramme(params, donnees) {
 
     const exosForce = [];
     for (const pattern of patternsParJour[j]) {
-      const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage, profil });
+      const ex = choisirForce(pattern, { exercices, materiel, niveau: niveaux.niveauPattern(pattern), prs, bonusIds, pris, usage, profil, zonesFragiles, eviterIds });
       if (!ex) continue;
       pris.add(ex.id);
       usage.set(ex.id, (usage.get(ex.id) || 0) + 1);
@@ -407,7 +414,8 @@ export function genererProgramme(params, donnees) {
     if (profil.finisher) {
       const exFin = FINISHERS.map((id) => exercices.get(id))
         .filter((ex) => ex && !pris.has(ex.id) && compatibleMateriel(ex, materiel))
-        .sort((a, b) => (usage.get(a.id) || 0) - (usage.get(b.id) || 0))[0];
+        .sort((a, b) => (zonesEnConflit(a, zonesFragiles).length - zonesEnConflit(b, zonesFragiles).length)
+          || ((usage.get(a.id) || 0) - (usage.get(b.id) || 0)))[0];
       if (exFin) {
         pris.add(exFin.id);
         usage.set(exFin.id, (usage.get(exFin.id) || 0) + 1);
@@ -442,6 +450,7 @@ export function genererProgramme(params, donnees) {
       objectifs, frequence, materiel, dureeMin,
       objectifGlobal: params.objectifGlobal || 'forme',
       mobilite: !!params.mobilite,
+      zonesFragiles,
       dateDebut: new Date().toISOString(),
       journal: [], // trace des évolutions de cibles, chacune expliquée
     },
@@ -511,7 +520,7 @@ function cibleForce(ex, prs, profil = PROFILS.forme) {
 // Meilleur exercice de force pour un pattern : difficulté proche du niveau,
 // bonus s'il transfère vers un objectif ou s'il est déjà calibré par un PR,
 // pénalité s'il est déjà utilisé un autre jour (variété).
-function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pris, usage, profil }) {
+function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pris, usage, profil, zonesFragiles, eviterIds }) {
   let meilleur = null;
   for (const ex of exercices.values()) {
     if (ex.pattern !== pattern || pris.has(ex.id)) continue;
@@ -521,6 +530,11 @@ function choisirForce(pattern, { exercices, materiel, niveau, prs, bonusIds, pri
     if (prs.has(ex.id)) score += 0.5;
     // Hypertrophie : les mouvements en reps priment sur les tenues.
     if (profil?.bonusReps && ex.type === 'reps') score += profil.bonusReps;
+    // Zones chroniquement sensibles : forte pénalité, jamais un blocage
+    // (si tout le pattern charge la zone, on programme quand même le meilleur).
+    if (zonesFragiles?.length) score -= 2 * zonesEnConflit(ex, zonesFragiles).length;
+    // Rotation de mésocycle : dé-priorise les exercices du cycle précédent.
+    if (eviterIds?.has(ex.id)) score -= 2.5;
     score -= 0.75 * (usage.get(ex.id) || 0);
     if (!meilleur || score > meilleur.score) meilleur = { ex, score };
   }

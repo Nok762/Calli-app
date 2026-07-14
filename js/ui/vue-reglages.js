@@ -7,7 +7,7 @@
 import { ctx } from '../app.js';
 import { dbGetAll, dbVider, dbPut, getReglage, setReglage } from '../db.js';
 import { recalculerTousPR } from '../pr.js';
-import { toast, setSonActif, confirmer } from './composants.js';
+import { toast, setSonActif, confirmer, libelle } from './composants.js';
 
 // Stores exportés/importés. 'exercices' est exclu : le seed reste la source de
 // vérité et se réimporte tout seul. 'reglages' inclut seedVersion : si le seed
@@ -15,11 +15,13 @@ import { toast, setSonActif, confirmer } from './composants.js';
 const STORES_DONNEES = ['etat_skills', 'sessions', 'pr', 'poids', 'programmes', 'reglages'];
 
 export async function vueReglages(el) {
-  const [repos, prepa, son] = await Promise.all([
+  const [repos, prepa, son, zonesFragiles] = await Promise.all([
     getReglage('dureeRepos', 90),
     getReglage('dureePrepa', 5),
     getReglage('son', true),
+    getReglage('zonesFragiles', []),
   ]);
+  const zones = ctx.meta?.enums.zones_a_risque || ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
 
   // État du stockage : persistant = le navigateur s'engage à ne pas purger.
   let persistant = null;
@@ -46,6 +48,15 @@ export async function vueReglages(el) {
       </div>
       <div class="chips" style="margin-top:10px">
         <label class="chip"><input type="checkbox" id="reg-son" ${son ? 'checked' : ''}><span>🔔 Son + vibration</span></label>
+      </div>
+    </div>
+
+    <div class="carte">
+      <h3>Zones sensibles (chroniques)</h3>
+      <p class="texte-2">Douleurs ou fragilités récurrentes : la génération de programmes évite les
+        exercices qui les chargent, et elles seront pré-cochées au démarrage de chaque séance.</p>
+      <div class="chips" id="chips-zones-fragiles">
+        ${zones.map((z) => `<label class="chip"><input type="checkbox" value="${z}" ${zonesFragiles.includes(z) ? 'checked' : ''}><span>${libelle(z)}</span></label>`).join('')}
       </div>
     </div>
 
@@ -78,6 +89,11 @@ export async function vueReglages(el) {
   el.querySelector('#reg-son').addEventListener('change', async (e) => {
     await setReglage('son', e.target.checked);
     setSonActif(e.target.checked);
+  });
+
+  el.querySelector('#chips-zones-fragiles').addEventListener('change', () => {
+    const cochees = [...el.querySelectorAll('#chips-zones-fragiles input:checked')].map((i) => i.value);
+    setReglage('zonesFragiles', cochees);
   });
 
   // --- Export : un fichier JSON autoportant, daté. --------------------------------
