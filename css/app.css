@@ -239,7 +239,10 @@ input, select {
 input:focus, select:focus { outline: 1px solid var(--accent); }
 label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction: column; gap: 4px; }
 .ligne-2 { display: flex; gap: 10px; margin: 10px 0 0; }
-.ligne-2 > * { flex: 1; }
+/* min-width: 0 : un label flex ne peut pas rétrécir sous la largeur intrinsèque
+   de son input (grande par défaut pour type=number) → débordait de l'écran. */
+.ligne-2 > * { flex: 1; min-width: 0; }
+.ligne-2 input, .ligne-2 select { width: 100%; }
 .filtres { margin-bottom: 12px; }
 .filtres input[type=search] { width: 100%; }
 
