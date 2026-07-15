@@ -78,14 +78,14 @@ export async function vueAccueil(el) {
         <div class="texte-2">Là où tu en étais · le chrono t'attend.</div>
       </a>` : heroHtml(hero)}
 
-    ${etirRecents ? '<button class="carte-fine btn-etirements" id="btn-etirements">🧘 Étirements de la dernière séance</button>' : ''}
+    ${etirRecents ? '<button class="carte-fine btn-etirements" id="btn-etirements">Étirements de la dernière séance</button>' : ''}
 
     <div class="carte" style="margin-top:10px">
       <div class="jauge-tete">
         <h3 style="margin:0">Cette semaine</h3>
-        <span class="jauge-val">${nbSemaine}${cibleSemaine ? '/' + cibleSemaine : ''} séance${nbSemaine > 1 ? 's' : ''}${streak > 1 ? ' · 🔥 ' + streak + ' sem.' : ''}</span>
+        <span class="jauge-val">${nbSemaine}${cibleSemaine ? '/' + cibleSemaine : ''} séance${nbSemaine > 1 ? 's' : ''}${streak > 1 ? ' · ' + streak + ' sem. d\'affilée' : ''}</span>
       </div>
-      <div class="ligne"><div style="width:${pctSemaine}%"></div></div>
+      <div class="ligne rail"><div style="width:${pctSemaine}%"></div></div>
     </div>
 
     ${suggPaliers.length || suggDeloads.length || suggPlateaux.length ? `
@@ -93,20 +93,20 @@ export async function vueAccueil(el) {
       <div class="liste">
         ${suggPaliers.map((s) => `
           <a class="carte accent" href="#/skills/${s.skill.id}">
-            <strong>💡 ${s.skill.nom} : palier atteignable !</strong>
+            <strong>${s.skill.nom} : palier atteignable !</strong>
             <div class="texte-2">Critère de « ${s.etape.exercice.nom} » (${texteCritere(s.etape.critere)})
               atteint sur ${s.nb} séances · valide l'étape.</div>
           </a>`).join('')}
         ${suggDeloads.map((s) => `
           <a class="carte" href="#/exercices/${(s.regression || s.exercice).id}">
-            <strong>💡 ${s.exercice.nom} : ${s.motif}</strong>
+            <strong>${s.exercice.nom} : ${s.motif}</strong>
             <div class="texte-2">${s.regression
               ? `Essaie la régression « ${s.regression.nom} » le temps de récupérer.`
               : 'Réduis le volume le temps de récupérer.'}</div>
           </a>`).join('')}
         ${suggPlateaux.map((s) => `
           <a class="carte" href="#/exercices/${(s.levier.exercice || s.exercice).id}">
-            <strong>💡 ${s.exercice.nom} : plateau</strong>
+            <strong>${s.exercice.nom} : plateau</strong>
             <div class="texte-2">${textePlateau(s)}</div>
           </a>`).join('')}
       </div>` : ''}
@@ -152,7 +152,7 @@ export async function vueAccueil(el) {
 
   el.querySelector('#btn-etirements')?.addEventListener('click', () =>
     afficherChecklist({
-      titre: '🧘 Étirements · récupération',
+      titre: 'Étirements · récupération',
       note: 'Respiration lente, on ne force jamais — juste une tension confortable.',
       items: etirRecents.liste,
     }));
@@ -175,7 +175,7 @@ function heroHtml(hero) {
         <div class="hero-label">Par où commencer</div>
         <div class="hero-titre">Ton premier programme</div>
         <div class="texte-2">Un plan construit sur tes objectifs et ton matériel, qui évolue tout seul.</div>
-        <button class="btn btn-accent btn-large" data-generer>✨ Générer mon programme</button>
+        <button class="btn btn-accent btn-large" data-generer>Générer mon programme</button>
         <p class="texte-2 centre" style="padding:8px 0 0; margin:0">ou <a href="#/seance">séance libre</a></p>
       </div>`;
   }

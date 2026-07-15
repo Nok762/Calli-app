@@ -47,7 +47,7 @@ export async function vueReglages(el) {
           <input id="reg-prepa" type="number" inputmode="numeric" min="0" value="${prepa}"></label>
       </div>
       <div class="chips" style="margin-top:10px">
-        <label class="chip"><input type="checkbox" id="reg-son" ${son ? 'checked' : ''}><span>🔔 Son + vibration</span></label>
+        <label class="chip"><input type="checkbox" id="reg-son" ${son ? 'checked' : ''}><span>Son + vibration</span></label>
       </div>
     </div>
 
@@ -64,12 +64,12 @@ export async function vueReglages(el) {
       <h3>Sauvegarde des données</h3>
       <p class="texte-2">Ton historique (${nbSessions} séance${nbSessions > 1 ? 's' : ''}) vit uniquement dans ce navigateur.
         Exporte régulièrement — c'est la seule copie.</p>
-      <p class="texte-2">${persistant === true ? '🔒 Stockage persistant accordé.'
-        : persistant === false ? '⚠️ Stockage non persistant : le navigateur peut purger les données — exporte souvent, ou installe l\'app (PWA).'
+      <p class="texte-2">${persistant === true ? 'Stockage persistant accordé.'
+        : persistant === false ? 'Stockage non persistant : le navigateur peut purger les données — exporte souvent, ou installe l\'app (PWA).'
         : ''}${usage != null ? ` · ${usage} Ko utilisés` : ''}</p>
       <div class="ligne-2">
-        <button class="btn btn-accent" id="btn-exporter">⬇ Exporter</button>
-        <button class="btn" id="btn-importer">⬆ Importer</button>
+        <button class="btn btn-accent" id="btn-exporter">Exporter</button>
+        <button class="btn" id="btn-importer">Importer</button>
       </div>
       <input type="file" id="inp-import" accept="application/json,.json" hidden>
       <button class="btn btn-lien" id="btn-recalc-pr">Recalculer les PR depuis l'historique</button>
@@ -115,7 +115,7 @@ export async function vueReglages(el) {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-    toast('Sauvegarde exportée ⬇');
+    toast('Sauvegarde exportée');
   });
 
   // --- Import : remplace les données par celles du fichier. ------------------------

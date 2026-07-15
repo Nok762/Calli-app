@@ -23,9 +23,9 @@ async function listeProgrammes(el) {
         <a class="carte" href="#/programmes/${p.id}">
           <strong>${echapper(p.nom)}</strong>
           <div class="texte-2">${p.jours.map((j) => `${echapper(j.nom)} (${j.exercices.length})`).join(' · ') || 'vide'}</div>
-        </a>`).join('') || '<p class="texte-2 centre">Aucun programme.<br>Crée ton premier template (Push/Pull/Legs, journée skill…) 👇</p>'}
+        </a>`).join('') || '<p class="texte-2 centre">Aucun programme.<br>Crée ton premier template (Push/Pull/Legs, journée skill…).</p>'}
     </div>
-    <button class="btn btn-accent btn-large" id="btn-generer">✨ Générer mon programme</button>
+    <button class="btn btn-accent btn-large" id="btn-generer">Générer mon programme</button>
     <button class="btn btn-large" id="btn-nouveau">+ Nouveau programme vide</button>`;
 
   el.querySelector('#btn-generer').addEventListener('click', () => {
@@ -57,7 +57,7 @@ async function editerProgramme(el, id) {
     ${prog.genere ? carteGenere(prog) : ''}
     ${prog.genere && semaineCourante(prog) >= REGLES.SEMAINES_ROTATION ? `
       <div class="carte banniere">
-        <span>🔄 Semaine ${semaineCourante(prog)} : nouveau cycle ? Mêmes objectifs, exercices variés, cibles recalibrées sur tes PR.</span>
+        <span>Semaine ${semaineCourante(prog)} : nouveau cycle ? Mêmes objectifs, exercices variés, cibles recalibrées sur tes PR.</span>
         <span class="banniere-actions">
           <button class="btn btn-accent" id="btn-rotation">Régénérer</button>
         </span>
@@ -71,19 +71,19 @@ async function editerProgramme(el, id) {
           </div>
           ${jour.echauffement?.length ? `
             <details class="echauffement">
-              <summary>🔥 Échauffement · ${jour.echauffement.length} étapes</summary>
+              <summary>Échauffement · ${jour.echauffement.length} étapes</summary>
               <ul>${jour.echauffement.map((e) => `<li>${e}</li>`).join('')}</ul>
             </details>` : ''}
           ${jour.exercices.map((e, k) => ligneExo(e, j, k)).join('') ||
             '<p class="texte-2">Aucun exercice pour l\'instant.</p>'}
           ${jour.mobilite?.length ? `
             <details class="echauffement">
-              <summary>🤸 Mobilité · ${jour.mobilite.length} positions</summary>
+              <summary>Mobilité · ${jour.mobilite.length} positions</summary>
               <ul>${jour.mobilite.map((e) => `<li>${e}</li>`).join('')}</ul>
             </details>` : ''}
           ${jour.etirements?.length ? `
             <details class="echauffement">
-              <summary>🧘 Étirements post-séance · ${jour.etirements.length}</summary>
+              <summary>Étirements post-séance · ${jour.etirements.length}</summary>
               <ul>${jour.etirements.map((e) => `<li>${e}</li>`).join('')}</ul>
             </details>` : ''}
           <div class="ligne-2">
@@ -122,7 +122,7 @@ async function editerProgramme(el, id) {
     }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
     await dbSupprimer('programmes', prog.id);
     await dbPut('programmes', nouveau);
-    toast('Nouveau cycle généré 🔄');
+    toast('Nouveau cycle généré');
     location.hash = '#/programmes/' + nouveau.id;
   });
 
@@ -214,14 +214,14 @@ async function assistant(el) {
 
   el.innerHTML = `
     <a class="retour" href="#/programmes">← Programmes</a>
-    <h1>✨ Générer un programme</h1>
+    <h1>Générer un programme</h1>
     <p class="texte-2">Un plan long terme construit sur tes objectifs, ton niveau (PR) et ton matériel,
       qui évolue tout seul séance après séance.</p>
-    ${existant ? `<p class="texte-attention">⚠ Remplacera « ${echapper(existant.nom)} ». Tes programmes créés à la main ne sont pas touchés.</p>` : ''}
+    ${existant ? `<p class="texte-attention">Remplacera « ${echapper(existant.nom)} ». Tes programmes créés à la main ne sont pas touchés.</p>` : ''}
     <div class="carte">
       <h3>Objectif principal</h3>
       <div class="chips" id="chips-objectif-global">
-        ${[['muscle', '💪 Prendre du muscle'], ['skills', '🤸 Maîtriser des skills'], ['gras', '🔥 Perdre du gras'], ['forme', '⚖️ Forme générale']]
+        ${[['muscle', 'Prendre du muscle'], ['skills', 'Maîtriser des skills'], ['gras', 'Perdre du gras'], ['forme', 'Forme générale']]
           .map(([id, nom]) => `<label class="chip"><input type="radio" name="objectif-global" value="${id}" ${id === 'skills' ? 'checked' : ''}><span>${nom}</span></label>`).join('')}
       </div>
       <p class="texte-2" id="note-objectif"></p>
@@ -250,12 +250,12 @@ async function assistant(el) {
       </div>
       <h3>Options</h3>
       <div class="chips">
-        <label class="chip"><input type="checkbox" id="chk-mobilite"><span>🧘 + Mobilité (5-8 min/séance)</span></label>
+        <label class="chip"><input type="checkbox" id="chk-mobilite"><span>+ Mobilité (5-8 min/séance)</span></label>
       </div>
       <p class="texte-2">Travail de mobilité active en fin de séance, ciblé sur les prérequis de tes
         skills (épaules/poignets pour la planche et le handstand, hanches/chevilles pour le pistol…).</p>
       ${zonesFragiles.length ? `
-        <p class="texte-2">🩹 Zones sensibles prises en compte : ${zonesFragiles.map(libelle).join(', ')}
+        <p class="texte-2">Zones sensibles prises en compte : ${zonesFragiles.map(libelle).join(', ')}
           — les exercices qui les chargent seront évités (modifiable dans Réglages).</p>` : ''}
       <button class="btn btn-accent btn-large" id="btn-lancer-generation">Générer</button>
     </div>`;
@@ -308,7 +308,7 @@ async function assistant(el) {
       await dbSupprimer('programmes', existant.id);
     }
     await dbPut('programmes', prog);
-    toast('Programme généré ✨');
+    toast('Programme généré');
     location.hash = '#/programmes/' + prog.id;
   });
 }
@@ -320,7 +320,7 @@ function carteGenere(prog) {
   const profilNom = PROFILS[g.objectifGlobal]?.nom || PROFILS.forme.nom;
   return `
     <div class="carte accent">
-      <strong>✨ Programme généré · semaine ${semaineCourante(prog)}</strong>
+      <strong>Programme généré · semaine ${semaineCourante(prog)}</strong>
       <div class="texte-2">${profilNom}${noms ? ' · skills : ' + noms : ''} · ${g.frequence} séances/sem · deload 1 semaine sur ${REGLES.SEMAINE_DELOAD}.
         Les cibles évoluent seules après chaque séance (double progression) et restent modifiables ici.</div>
       ${g.journal?.length ? `

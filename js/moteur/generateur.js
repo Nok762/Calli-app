@@ -444,7 +444,7 @@ export function genererProgramme(params, donnees) {
 
   return {
     id: 'p_' + Date.now().toString(36),
-    nom: '✨ ' + (objSkills.map((s) => s.nom).join(' + ') || profil.nom),
+    nom: (objSkills.map((s) => s.nom).join(' + ') || profil.nom),
     jours,
     genere: {
       objectifs, frequence, materiel, dureeMin,

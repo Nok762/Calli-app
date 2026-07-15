@@ -127,14 +127,14 @@ async function formulaireDemarrage(el) {
     <h1>Séance</h1>
     ${template ? `
       <div class="carte accent carte-template">
-        <div><strong>📋 ${echapper(template.prog.nom)} — ${echapper(template.jour.nom)}</strong>
+        <div><strong>${echapper(template.prog.nom)} — ${echapper(template.jour.nom)}</strong>
           <div class="texte-2">${template.jour.exercices.length} exercices pré-remplis</div></div>
         <button class="btn-x" id="btn-annuler-template">×</button>
       </div>
-      <label class="chip chip-filtre"><input type="checkbox" id="chk-varier"><span>🎲 Varier cette séance</span></label>
+      <label class="chip chip-filtre"><input type="checkbox" id="chk-varier"><span>Varier cette séance</span></label>
       ${template.jour.echauffement?.length ? `
         <details class="echauffement">
-          <summary>🔥 Échauffement · ${template.jour.echauffement.length} étapes</summary>
+          <summary>Échauffement · ${template.jour.echauffement.length} étapes</summary>
           <ul>${template.jour.echauffement.map((e) => `<li>${e}</li>`).join('')}</ul>
         </details>` : ''}` : ''}
     ${jours.length ? `
@@ -283,7 +283,7 @@ function rendrePlayer(el) {
           <button class="btn-x" data-liste title="Vue liste">☰</button>
         </div>
         <div class="player-corps">
-          <p class="texte-2 centre">Aucun exercice.<br>Ajoute ton premier mouvement 👇</p>
+          <p class="texte-2 centre">Aucun exercice.<br>Ajoute ton premier mouvement.</p>
           <button class="btn btn-accent btn-large" data-ajouter>+ Ajouter un exercice</button>
         </div>
       </div>`;
@@ -327,10 +327,10 @@ function rendrePlayer(el) {
         <button class="btn-x" data-nav="prec" ${i === 0 ? 'disabled' : ''}>←</button>
         <div class="player-prog">
           <div class="player-prog-txt">Exercice ${i + 1} / ${n}</div>
-          <div class="ligne"><div style="width:${((i + 1) / n) * 100}%"></div></div>
+          <div class="ligne rail"><div style="width:${((i + 1) / n) * 100}%"></div></div>
         </div>
         <button class="btn-x" data-nav="suiv" ${estDernier ? 'disabled' : ''}>→</button>
-        ${seance.echauffement?.length ? '<button class="btn-x" data-echauffement title="Échauffement">🔥</button>' : ''}
+        ${seance.echauffement?.length ? `<button class="btn-x" data-echauffement title="Échauffement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3-3 4.5-3 8a3.5 3.5 0 0 0 7 0c0-1.2-.5-2.2-1-3-.2 1-.8 1.5-1.5 1.8C14 8 15 5.5 12 3z"/><path d="M12 21a6 6 0 0 1-6-6c0-2 1-3.8 2-5"/><path d="M18 10c.6 1.4 0 5-1 6.5"/></svg></button>` : ''}
         <button class="btn-x" data-liste title="Vue liste">☰</button>
       </div>
 
@@ -341,7 +341,7 @@ function rendrePlayer(el) {
           ${entree.cible ? `<span class="badge badge-accent">objectif ${entree.cible.sets}×${entree.cible.valeur}${estHold ? ' s' : ''}</span>` : ''}
         </div>
         ${prevu ? `<div class="texte-2">⇄ remplace ${prevu.nom} · ${entree.remplace.raison}</div>` : ''}
-        ${verif.ok ? '' : `<div class="texte-attention">⚠ ${verif.raisons.join(' · ')}</div>`}
+        ${verif.ok ? '' : `<div class="texte-attention">${verif.raisons.join(' · ')}</div>`}
         <div class="player-dots">${dots}</div>
         <div class="player-serie-num">${atteint ? `${faits} série${faits > 1 ? 's' : ''} ✓` : `Série ${faits + 1} / ${target}`}</div>
         <div class="player-recap">${recap}</div>
@@ -383,7 +383,7 @@ function rendrePlayer(el) {
     }));
   el.querySelector('[data-liste]').addEventListener('click', () => { modeListe = true; seanceEnCours(el); });
   el.querySelector('[data-echauffement]')?.addEventListener('click', () =>
-    afficherChecklist({ titre: '🔥 Échauffement', items: seance.echauffement }));
+    afficherChecklist({ titre: 'Échauffement', items: seance.echauffement }));
   el.querySelector('[data-fiche]').addEventListener('click', () => ouvrirFiche(ex));
   el.querySelector('[data-remplacer]').addEventListener('click', () => ouvrirRemplacement(el, i));
 
@@ -542,10 +542,10 @@ function rendreListe(el) {
     </div>
     ${resumeContraintes()}
     ${bannieresAjustement()}
-    ${seance.echauffement?.length ? '<button class="chip-lien" id="btn-echauffement-liste">🔥 Échauffement</button>' : ''}
+    ${seance.echauffement?.length ? '<button class="chip-lien" id="btn-echauffement-liste">Échauffement</button>' : ''}
     <button class="btn btn-accent btn-large" id="btn-plein-ecran">▶ Reprendre en plein écran</button>
     <div class="liste">${seance.entrees.map(carteEntree).join('') ||
-      '<p class="texte-2 centre">Ajoute un premier exercice 👇</p>'}</div>
+      '<p class="texte-2 centre">Ajoute un premier exercice.</p>'}</div>
     <button class="btn btn-large" id="btn-ajouter-exo">+ Ajouter un exercice</button>
     <div class="ligne-2">
       <button class="btn btn-accent btn-large" id="btn-terminer">Terminer la séance</button>
@@ -567,7 +567,7 @@ function rendreListe(el) {
   el.querySelector('#btn-ajouter-exo').addEventListener('click', () => ajouterExercice(el));
 
   el.querySelector('#btn-echauffement-liste')?.addEventListener('click', () =>
-    afficherChecklist({ titre: '🔥 Échauffement', items: seance.echauffement }));
+    afficherChecklist({ titre: 'Échauffement', items: seance.echauffement }));
 
   el.querySelector('#btn-terminer').addEventListener('click', async () => {
     if (!seance.entrees.some((e) => e.sets.length)) {
@@ -719,7 +719,7 @@ function resumeContraintes() {
   const morceaux = [
     c.materiel.length ? 'Matériel : ' + c.materiel.map(libelle).join(', ') : 'Sans matériel',
   ];
-  if (c.douleurs.length) morceaux.push('⚠ ' + c.douleurs.map(libelle).join(', '));
+  if (c.douleurs.length) morceaux.push('Attention : ' + c.douleurs.map(libelle).join(', '));
   if (c.tempsDispo) morceaux.push(c.tempsDispo + ' min');
   morceaux.push('énergie ' + c.energie);
   return `<div class="texte-2 resume-contraintes">${morceaux.join(' · ')}</div>`;
@@ -734,7 +734,7 @@ function bannieresAjustement() {
   if (seance.modulation && !seance.ajustements.modulation) {
     bans.push(`
       <div class="carte banniere">
-        <span>💡 ${seance.modulation.raison} → cibles à ${Math.round(seance.modulation.facteur * 100)} %</span>
+        <span>${seance.modulation.raison} → cibles à ${Math.round(seance.modulation.facteur * 100)} %</span>
         <span class="banniere-actions">
           <button class="btn" data-ajust="modulation-retablir">Rétablir</button>
           <button class="btn btn-accent" data-ajust="modulation-garder">OK</button>
@@ -750,7 +750,7 @@ function bannieresAjustement() {
       const aCibles = seance.entrees.some((e) => e.cible && e.cible.sets > 1);
       bans.push(`
         <div class="carte banniere">
-          <span>💡 Forme en baisse (${pourquoi}) → ${aCibles ? 'alléger d\'un set et viser RPE ≤ 8 ?' : 'vise un set de moins et RPE ≤ 8.'}</span>
+          <span>Forme en baisse (${pourquoi}) → ${aCibles ? 'alléger d\'un set et viser RPE ≤ 8 ?' : 'vise un set de moins et RPE ≤ 8.'}</span>
           <span class="banniere-actions">
             ${aCibles ? '<button class="btn btn-accent" data-ajust="readiness-moins">−1 set</button>' : ''}
             <button class="btn" data-ajust="readiness-ignorer">OK</button>
@@ -760,7 +760,7 @@ function bannieresAjustement() {
       const aForce = seance.entrees.some((e) => e.cible && !ctx.exercices.get(e.exerciceId)?.skill);
       bans.push(`
         <div class="carte banniere">
-          <span>💡 Bonne forme (${pourquoi}) → ${aForce ? 'ajouter un set sur le travail de force ?' : 'tu peux pousser un peu plus que d\'habitude.'}</span>
+          <span>Bonne forme (${pourquoi}) → ${aForce ? 'ajouter un set sur le travail de force ?' : 'tu peux pousser un peu plus que d\'habitude.'}</span>
           <span class="banniere-actions">
             ${aForce ? '<button class="btn btn-accent" data-ajust="readiness-plus">+1 set</button>' : ''}
             <button class="btn" data-ajust="readiness-ignorer">OK</button>
@@ -774,7 +774,7 @@ function bannieresAjustement() {
     if (plan) {
       bans.push(`
         <div class="carte banniere">
-          <span>💡 ~${plan.dureeAvant} min prévues pour ${c.tempsDispo} dispo → retirer ${plan.nomsRetires.join(', ')} et garder le skill + les compounds (~${plan.dureeApres} min) ?</span>
+          <span>~${plan.dureeAvant} min prévues pour ${c.tempsDispo} dispo → retirer ${plan.nomsRetires.join(', ')} et garder le skill + les compounds (~${plan.dureeApres} min) ?</span>
           <span class="banniere-actions">
             <button class="btn btn-accent" data-ajust="temps-appliquer">Raccourcir</button>
             <button class="btn" data-ajust="temps-ignorer">OK</button>
@@ -819,7 +819,7 @@ function carteEntree(entree, i) {
         </div>
       </div>
       ${prevu ? `<div class="texte-2">⇄ remplace ${prevu.nom} · ${entree.remplace.raison}</div>` : ''}
-      ${verif.ok ? '' : `<div class="texte-attention">⚠ ${verif.raisons.join(' · ')} · touche ⇄ pour une alternative</div>`}
+      ${verif.ok ? '' : `<div class="texte-attention">${verif.raisons.join(' · ')} · touche ⇄ pour une alternative</div>`}
       ${sets}
       <div class="form-set" data-i="${i}">
         <button class="btn btn-step" data-step="${i}:-1">−</button>
@@ -919,7 +919,7 @@ function lancerTick() {
     if (chrono.mode === 'repos' && chrono.pause === null && Date.now() >= chrono.fin) {
       stopChrono();
       bip();
-      toast('Repos terminé, au boulot 💪');
+      toast('Repos terminé — au boulot.');
       return;
     }
     if (chrono.mode === 'prepa') {
@@ -1196,10 +1196,10 @@ async function terminer() {
     + suggestionsPlateau(sessions, ctx.exercices).length;
 
   let message = nouveauxPR.length
-    ? `Séance enregistrée · ${nouveauxPR.length} nouveau${nouveauxPR.length > 1 ? 'x' : ''} PR 🎉`
+    ? `Séance enregistrée · ${nouveauxPR.length} nouveau${nouveauxPR.length > 1 ? 'x' : ''} PR`
     : 'Séance enregistrée ✓';
   if (nbEvolutions) message += ` · ${nbEvolutions} cible${nbEvolutions > 1 ? 's' : ''} du programme ajustée${nbEvolutions > 1 ? 's' : ''}`;
-  if (nbSuggestions) message += ' · 💡 suggestions sur l\'Accueil';
+  if (nbSuggestions) message += ' · suggestions sur l\'Accueil';
   toast(message, 3600);
   // Fin de séance : mobilité du jour (muscles chauds, travail actif) PUIS
   // étirements adaptés à ce qui a été travaillé. Mémorisés (récupérables
@@ -1211,7 +1211,7 @@ async function terminer() {
   location.hash = '#/accueil';
   if (items.length) {
     afficherChecklist({
-      titre: mobiliteDuJour.length ? '🤸 Mobilité + récupération' : '🧘 Étirements · récupération',
+      titre: mobiliteDuJour.length ? 'Mobilité + récupération' : 'Étirements · récupération',
       note: 'Respiration lente, on ne force jamais — juste une tension confortable.',
       items,
     });

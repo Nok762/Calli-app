@@ -28,7 +28,7 @@ export async function vueHistorique(el, params) {
 async function ongletSeances(el) {
   const sessions = (await dbGetAll('sessions')).sort((a, b) => b.dateDebut.localeCompare(a.dateDebut));
   if (!sessions.length) {
-    el.innerHTML = '<p class="texte-2 centre">Aucune séance loggée pour l\'instant.<br>Lance-toi depuis l\'onglet Séance 💪</p>';
+    el.innerHTML = '<p class="texte-2 centre">Aucune séance loggée pour l\'instant.<br>Lance-toi depuis l\'onglet Séance.</p>';
     return;
   }
 
@@ -140,7 +140,7 @@ async function ongletVolume(el) {
     .sort((a, b) => (actuel[b] || 0) - (actuel[a] || 0));
 
   if (!sessions.length) {
-    el.innerHTML = '<p class="texte-2 centre">Logge des séances pour voir ton volume par muscle 💪</p>';
+    el.innerHTML = '<p class="texte-2 centre">Logge des séances pour voir ton volume par muscle.</p>';
     return;
   }
 
@@ -248,7 +248,7 @@ async function ongletPoids(el) {
             <strong>${l.poidsKg} kg</strong>
           </div>`).join('')}
       </div>`
-    : '<p class="texte-2 centre">Logge ton premier poids 👆</p>'}`;
+    : '<p class="texte-2 centre">Logge ton premier poids.</p>'}`;
 
   if (logs.length) {
     graphiqueLigne(el.querySelector('#graphe-poids'), logs.map((l) => ({ x: l.date, y: l.poidsKg })));

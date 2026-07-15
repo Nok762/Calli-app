@@ -1,44 +1,72 @@
-/* app.css — identité "graphite & ambre".
-   Univers : magnésie, acier, la ligne du corps à l'horizontale.
-   Règles : dark par défaut, UNE couleur d'accent (ambre), grandes zones
-   tactiles, motif signature unique — « la Ligne » (toute progression est une
-   ligne horizontale qui se remplit : chrono, jauges, paliers de skills).
-   Rayons : 14px cartes / 10px contrôles / 999px pilules. */
+/* app.css — identité « Obsidienne ».
+   Univers : l'instrument de mesure de la force. Callisthénie = kallos (beauté)
+   + sthenos (force) : titres en capitales lapidaires (Marcellus, romain
+   inscriptionnel), interface en Hanken Grotesk, temps et progression lus sur
+   des rails, comme sur un chronographe.
+   Quatre gestes d'identité :
+     I.   Capitales lapidaires — Marcellus, réservé aux titres et noms d'exercices.
+     II.  Le rail gradué — les grandes mesures (semaine, chrono, progression de
+          séance) portent des graduations ; les listes gardent un fil simple.
+     III. Chiffres d'instrument — valeurs en graisse fine, très grandes, unité
+          discrète ; chiffres tabulaires partout.
+     IV.  Matière — grain photographique à peine perceptible + lumière douce
+          venant du haut : une surface, pas un aplat.
+   Le laiton est rationné : progression, élément actif, action principale.
+   Tout le reste travaille en gris. Rayons : 16px cartes / 12px contrôles /
+   999px pilules. */
 
 @font-face {
-  font-family: 'Barlow Condensed';
+  font-family: 'Marcellus';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/marcellus-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fonts/hanken-grotesk-300.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/hanken-grotesk-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('../fonts/barlow-condensed-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Barlow Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../fonts/barlow-condensed-700.woff2') format('woff2');
+  src: url('../fonts/hanken-grotesk-600.woff2') format('woff2');
 }
 
 :root {
-  --fond: #14120F;          /* graphite chaud */
-  --fond-2: #1E1A15;        /* surface carte */
-  --fond-3: #29231B;        /* surface contrôle */
-  --texte: #F2EDE4;         /* craie */
-  --texte-2: #B4AB99;       /* craie estompée — assez claire pour porter de l'info (cibles, dates, résumés) */
-  --accent: #FFA028;        /* ambre — l'unique accent */
-  --accent-texte: #2A1602;  /* texte posé sur fond ambre */
-  --accent-voile: rgba(255, 160, 40, .13);
-  --ligne-fond: #2E2820;    /* rail de la Ligne */
-  --danger: #E25B4A;
-  --bord: #363028;
-  --rayon: 14px;
-  --police-titre: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --fond: #0E0F12;           /* obsidienne — noir minéral froid */
+  --fond-2: #15171B;         /* basalte — surface carte */
+  --fond-3: #1C1F24;         /* surface contrôle */
+  --texte: #EDEEF0;          /* givre */
+  --texte-2: #8F939B;        /* brume — assez claire pour porter de l'info */
+  --accent: #C9A96E;         /* laiton — l'unique accent, rationné */
+  --accent-clair: #E8CE9C;   /* laiton clair — la pointe lumineuse des rails */
+  --accent-texte: #17120A;   /* texte posé sur fond laiton */
+  --accent-voile: rgba(201, 169, 110, .12);
+  --lueur: 0 0 8px rgba(201, 169, 110, .45);  /* halo laiton des éléments actifs */
+  --ligne-fond: rgba(237, 238, 240, .09);     /* rail de la Ligne */
+  --danger: #D26A5C;         /* terre cuite éteinte, pas un rouge criard */
+  --bord: rgba(237, 238, 240, .10);           /* hairline des contrôles */
+  --hair: rgba(237, 238, 240, .07);           /* hairline des cartes, plus discrète */
+  --rayon: 16px;
+  --police-titre: 'Marcellus', 'Times New Roman', serif;
+  --police-ui: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Motion : deux durées, une sortie décélérée. Tout est transform/opacity. */
   --vif: .15s;
   --pose: .3s;
   --sortie: cubic-bezier(.2, .7, .2, 1);
-  --ombre-flottante: 0 10px 30px rgba(0, 0, 0, .42);
+  --ombre-flottante: 0 10px 30px rgba(0, 0, 0, .5);
 }
 
 * { box-sizing: border-box; }
@@ -46,11 +74,24 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--fond);
+  /* Lumière douce venant du haut : une surface, pas un aplat. */
+  background: radial-gradient(120% 90% at 50% -10%, #17181D 0%, var(--fond) 55%) fixed, var(--fond);
   color: var(--texte);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--police-ui);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Grain d'obsidienne : bruit fixe à 4 %, par-dessus tout (comme un grain de
+   film). Ça ne se remarque pas — ça se sent. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 #vue {
@@ -59,31 +100,42 @@ html, body {
   padding: 16px 16px calc(92px + env(safe-area-inset-bottom));
 }
 
-/* Typographie display : Barlow Condensed, capitales, chiffres tabulaires. */
+/* Typographie display : capitales lapidaires. Chiffres tabulaires partout. */
 h1 {
   font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 1.9rem;
+  font-weight: 400;
+  font-size: 1.65rem;
   text-transform: uppercase;
-  letter-spacing: .02em;
-  margin: 6px 0 14px;
-  line-height: 1.05;
+  letter-spacing: .075em;
+  margin: 6px 0 16px;
+  line-height: 1.12;
 }
 h2 {
   font-family: var(--police-titre);
-  font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: .01em;
+  font-weight: 400;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
   margin: 4px 0 10px;
+  line-height: 1.25;
 }
+/* h3 = label de section : petit, très espacé, précédé d'un tiret laiton. */
 h3 {
-  font-family: var(--police-titre);
+  font-size: .66rem;
   font-weight: 600;
-  font-size: .92rem;
-  margin: 16px 0 8px;
+  margin: 18px 0 8px;
   color: var(--texte-2);
   text-transform: uppercase;
-  letter-spacing: .09em;
+  letter-spacing: .22em;
+}
+h3::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-right: 8px;
 }
 a { color: var(--accent); text-decoration: none; }
 p { line-height: 1.5; margin: 6px 0; }
@@ -96,40 +148,77 @@ li { line-height: 1.5; }
 .retour {
   display: inline-block;
   margin-bottom: 8px;
-  font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .9rem;
+  font-size: .72rem;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .18em;
+  color: var(--texte-2);
 }
 
-/* --- La Ligne : LE motif de l'app --------------------------------------------- */
+/* --- La Ligne : LE motif de l'app -------------------------------------------------
+   Fil simple : rail hairline, remplissage laiton à pointe lumineuse.
+   Variante .rail (grandes mesures) : graduations fines, comme la lunette d'un
+   chronographe. Le remplissage reste un <div> avec width inline — le DOM ne
+   change pas. */
 .ligne, .barre-prog {
-  height: 4px;
+  position: relative;
+  height: 2px;
   background: var(--ligne-fond);
   border-radius: 2px;
-  overflow: hidden;
 }
 .ligne > div, .barre-prog > div {
+  position: absolute;
+  left: 0; top: 0;
   height: 100%;
-  background: var(--accent);
+  max-width: 100%;
+  background: linear-gradient(90deg, rgba(201, 169, 110, .45), var(--accent));
   border-radius: 2px;
+  box-shadow: var(--lueur);
   transition: width .3s ease;
 }
+/* Pointe lumineuse (masquée à 0 % : un remplissage vide n'a pas de pointe). */
+.ligne > div::after, .barre-prog > div::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent-clair);
+  box-shadow: 0 0 7px rgba(232, 206, 156, .9);
+}
+.ligne > div[style*="width:0%"]::after, .ligne > div[style*="width: 0%"]::after,
+.barre-prog > div[style*="width:0%"]::after, .barre-prog > div[style*="width: 0%"]::after { display: none; }
 
-/* --- Navigation basse : barre légère, flottante, monochrome ----------------------
-   Translucide + léger flou (l'app respire dessous), hairline plutôt qu'un bord
-   franc, icônes de trait qui héritent de currentColor. L'onglet actif est marqué
-   par « la Ligne » — un court trait ambre, cohérent avec le motif signature. */
+/* Rail gradué : graduations tous les 12px + ligne de base, fil centré. */
+.ligne.rail { height: 8px; background: none; }
+.ligne.rail::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 1px;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, rgba(237, 238, 240, .16) 0 1px, transparent 1px 12px);
+}
+.ligne.rail::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 3.5px;
+  height: 1px;
+  background: var(--ligne-fond);
+}
+.ligne.rail > div { top: 3px; height: 2px; z-index: 1; }
+
+/* --- Navigation basse : barre translucide, hairline, laiton pour l'actif ------- */
 #nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   display: flex;
   justify-content: center;
-  background: rgba(20, 18, 15, .72);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
-  backdrop-filter: blur(16px) saturate(1.3);
-  border-top: 1px solid rgba(242, 237, 228, .06);
+  background: rgba(14, 15, 18, .82);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-top: 1px solid var(--hair);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 20;
 }
@@ -141,77 +230,76 @@ li { line-height: 1.5; }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 11px 0 9px;
+  padding: 12px 0 9px;
   color: var(--texte-2);
-  font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .68rem;
+  font-size: .58rem;
   text-transform: uppercase;
-  letter-spacing: .09em;
+  letter-spacing: .14em;
   transition: color .18s ease;
 }
 #nav a.actif { color: var(--accent); }
-/* « la Ligne » de l'onglet actif : fin trait ambre, aligné sur le bord haut. */
+/* L'onglet actif porte un court trait laiton lumineux, aligné sur le bord haut. */
 #nav a.actif::before {
   content: "";
   position: absolute;
   top: -1px;
-  width: 20px;
-  height: 2px;
-  border-radius: 0 0 2px 2px;
+  width: 16px;
+  height: 1.5px;
   background: var(--accent);
+  box-shadow: var(--lueur);
 }
-.nav-ico { width: 22px; height: 22px; display: block; }
+.nav-ico { width: 21px; height: 21px; display: block; }
 
-/* --- Cartes et listes -------------------------------------------------------------- */
+/* --- Cartes et listes ----------------------------------------------------------- */
 .liste { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
 .carte {
   background: var(--fond-2);
-  border: 1px solid #2E2921; /* hairline plus douce que --bord : moins « encadré », plus posé */
+  border: 1px solid var(--hair);
   border-radius: var(--rayon);
-  padding: 15px;
+  padding: 16px;
   display: block;
   color: var(--texte);
 }
-.carte.accent { border-color: var(--accent); }
+.carte.accent { border-color: rgba(201, 169, 110, .45); }
 .carte.erreur { border-color: var(--danger); }
-.carte-fine { background: var(--fond-2); border: 1px solid var(--bord); border-radius: 10px; padding: 10px 14px; }
+.carte-fine { background: var(--fond-2); border: 1px solid var(--hair); border-radius: 12px; padding: 10px 14px; }
 
 .badge {
   background: var(--fond-3);
+  border: 1px solid var(--hair);
   border-radius: 999px;
   padding: 3px 10px;
-  font-size: .78rem;
+  font-size: .76rem;
   color: var(--texte-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.badge-accent { color: var(--accent); }
+.badge-accent { color: var(--accent); border-color: rgba(201, 169, 110, .35); }
 
-/* --- Boutons -------------------------------------------------------------------------- */
+/* --- Boutons --------------------------------------------------------------------- */
 .btn {
   background: var(--fond-3);
   color: var(--texte);
   border: 1px solid var(--bord);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 14px;
-  font-size: .95rem;
+  font-size: .92rem;
   font-family: inherit;
   cursor: pointer;
   transition: background .15s ease, border-color .15s ease, transform .06s ease;
 }
 .btn:active { transform: scale(.98); }
+/* Action principale : le laiton plein, légèrement bombé — la seule pièce chaude. */
 .btn-accent {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: linear-gradient(180deg, #D4B67E, #C2A163);
+  border-color: transparent;
   color: var(--accent-texte);
-  font-family: var(--police-titre);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .03em;
+  letter-spacing: .02em;
 }
-.btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
-.btn-large { width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px; }
+.btn-danger { background: none; border-color: rgba(210, 106, 92, .55); color: var(--danger); }
+.btn-large { width: 100%; padding: 14px; font-size: 1rem; margin-top: 10px; }
 .btn-x {
   background: none;
   border: none;
@@ -221,15 +309,16 @@ li { line-height: 1.5; }
   cursor: pointer;
   line-height: 1;
 }
+.btn-x svg { width: 18px; height: 18px; display: block; }
 .btn-lien { background: none; border: none; color: var(--accent); padding: 6px 0 0; font-size: .85rem; cursor: pointer; }
-.btn-chrono.actif { color: var(--accent); border-color: var(--accent); font-variant-numeric: tabular-nums; }
+.btn-chrono.actif { color: var(--accent); border-color: rgba(201, 169, 110, .5); font-variant-numeric: tabular-nums; }
 
-/* --- Formulaires ----------------------------------------------------------------------- */
+/* --- Formulaires ------------------------------------------------------------------ */
 input, select {
   background: var(--fond-3);
   border: 1px solid var(--bord);
   color: var(--texte);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px;
   font-size: 1rem;
   font-family: inherit;
@@ -237,7 +326,7 @@ input, select {
   font-variant-numeric: tabular-nums;
 }
 input:focus, select:focus { outline: 1px solid var(--accent); }
-label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction: column; gap: 4px; }
+label { font-size: .82rem; color: var(--texte-2); display: flex; flex-direction: column; gap: 4px; }
 .ligne-2 { display: flex; gap: 10px; margin: 10px 0 0; }
 /* min-width: 0 : un label flex ne peut pas rétrécir sous la largeur intrinsèque
    de son input (grande par défaut pour type=number) → débordait de l'écran. */
@@ -246,7 +335,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 .filtres { margin-bottom: 12px; }
 .filtres input[type=search] { width: 100%; }
 
-/* --- Chips (toggles + infos) ---------------------------------------------------------------- */
+/* --- Chips (toggles + infos) -------------------------------------------------------- */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .chip { display: inline-flex; flex-direction: row; }
 .chip input { display: none; }
@@ -255,25 +344,25 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid var(--bord);
-  background: var(--fond-3);
-  font-size: .85rem;
+  background: none;
+  font-size: .84rem;
   color: var(--texte);
   cursor: pointer;
 }
-.chip-info { cursor: default; }
+.chip-info { cursor: default; color: var(--texte-2); }
 .chip input:checked + span {
   background: var(--accent);
   color: var(--accent-texte);
   border-color: var(--accent);
   font-weight: 600;
 }
-.chip-lien { color: var(--accent); border-color: var(--accent); background: none; }
-.chip-attention { color: var(--danger); border-color: var(--danger); background: none; cursor: default; }
+.chip-lien { color: var(--accent); border-color: rgba(201, 169, 110, .4); }
+.chip-attention { color: var(--danger); border-color: rgba(210, 106, 92, .5); cursor: default; }
 .chip-actif { background: var(--accent); color: var(--accent-texte); border-color: var(--accent); font-weight: 600; }
 .chip-filtre { margin-bottom: 10px; align-self: flex-start; }
 .chips button.chip-lien { cursor: pointer; font-family: inherit; }
 
-/* --- Accueil (dashboard) ------------------------------------------------------------------------ */
+/* --- Accueil (dashboard) -------------------------------------------------------------- */
 .accueil-tete {
   display: flex;
   justify-content: space-between;
@@ -284,42 +373,40 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 .lien-reglages { color: var(--texte-2); display: flex; padding: 4px; }
 .lien-reglages:active { color: var(--accent); }
 .accueil-date {
-  font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .85rem;
+  font-size: .68rem;
   text-transform: uppercase;
-  letter-spacing: .13em;
+  letter-spacing: .22em;
   color: var(--texte-2);
 }
-.accueil-date + h1 { margin-top: 2px; }
+.accueil-date + h1 { margin-top: 4px; }
 .hero-label {
-  font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .82rem;
+  font-size: .64rem;
   text-transform: uppercase;
-  letter-spacing: .13em;
+  letter-spacing: .26em;
   color: var(--accent);
 }
 .hero-titre {
   font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 1.6rem;
+  font-weight: 400;
+  font-size: 1.3rem;
   text-transform: uppercase;
-  letter-spacing: .01em;
-  line-height: 1.1;
-  margin: 2px 0;
+  letter-spacing: .06em;
+  line-height: 1.25;
+  margin: 6px 0 2px;
 }
+/* Chiffres d'instrument : graisse fine, très grande. */
 .carte-stat { text-align: center; }
 .stat-val {
-  font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 2.1rem;
-  color: var(--texte); /* craie plutôt qu'ambre : l'accent est réservé à l'actif/actionnable */
+  font-weight: 300;
+  font-size: 2.3rem;
+  color: var(--texte);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
 .jauge-tete { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-.jauge-val { font-variant-numeric: tabular-nums; font-size: .85rem; color: var(--texte-2); }
+.jauge-val { font-variant-numeric: tabular-nums; font-weight: 300; font-size: .9rem; color: var(--texte-2); }
 .cal-grille {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -331,19 +418,19 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   border-radius: 4px;
   background: var(--ligne-fond);
 }
-.cal-jour.fait { background: var(--accent); }
+.cal-jour.fait { background: var(--accent); box-shadow: var(--lueur); }
 .cal-jour.aujourdhui { outline: 1px solid var(--texte-2); outline-offset: 1px; }
 .cal-jour.futur { background: none; border: 1px dashed var(--bord); }
-.objectif-item { display: block; color: var(--texte); padding: 10px 0; border-bottom: 1px solid var(--bord); }
+.objectif-item { display: block; color: var(--texte); padding: 11px 0; border-bottom: 1px solid var(--hair); }
 .objectif-item:last-child { border-bottom: none; }
 .objectif-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
-.objectif-tete strong { font-size: .95rem; }
+.objectif-tete strong { font-size: .92rem; letter-spacing: .01em; }
 
-/* --- Skills -------------------------------------------------------------------------------------- */
+/* --- Skills ------------------------------------------------------------------------------ */
 .carte-skill-tete { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.barre-prog { margin: 10px 0 8px; }
+.barre-prog { margin: 12px 0 8px; }
 .echelle { display: flex; flex-direction: column; }
-.etape { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--bord); }
+.etape { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--hair); }
 .etape-pastille {
   width: 34px; height: 34px;
   border-radius: 50%;
@@ -352,13 +439,14 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   align-items: center;
   justify-content: center;
   background: var(--fond-3);
+  border: 1px solid var(--hair);
   color: var(--texte-2);
   font-family: var(--police-titre);
-  font-weight: 700;
+  font-size: 1rem;
 }
-.etape-validee .etape-pastille { background: var(--accent); color: var(--accent-texte); }
-.etape-courante .etape-pastille { background: none; border: 2px solid var(--accent); color: var(--accent); }
-.etape-verrouillee { opacity: .55; }
+.etape-validee .etape-pastille { background: var(--accent); border-color: var(--accent); color: var(--accent-texte); }
+.etape-courante .etape-pastille { background: none; border: 1.5px solid var(--accent); color: var(--accent); box-shadow: var(--lueur); }
+.etape-verrouillee { opacity: .5; }
 .etape-corps { flex: 1; }
 .etape-corps a { color: var(--texte); }
 .etape-courante .etape-corps a { color: var(--accent); }
@@ -366,7 +454,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 .form-validation { display: flex; gap: 8px; margin-top: 10px; }
 .form-validation input { flex: 1; }
 
-/* --- Séance ---------------------------------------------------------------------------------------- */
+/* --- Séance -------------------------------------------------------------------------------- */
 .entete-seance { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .resume-contraintes { margin: -6px 0 12px; line-height: 1.5; }
 .carte-exo-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; gap: 8px; }
@@ -375,7 +463,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   align-items: center;
   gap: 10px;
   padding: 7px 0;
-  border-bottom: 1px solid var(--bord);
+  border-bottom: 1px solid var(--hair);
   font-size: .92rem;
   font-variant-numeric: tabular-nums;
 }
@@ -390,7 +478,7 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   background: var(--fond-3);
   border: 1px solid var(--bord);
   color: var(--texte-2);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 0;
   width: 42px;
   cursor: pointer;
@@ -429,16 +517,20 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 }
 .ligne-repos input { width: 64px; padding: 6px 8px; text-align: center; }
 
-/* --- Barre de chrono (repos / prépa / tenue) ------------------------------------------------------------ */
+/* --- Barre de chrono (repos / prépa / tenue) ------------------------------------------------
+   L'instrument de l'app : le temps s'y lit en graisse fine, la progression sur
+   un remplissage laiton à bord lumineux. */
 .barre-chrono {
   position: fixed;
   bottom: calc(68px + env(safe-area-inset-bottom));
   left: 12px; right: 12px;
   max-width: 616px;
   margin: 0 auto;
-  background: var(--fond-3);
+  background: rgba(28, 31, 36, .92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--bord);
-  border-radius: var(--rayon);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -447,17 +539,18 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
   z-index: 30;
   overflow: hidden; /* contient la ligne de progression */
 }
-.barre-chrono.barre-active { border-color: var(--accent); }
-.barre-chrono.barre-tenue { border-color: var(--accent); background: var(--fond-2); }
-/* Remplissage de progression : fond ambre qui grandit gauche→droite, avec un
-   bord d'attaque ambre net (« la Ligne ») qui avance. Absolu → n'entre PAS dans
-   le flux flex, donc ne pousse jamais le texte (bug corrigé). */
+.barre-chrono.barre-active { border-color: rgba(201, 169, 110, .45); }
+.barre-chrono.barre-tenue { border-color: rgba(201, 169, 110, .6); background: rgba(21, 23, 27, .94); }
+/* Remplissage de progression : voile laiton qui grandit gauche→droite, avec un
+   bord d'attaque lumineux qui avance. Absolu → n'entre PAS dans le flux flex,
+   donc ne pousse jamais le texte. */
 .barre-ligne {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 0;
   background: var(--accent-voile);
   border-right: 2px solid var(--accent);
+  box-shadow: 4px 0 10px rgba(201, 169, 110, .35);
   transition: width .2s linear;
   pointer-events: none;
 }
@@ -476,46 +569,44 @@ label { font-size: .85rem; color: var(--texte-2); display: flex; flex-direction:
 }
 .barre-chip { min-width: 58px; font-variant-numeric: tabular-nums; }
 .barre-label {
-  color: var(--texte-2);
-  font-family: var(--police-titre);
+  color: var(--accent);
   font-weight: 600;
-  font-size: .82rem;
+  font-size: .64rem;
   text-transform: uppercase;
-  letter-spacing: .09em;
+  letter-spacing: .24em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 42%;
 }
 .barre-temps {
-  font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 1.7rem;
+  font-weight: 300;
+  font-size: 1.8rem;
   font-variant-numeric: tabular-nums;
   min-width: 64px;
   text-align: center;
   line-height: 1;
 }
-.barre-temps.grand { font-size: 2.1rem; }
+.barre-temps.grand { font-size: 2.3rem; }
 .btn-stop-tenue {
-  background: var(--accent) !important;
-  border-color: var(--accent) !important;
+  background: linear-gradient(180deg, #D4B67E, #C2A163) !important;
+  border-color: transparent !important;
   color: var(--accent-texte) !important;
-  font-family: var(--police-titre) !important;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .08em;
+  font-size: .8rem !important;
   padding: 12px 18px !important;
 }
 .btn-demarrer-repos { color: var(--accent); font-size: 1.05rem; }
 .espace-barre { height: 76px; }
 
-/* --- Mode Focus : séance immersive, un exercice par écran ------------------------------------------------ */
+/* --- Mode Focus : séance immersive, un exercice par écran ----------------------------------- */
 body.mode-seance #nav { display: none; }
 body.mode-seance #vue { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 body.mode-seance .barre-chrono { padding: 14px 12px; }
-body.mode-seance .barre-temps { font-size: 2rem; }
-body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
+body.mode-seance .barre-temps { font-size: 2.2rem; }
+body.mode-seance .barre-temps.grand { font-size: 2.6rem; }
 
 .player { display: flex; flex-direction: column; min-height: calc(100dvh - 32px); }
 .player-tete { display: flex; align-items: center; gap: 6px; }
@@ -523,11 +614,10 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .player-tete .btn-x[disabled] { opacity: .3; }
 .player-prog { flex: 1; padding: 0 4px; }
 .player-prog-txt {
-  font-family: var(--police-titre);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .1em;
-  font-size: .8rem;
+  letter-spacing: .22em;
+  font-size: .64rem;
   color: var(--texte-2);
   text-align: center;
 }
@@ -543,66 +633,72 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   gap: 12px;
   padding: 16px 0;
 }
+/* Le nom de l'exercice, gravé. */
 .player-nom {
   background: none;
   border: none;
   color: var(--texte);
   font-family: var(--police-titre);
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
-  font-size: 2.1rem;
-  line-height: 1.05;
-  letter-spacing: .01em;
+  font-size: 1.8rem;
+  line-height: 1.15;
+  letter-spacing: .07em;
   cursor: pointer;
   padding: 2px 0;
 }
 .chips-mini { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
-.player-dots { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
-.player-dots .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ligne-fond); }
-.player-dots .dot.faite { background: var(--accent); }
+.player-dots { display: flex; gap: 9px; justify-content: center; margin-top: 4px; }
+.player-dots .dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(237, 238, 240, .25); background: none; }
+.player-dots .dot.faite { background: var(--accent); border-color: var(--accent); box-shadow: var(--lueur); }
 .player-serie-num {
-  font-family: var(--police-titre);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .22em;
   color: var(--texte-2);
-  font-size: .85rem;
+  font-size: .7rem;
 }
 .player-recap { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .mini-set {
-  background: var(--fond-3);
+  background: none;
   border: 1px solid var(--bord);
   border-radius: 999px;
   padding: 2px 10px;
   font-size: .8rem;
+  color: var(--texte-2);
   font-variant-numeric: tabular-nums;
 }
-.mini-set.echec { color: var(--danger); border-color: var(--danger); }
+.mini-set.echec { color: var(--danger); border-color: rgba(210, 106, 92, .5); }
 
 .player-saisie { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
 .player-saisie .btn-step { width: 56px; height: 56px; font-size: 1.6rem; }
 .player-val { display: flex; align-items: baseline; gap: 6px; }
+/* Chiffre d'instrument : la valeur se saisit en graisse fine, très grande. */
 .player-val .inp-valeur {
-  width: 120px;
-  font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 2.6rem;
+  width: 130px;
+  font-weight: 300;
+  font-size: 3rem;
   text-align: center;
   padding: 6px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--bord);
+  border-radius: 0;
 }
-.player-unite { color: var(--texte-2); font-size: 1rem; }
+.player-val .inp-valeur:focus { outline: none; border-bottom-color: var(--accent); }
+.player-unite { color: var(--accent); font-size: .95rem; letter-spacing: .08em; }
 .btn-chrono-grand { width: 100%; max-width: 320px; }
 .player-corps .ligne-rpe { justify-content: center; }
 
 .player-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.player-primary { width: 100%; font-size: 1.15rem; padding: 16px; }
+.player-primary { width: 100%; font-size: 1.1rem; padding: 16px; }
 
 /* Décompte de démarrage 3·2·1·GO */
 .demarrage-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: var(--fond);
+  background: radial-gradient(120% 90% at 50% -10%, #17181D 0%, var(--fond) 55%), var(--fond);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -610,11 +706,12 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   gap: 28px;
 }
 .demarrage-num {
-  font-family: var(--police-titre);
-  font-weight: 700;
+  font-weight: 300;
   font-size: 7rem;
   color: var(--accent);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 30px rgba(201, 169, 110, .4);
   animation: demarrage-pop .32s ease;
 }
 @keyframes demarrage-pop {
@@ -625,13 +722,16 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   .demarrage-num { animation: none; }
 }
 
-/* --- Bannières du moteur (suggestions, jamais imposées) --------------------------------------------------- */
+/* --- Bannières du moteur (suggestions, jamais imposées) --------------------------------------
+   Un filet laiton sur la tranche : une note de l'instrument, pas une alerte. */
 .banniere {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  border-color: var(--accent);
+  border-color: var(--hair);
+  border-left: 2px solid var(--accent);
+  border-radius: 12px;
   margin-bottom: 10px;
   font-size: .9rem;
 }
@@ -639,14 +739,14 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .texte-attention { color: var(--danger); font-size: .8rem; }
 .carte-template { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
-/* --- Toast --------------------------------------------------------------------------------------------- */
+/* --- Toast ------------------------------------------------------------------------------------ */
 .toast {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   background: var(--fond-3);
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(201, 169, 110, .5);
   color: var(--texte);
   padding: 10px 18px;
   border-radius: 999px;
@@ -655,11 +755,11 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   max-width: 90vw;
 }
 
-/* --- Overlay / feuilles ------------------------------------------------------------------------------------ */
+/* --- Overlay / feuilles ------------------------------------------------------------------------- */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 8, 5, .65);
+  background: rgba(5, 6, 8, .7);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -667,17 +767,18 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 }
 .feuille {
   background: var(--fond-2);
+  border-top: 1px solid var(--bord);
   width: 100%;
   max-width: 640px;
   max-height: 80vh;
-  border-radius: 18px 18px 0 0;
+  border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
   padding: 14px;
 }
 .feuille-tete { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
 .feuille-tete input { flex: 1; }
-.feuille-tete strong { flex: 1; font-family: var(--police-titre); font-weight: 600; font-size: 1.15rem; }
+.feuille-tete strong { flex: 1; font-family: var(--police-titre); font-weight: 400; font-size: 1rem; text-transform: uppercase; letter-spacing: .05em; }
 .picker-liste { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .picker-item {
   display: flex;
@@ -685,8 +786,8 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   align-items: center;
   gap: 8px;
   background: var(--fond-3);
-  border: 1px solid var(--bord);
-  border-radius: 10px;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
   padding: 12px;
   color: var(--texte);
   font-size: .95rem;
@@ -695,21 +796,20 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   text-align: left;
 }
 
-/* --- Onglets (Suivi) ----------------------------------------------------------------------------------------- */
+/* --- Onglets (Suivi) ------------------------------------------------------------------------------ */
 .onglets { display: flex; gap: 6px; margin-bottom: 14px; }
 .onglets a {
   flex: 1;
   text-align: center;
   padding: 10px;
-  border-radius: 10px;
-  background: var(--fond-2);
+  border-radius: 12px;
+  background: none;
   border: 1px solid var(--bord);
   color: var(--texte-2);
-  font-family: var(--police-titre);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .06em;
-  font-size: .9rem;
+  letter-spacing: .12em;
+  font-size: .72rem;
 }
 .onglets a.actif {
   color: var(--accent-texte);
@@ -717,7 +817,7 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   border-color: var(--accent);
 }
 
-/* --- Historique ------------------------------------------------------------------------------------------------ */
+/* --- Historique ------------------------------------------------------------------------------------- */
 .carte-session { cursor: pointer; }
 .carte-session-tete { display: flex; justify-content: space-between; gap: 8px; }
 .carte-session-detail { display: none; margin-top: 10px; }
@@ -732,15 +832,17 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
-.carte-session-detail .ligne-detail { border-bottom: 1px dashed var(--bord); }
+.carte-session-detail .ligne-detail { border-bottom: 1px dashed var(--hair); }
 .carte-pr { cursor: pointer; }
 .carte-pr-tete { display: flex; justify-content: space-between; gap: 8px; }
 
-/* --- Programmes ---------------------------------------------------------------------------------------------------- */
+/* --- Programmes -------------------------------------------------------------------------------------- */
 .input-titre {
   font-family: var(--police-titre);
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-weight: 400;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
   width: 100%;
   margin: 8px 0 14px;
 }
@@ -748,22 +850,21 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .inp-cible { width: 56px; padding: 6px 8px; text-align: center; }
 .sous-titre { margin: -10px 0 14px; text-transform: capitalize; }
 
-/* --- Échauffement (checklist repliable) ---------------------------------------------------------------- */
+/* --- Échauffement (checklist repliable) ----------------------------------------------------- */
 .echauffement {
   margin: 8px 0;
-  border: 1px solid var(--bord);
-  border-radius: 10px;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
   padding: 8px 12px;
-  background: var(--fond-3);
+  background: var(--fond-2);
 }
 .echauffement summary {
   cursor: pointer;
   list-style: none;
-  font-family: var(--police-titre);
   font-weight: 600;
-  font-size: .85rem;
+  font-size: .7rem;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .16em;
   color: var(--texte-2);
 }
 .echauffement summary::-webkit-details-marker { display: none; }
@@ -772,7 +873,7 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 .echauffement li { font-size: .9rem; line-height: 1.5; color: var(--texte); margin: 3px 0; }
 
 /* Feuille de confirmation maison (les confirm() natifs sortent du plein écran). */
-.feuille-confirm { max-width: 480px; border-radius: 18px; margin-bottom: 18vh; }
+.feuille-confirm { max-width: 480px; border-radius: 20px; border: 1px solid var(--bord); margin-bottom: 18vh; }
 .feuille-confirm p { font-size: 1rem; line-height: 1.5; margin: 4px 2px 14px; }
 .overlay:has(.feuille-confirm) { align-items: center; }
 
@@ -793,8 +894,8 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   align-items: flex-start;
   gap: 10px;
   background: var(--fond-3);
-  border: 1px solid var(--bord);
-  border-radius: 10px;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
   padding: 12px;
   font-size: .92rem;
   line-height: 1.45;
@@ -808,17 +909,17 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   flex-shrink: 0;
 }
 .etirement-item:has(input:checked) {
-  border-color: var(--accent);
+  border-color: rgba(201, 169, 110, .45);
 }
 .etirement-item:has(input:checked) span {
   color: var(--texte-2);
   text-decoration: line-through;
 }
 
-/* --- Graphiques -------------------------------------------------------------------------------------------------------- */
+/* --- Graphiques ---------------------------------------------------------------------------------------- */
 .graphe { width: 100%; height: 170px; display: block; margin-top: 6px; }
 
-/* --- Onglet Volume (Suivi) : séries par muscle vs zone efficace ------------------------------------------------------- */
+/* --- Onglet Volume (Suivi) : séries par muscle vs zone efficace --------------------------------------- */
 .vol-ligne { margin: 12px 0; }
 .vol-rail { position: relative; }
 /* Repère de la zone efficace : trait vertical à ZONE_MIN (50 % du rail = 10/20). */
@@ -826,16 +927,18 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   content: "";
   position: absolute;
   left: 50%;
-  top: 0; bottom: 0;
-  width: 2px;
+  top: -2px; bottom: -2px;
+  width: 1px;
   background: var(--texte-2);
   opacity: .55;
+  height: auto;
 }
 .vol-rail .vol-sous { opacity: .45; }
-.vol-rail .vol-trop { background: var(--danger); }
+.vol-rail .vol-trop { background: var(--danger); box-shadow: none; }
+.vol-rail .vol-trop::after { display: none; }
 .vol-delta { color: var(--texte-2); font-size: .78rem; }
 
-/* --- Motion : « la Ligne se dessine » -----------------------------------------------------------------------------------
+/* --- Motion : « la Ligne se dessine » ---------------------------------------------------------------------
    Une seule idée, déclinée : à l'entrée d'une vue, le contenu se pose et toutes
    les Lignes (progression, jauges, nav) se tracent de gauche à droite — comme un
    trait de magnésie. Le reste n'est que feedback bref. Le routeur pose la classe
@@ -882,7 +985,7 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
   animation: trace-ligne .55s var(--sortie) .12s backwards;
 }
 
-/* Nav : le trait ambre de l'onglet actif se trace à chaque changement. */
+/* Nav : le trait laiton de l'onglet actif se trace à chaque changement. */
 #nav a.actif::before {
   transform-origin: left;
   animation: trace-ligne .25s var(--sortie);
@@ -913,7 +1016,7 @@ body.mode-seance .barre-temps.grand { font-size: 2.4rem; }
 a.carte:active, .carte-session:active, .carte-pr:active { transform: scale(.99); }
 .btn-x:active { transform: scale(.9); }
 
-/* Clavier : focus visible, à l'ambre. */
+/* Clavier : focus visible, au laiton. */
 a:focus-visible, button:focus-visible, summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

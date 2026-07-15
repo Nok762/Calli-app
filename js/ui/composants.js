@@ -261,7 +261,7 @@ export function choisirExercice({ exercices, contraintes = null, onChoisi }) {
         const verif = contraintes ? verifierExercice(ex, contraintes) : { ok: true, raisons: [] };
         return `
           <button class="picker-item" data-id="${ex.id}">
-            <span>${ex.nom}${verif.ok ? '' : `<br><small class="texte-attention">⚠ ${verif.raisons.join(' · ')}</small>`}</span>
+            <span>${ex.nom}${verif.ok ? '' : `<br><small class="texte-attention">${verif.raisons.join(' · ')}</small>`}</span>
             <span class="texte-2">${ex.type === 'hold' ? 'tenue' : 'reps'} · diff. ${ex.difficulte}</span>
           </button>`;
       }).join('') || '<p class="texte-2 centre">Aucun résultat</p>';

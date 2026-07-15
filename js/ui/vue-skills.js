@@ -26,7 +26,7 @@ async function listeSkills(el) {
           <span class="badge">${etat.termine ? 'Terminé ✓' : `${validees}/${total}`}</span>
         </div>
         <div class="barre-prog"><div style="width:${(validees / total) * 100}%"></div></div>
-        <div class="texte-2">${etat.termine ? 'Skill débloqué 🎉' : `Étape ${courante.step} — ${courante.exercice.nom}`}</div>
+        <div class="texte-2">${etat.termine ? 'Skill débloqué' : `Étape ${courante.step} — ${courante.exercice.nom}`}</div>
       </a>`);
   }
   el.innerHTML = `<h1>Skills</h1><div class="liste">${cartes.join('')}</div>`;
@@ -66,7 +66,7 @@ async function detailSkill(el, skillId) {
   el.innerHTML = `
     <a class="retour" href="#/skills">← Skills</a>
     <h1>${skill.nom}</h1>
-    ${etat.termine ? `<div class="carte accent">Skill débloqué 🎉 — continue à l'entretenir.</div>` : ''}
+    ${etat.termine ? `<div class="carte accent">Skill débloqué — continue à l'entretenir.</div>` : ''}
     <div class="echelle">${lignes.join('')}</div>`;
 
   el.querySelector('[data-valider]')?.addEventListener('click', async () => {
@@ -78,7 +78,7 @@ async function detailSkill(el, skillId) {
     const etape = skill.etapes.find((e) => e.step === etat.etapeCourante);
     const derniere = etape.step === skill.etapes[skill.etapes.length - 1].step;
     await validerEtape(skill, etape.step, { type: etape.exercice.type, valeur });
-    toast(derniere ? '🎉 Skill terminé, bravo !' : 'Étape validée — suivante débloquée 💪');
+    toast(derniere ? 'Skill terminé, bravo !' : 'Étape validée — suivante débloquée');
     detailSkill(el, skillId);
   });
 
