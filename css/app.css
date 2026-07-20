@@ -251,6 +251,10 @@ li { line-height: 1.6; }
 }
 .nav-ico { width: 21px; height: 21px; display: block; }
 
+/* --- Onboarding (premier lancement) : le rail du parcours ------------------------- */
+.onb-prog { margin: -8px 0 24px; }
+.onb-prog .player-prog-txt { text-align: left; margin-bottom: 7px; }
+
 /* --- Cartes et listes ----------------------------------------------------------- */
 .liste { display: flex; flex-direction: column; gap: 14px; margin: 12px 0 20px; }
 .carte {

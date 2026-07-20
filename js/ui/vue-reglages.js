@@ -15,13 +15,16 @@ import { toast, setSonActif, confirmer, libelle } from './composants.js';
 const STORES_DONNEES = ['etat_skills', 'sessions', 'pr', 'poids', 'programmes', 'reglages'];
 
 export async function vueReglages(el) {
-  const [repos, prepa, son, zonesFragiles] = await Promise.all([
+  const [repos, prepa, son, zonesFragiles, materielHabituel] = await Promise.all([
     getReglage('dureeRepos', 90),
     getReglage('dureePrepa', 5),
     getReglage('son', true),
     getReglage('zonesFragiles', []),
+    getReglage('materielHabituel', []),
   ]);
   const zones = ctx.meta?.enums.zones_a_risque || ['poignets', 'epaules', 'coudes', 'lombaires', 'genoux'];
+  const equipements = (ctx.meta?.enums.equipement || ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'])
+    .filter((e) => e !== 'aucun');
 
   // État du stockage : persistant = le navigateur s'engage à ne pas purger.
   let persistant = null;
@@ -48,6 +51,15 @@ export async function vueReglages(el) {
       </div>
       <div class="chips" style="margin-top:10px">
         <label class="chip"><input type="checkbox" id="reg-son" ${son ? 'checked' : ''}><span>Son + vibration</span></label>
+      </div>
+    </div>
+
+    <div class="carte">
+      <h3>Matériel habituel</h3>
+      <p class="texte-2">Pré-coché au démarrage de chaque séance — tu ajustes l'exception
+        du jour là-bas, pas la règle ici.</p>
+      <div class="chips" id="chips-materiel-hab">
+        ${equipements.map((e) => `<label class="chip"><input type="checkbox" value="${e}" ${materielHabituel.includes(e) ? 'checked' : ''}><span>${libelle(e)}</span></label>`).join('')}
       </div>
     </div>
 
@@ -94,6 +106,11 @@ export async function vueReglages(el) {
   el.querySelector('#chips-zones-fragiles').addEventListener('change', () => {
     const cochees = [...el.querySelectorAll('#chips-zones-fragiles input:checked')].map((i) => i.value);
     setReglage('zonesFragiles', cochees);
+  });
+
+  el.querySelector('#chips-materiel-hab').addEventListener('change', () => {
+    const cochees = [...el.querySelectorAll('#chips-materiel-hab input:checked')].map((i) => i.value);
+    setReglage('materielHabituel', cochees);
   });
 
   // --- Export : un fichier JSON autoportant, daté. --------------------------------

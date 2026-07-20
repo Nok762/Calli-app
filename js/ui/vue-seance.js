@@ -177,6 +177,19 @@ async function formulaireDemarrage(el) {
     if (zonesFragiles.includes(i.value)) i.checked = true;
   });
 
+  // Matériel habituel (onboarding / Réglages), sinon celui de la dernière
+  // séance : pré-coché — démarrer ne demande plus que d'ajuster l'exception.
+  let materielPrecoche = await getReglage('materielHabituel', null);
+  if (!materielPrecoche) {
+    const dernieres = await dbGetAll('sessions');
+    materielPrecoche = dernieres.sort((a, b) => b.dateDebut.localeCompare(a.dateDebut))[0]?.contraintes.materiel || null;
+  }
+  if (materielPrecoche) {
+    el.querySelectorAll('#chips-materiel input').forEach((i) => {
+      if (materielPrecoche.includes(i.value)) i.checked = true;
+    });
+  }
+
   el.querySelector('#btn-annuler-template')?.addEventListener('click', async () => {
     await setReglage('template_a_demarrer', null);
     formulaireDemarrage(el);

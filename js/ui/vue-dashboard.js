@@ -10,6 +10,7 @@ import { getPR } from '../pr.js';
 import { suggestionsPalier, suggestionsDeload, suggestionsPlateau } from '../moteur/adaptation.js';
 import { prochainJour, REGLES } from '../moteur/generateur.js';
 import { afficherChecklist, echapper } from './composants.js';
+import { vueOnboarding } from './vue-onboarding.js';
 
 // Clé de date en heure LOCALE (toISOString est en UTC : à minuit heure de
 // Paris, le jour UTC est encore la veille — faux marquage du calendrier).
@@ -23,6 +24,13 @@ export async function vueAccueil(el) {
     dbGetAll('programmes'),
     getReglage('seance_en_cours'),
   ]);
+
+  // Premier lancement (rien : ni programme, ni séance, ni onboarding passé) :
+  // l'Accueil devient le parcours d'accueil — trois questions, un plan prêt.
+  if (!programmes.length && !sessions.length && !brouillon
+      && !(await getReglage('onboarding_fait'))) {
+    return vueOnboarding(el, () => vueAccueil(el));
+  }
 
   const date = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const progGenere = programmes.find((p) => p.genere);
@@ -76,7 +84,7 @@ export async function vueAccueil(el) {
         <div class="hero-label">Séance en cours</div>
         <div class="hero-titre">Reprendre</div>
         <div class="texte-2">Là où tu en étais · le chrono t'attend.</div>
-      </a>` : heroHtml(hero)}
+      </a>` : heroHtml(hero, sessions.length === 0)}
 
     ${etirRecents ? '<button class="carte-fine btn-etirements" id="btn-etirements">Étirements de la dernière séance</button>' : ''}
 
@@ -168,7 +176,7 @@ function textePlateau(s) {
 }
 
 // Carte hero : LA décision du jour, un seul gros bouton.
-function heroHtml(hero) {
+function heroHtml(hero, premiereSeance) {
   if (!hero) {
     return `
       <div class="carte accent">
@@ -176,7 +184,7 @@ function heroHtml(hero) {
         <div class="hero-titre">Ton premier programme</div>
         <div class="texte-2">Un plan construit sur tes objectifs et ton matériel, qui évolue tout seul.</div>
         <button class="btn btn-accent btn-large" data-generer>Générer mon programme</button>
-        <p class="texte-2 centre" style="padding:8px 0 0; margin:0">ou <a href="#/seance">séance libre</a></p>
+        <p class="texte-2 centre" style="padding:8px 0 0; margin:0">ou <a href="#/seance">séance du jour</a></p>
       </div>`;
   }
   const duree = Math.round((hero.jour.exercices.length * REGLES.MIN_PAR_EXO) / 5) * 5;
@@ -185,12 +193,12 @@ function heroHtml(hero) {
     .filter(({ jour, j }) => j !== hero.j && jour.exercices.length);
   return `
     <div class="carte accent">
-      <div class="hero-label">Prochaine séance</div>
+      <div class="hero-label">${premiereSeance ? 'Ta première séance' : 'Prochaine séance'}</div>
       <div class="hero-titre">${echapper(hero.jour.nom)}</div>
       <div class="texte-2">${echapper(hero.prog.nom)} · ${hero.jour.exercices.length} exercices · ~${duree} min</div>
       <button class="btn btn-accent btn-large" data-template="${hero.prog.id}:${hero.j}">▶ Démarrer</button>
       <p class="texte-2 centre" style="padding:8px 0 0; margin:0">
-        ${autres.map(({ jour, j }) => `<button class="btn-lien" data-template="${hero.prog.id}:${j}">${echapper(jour.nom)}</button>`).join(' · ')}${autres.length ? ' · ' : ''}<a href="#/seance">séance libre</a>
+        ${autres.map(({ jour, j }) => `<button class="btn-lien" data-template="${hero.prog.id}:${j}">${echapper(jour.nom)}</button>`).join(' · ')}${autres.length ? ' · ' : ''}<a href="#/seance">séance du jour</a>
       </p>
     </div>`;
 }

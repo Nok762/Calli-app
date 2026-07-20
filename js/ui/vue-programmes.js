@@ -207,7 +207,8 @@ async function assistant(el) {
   // Matériel pré-coché depuis la dernière séance loggée.
   const sessions = await dbGetAll('sessions');
   const derniere = sessions.sort((a, b) => b.dateDebut.localeCompare(a.dateDebut))[0];
-  const dernierMateriel = derniere?.contraintes.materiel || [];
+  const dernierMateriel = (await getReglage('materielHabituel', null))
+    || derniere?.contraintes.materiel || [];
   const zonesFragiles = await getReglage('zonesFragiles', []);
   const equip = (ctx.meta?.enums.equipement || ['barre', 'anneaux', 'parallettes', 'elastiques', 'surface_surelevee'])
     .filter((e) => e !== 'aucun');
