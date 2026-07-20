@@ -19,6 +19,7 @@ import {
 } from '../moteur/adaptation.js';
 import {
   evoluerCibles, modulationSeance, proposerSeanceRaccourcie, genererEtirements, cibleSkill,
+  genererSeancePonctuelle,
 } from '../moteur/generateur.js';
 import { toast, bip, tick, go, libelle, choisirExercice, confirmer, afficherChecklist, echapper } from './composants.js';
 
@@ -160,7 +161,13 @@ async function formulaireDemarrage(el) {
             <option value="haute">Haute</option>
           </select></label>
       </div>
-      <button class="btn btn-accent btn-large" id="btn-demarrer">Démarrer la séance</button>
+      ${template ? `
+        <button class="btn btn-accent btn-large" id="btn-demarrer">Démarrer la séance</button>
+      ` : `
+        <button class="btn btn-accent btn-large" id="btn-ponctuelle">Générer la séance du jour</button>
+        <p class="centre texte-2">Une séance complète construite avec le matériel coché ci-dessus
+          — sans toucher à tes programmes.<br>ou <a href="#" id="lnk-libre">séance libre (vide)</a></p>
+      `}
     </div>
     <p class="centre"><a href="#/programmes">Gérer mes programmes →</a></p>`;
 
@@ -182,18 +189,73 @@ async function formulaireDemarrage(el) {
       formulaireDemarrage(el);
     }));
 
-  el.querySelector('#btn-demarrer').addEventListener('click', async () => {
+  const lireContraintes = () => ({
+    materiel: cochees('#chips-materiel'),
+    douleurs: cochees('#chips-douleurs'),
+    tempsDispo: Number(el.querySelector('#inp-temps').value) || null,
+    energie: el.querySelector('#sel-energie').value,
+  });
+
+  // Filtre matériel/douleurs à l'entrée de séance : un exercice irréalisable
+  // avec les contraintes du jour est remplacé D'OFFICE par la meilleure
+  // alternative compatible — tracé ⇄ avec sa raison, réversible en séance.
+  // Un bloc skill substitué perd son marqueur `skill` : le remplaçant n'est pas
+  // l'étape (le programme, lui, garde son exercice canonique). Sans alternative
+  // possible, l'exercice reste avec son avertissement : l'utilisateur garde le
+  // dernier mot.
+  const substituerIrrealisables = (entrees, contraintes) => {
+    const bilan = { remplaces: 0, sansAlternative: 0 };
+    for (const entree of entrees) {
+      if (entree.remplace) continue; // déjà remplacé (« Varier »)
+      const ex = ctx.exercices.get(entree.exerciceId);
+      if (!ex || verifierExercice(ex, contraintes).ok) continue;
+      // Garde-fou : jamais un remplaçant à plus de 2 points de difficulté de
+      // l'exo prévu (sans lui, « tractions négatives » sans barre pouvait
+      // devenir « muscle-up » — seul tirage vertical compatible anneaux).
+      const alt = proposerAlternatives(ex, ctx.exercices, contraintes, 'contrainte')
+        .find((a) => Math.abs(a.exercice.difficulte - ex.difficulte) <= 2);
+      if (!alt) { bilan.sansAlternative++; continue; }
+      entree.remplace = { exerciceIdPrevu: ex.id, raison: texteCause('contrainte', ex, contraintes) };
+      entree.exerciceId = alt.exercice.id;
+      delete entree.skill;
+      // La valeur cible n'a de sens que si la modalité ne change pas.
+      if (entree.cible && ex.type !== alt.exercice.type) {
+        entree.cible.valeur = alt.exercice.type === 'hold' ? 15 : 8;
+      }
+      bilan.remplaces++;
+    }
+    return bilan;
+  };
+
+  // Lancement commun : persiste la séance et bascule en mode Focus.
+  const lancer = async (nouvelleSeance, bilan) => {
+    seance = nouvelleSeance;
+    await setReglage('template_a_demarrer', null);
+    await persister();
+    const morceaux = [];
+    if (bilan?.remplaces) {
+      morceaux.push(`${bilan.remplaces} exercice${bilan.remplaces > 1 ? 's' : ''} adapté${bilan.remplaces > 1 ? 's' : ''} à ton matériel`);
+    }
+    if (bilan?.sansAlternative) {
+      morceaux.push(`${bilan.sansAlternative} exercice${bilan.sansAlternative > 1 ? 's' : ''} sans alternative avec ce matériel — gardé${bilan.sansAlternative > 1 ? 's' : ''}, remplaçable${bilan.sansAlternative > 1 ? 's' : ''} en séance (⇄)`);
+    }
+    if (morceaux.length) toast(morceaux.join(' · '));
+    // « Quelque chose se lance » : plein écran (best-effort, geste utilisateur)
+    // + décompte 3·2·1·GO au premier rendu du player.
+    focusIndex = 0;
+    modeListe = false;
+    animerProchainRendu = true;
+    demanderFullscreen();
+    vueSeance(el);
+  };
+
+  el.querySelector('#btn-demarrer')?.addEventListener('click', async () => {
     const sessions = await dbGetAll('sessions');
     // Modulation (deload planifié / reprise après pause) pour un programme
     // généré : appliquée à la SÉANCE uniquement — le programme garde ses
     // cibles canoniques, et la bannière permet de rétablir.
     const modulation = template?.prog.genere ? modulationSeance(template.prog, sessions) : null;
-    const contraintes = {
-      materiel: cochees('#chips-materiel'),
-      douleurs: cochees('#chips-douleurs'),
-      tempsDispo: Number(el.querySelector('#inp-temps').value) || null,
-      energie: el.querySelector('#sel-energie').value,
-    };
+    const contraintes = lireContraintes();
     // Autorégulation « forme du jour » : verdict figé au démarrage (comme la
     // modulation), consommé ensuite par la bannière readiness.
     const readiness = evaluerReadiness(contraintes, sessions);
@@ -226,7 +288,8 @@ async function formulaireDemarrage(el) {
         }
       }
     }
-    seance = {
+    const bilan = substituerIrrealisables(entrees, contraintes);
+    await lancer({
       id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       dateDebut: new Date().toISOString(),
       programme: template
@@ -239,16 +302,72 @@ async function formulaireDemarrage(el) {
       echauffement: template?.jour.echauffement || null,
       mobilite: template?.jour.mobilite || null,
       ajustements: {},
-    };
-    await setReglage('template_a_demarrer', null);
-    await persister();
-    // « Quelque chose se lance » : plein écran (best-effort, geste utilisateur)
-    // + décompte 3·2·1·GO au premier rendu du player.
-    focusIndex = 0;
-    modeListe = false;
-    animerProchainRendu = true;
-    demanderFullscreen();
-    vueSeance(el);
+    }, bilan);
+  });
+
+  // Séance ponctuelle « hors programme » : un jour complet généré avec les
+  // contraintes cochées à l'instant (matériel réellement dispo, douleurs,
+  // temps). Les objectifs skills du dernier programme généré orientent la
+  // sélection s'il en existe un ; rien n'est enregistré côté programmes.
+  el.querySelector('#btn-ponctuelle')?.addEventListener('click', async () => {
+    const contraintes = lireContraintes();
+    const sessions = await dbGetAll('sessions');
+    const readiness = evaluerReadiness(contraintes, sessions);
+    const etats = new Map();
+    for (const skill of ctx.skills) etats.set(skill.id, await getEtatSkill(skill));
+    const prs = new Map((await dbGetAll('pr')).map((p) => [p.exerciceId, p]));
+    const dernierGenere = (await dbGetAll('programmes'))
+      .filter((p) => p.genere)
+      .sort((a, b) => (b.genere.dateDebut || '').localeCompare(a.genere.dateDebut || ''))[0];
+
+    const jour = genererSeancePonctuelle({
+      objectifs: dernierGenere?.genere.objectifs || [],
+      objectifGlobal: dernierGenere?.genere.objectifGlobal || 'forme',
+      materiel: contraintes.materiel,
+      dureeMin: contraintes.tempsDispo || 45,
+      zonesFragiles: contraintes.douleurs,
+    }, { exercices: ctx.exercices, skills: ctx.skills, etats, prs });
+
+    const entrees = jour.exercices.map((e) => {
+      const entree = { exerciceId: e.exerciceId, sets: [], cible: { ...e.cible } };
+      if (e.skill) entree.skill = e.skill;
+      return entree;
+    });
+    // Le générateur filtre la force par matériel, mais pas les étapes de skill :
+    // la passe de substitution couvre ce cas (et les douleurs déclarées).
+    const bilan = substituerIrrealisables(entrees, contraintes);
+    await lancer({
+      id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      dateDebut: new Date().toISOString(),
+      programme: null,
+      generee: true,
+      contraintes,
+      entrees,
+      modulation: null,
+      readiness,
+      echauffement: jour.echauffement || null,
+      mobilite: null,
+      ajustements: {},
+    }, bilan);
+  });
+
+  // Séance libre : on démarre vide, les exercices s'ajoutent en séance.
+  el.querySelector('#lnk-libre')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const contraintes = lireContraintes();
+    const sessions = await dbGetAll('sessions');
+    await lancer({
+      id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      dateDebut: new Date().toISOString(),
+      programme: null,
+      contraintes,
+      entrees: [],
+      modulation: null,
+      readiness: evaluerReadiness(contraintes, sessions),
+      echauffement: null,
+      mobilite: null,
+      ajustements: {},
+    }, 0);
   });
 }
 
@@ -279,7 +398,7 @@ function rendrePlayer(el) {
     el.innerHTML = `
       <div class="player">
         <div class="player-tete">
-          <div class="player-prog"><div class="player-prog-txt">${seance.programme ? echapper(seance.programme.jour) : 'Séance libre'}</div></div>
+          <div class="player-prog"><div class="player-prog-txt">${seance.programme ? echapper(seance.programme.jour) : seance.generee ? 'Séance du jour' : 'Séance libre'}</div></div>
           <button class="btn-x" data-liste title="Vue liste">☰</button>
         </div>
         <div class="player-corps">
@@ -537,7 +656,7 @@ function rendreListe(el) {
 
   el.innerHTML = `
     <div class="entete-seance">
-      <h1>${seance.programme ? echapper(seance.programme.nom + ' — ' + seance.programme.jour) : 'Séance en cours'}</h1>
+      <h1>${seance.programme ? echapper(seance.programme.nom + ' — ' + seance.programme.jour) : seance.generee ? 'Séance du jour' : 'Séance en cours'}</h1>
       <span class="texte-2">démarrée à ${heure}</span>
     </div>
     ${resumeContraintes()}

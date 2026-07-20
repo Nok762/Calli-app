@@ -457,6 +457,16 @@ export function genererProgramme(params, donnees) {
   };
 }
 
+// Séance ponctuelle « hors programme » : UN jour d'entraînement généré avec les
+// contraintes du moment (matériel réellement coché, zones à ménager, temps
+// dispo). On réutilise la génération complète en fréquence 2 — ses jours sont
+// équilibrés quasi full-body — et on ne garde que le premier jour. Rien n'est
+// enregistré comme programme : le jour retourné se consomme directement en
+// séance.
+export function genererSeancePonctuelle(params, donnees) {
+  return genererProgramme({ ...params, frequence: 2 }, donnees).jours[0];
+}
+
 // Niveau force estimé depuis les PR existants (difficulté moyenne des exercices
 // maîtrisés). Estimé PAR PATTERN : on peut être avancé en tirage et débutant en
 // jambes, et le générateur doit choisir en conséquence. Sans historique sur un

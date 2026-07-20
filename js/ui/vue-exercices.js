@@ -12,20 +12,23 @@ export async function vueExercices(el, params) {
 }
 
 // Filtres conservés en mémoire pour survivre aux allers-retours liste/détail.
-const filtres = { q: '', pattern: '', equipement: '' };
+const filtres = { q: '', muscle: '', equipement: '' };
 
 function listeExercices(el) {
   const patterns = ctx.meta?.enums.pattern || [...new Set([...ctx.exercices.values()].map((e) => e.pattern))];
   const equips = ctx.meta?.enums.equipement || [];
+  // Zones ciblées : dérivées du seed (pas d'énumération dédiée dans meta).
+  const muscles = [...new Set([...ctx.exercices.values()].flatMap((e) => e.muscles_primaires))]
+    .sort((a, b) => libelle(a).localeCompare(libelle(b)));
 
   el.innerHTML = `
     <h1>Exercices</h1>
     <div class="filtres">
       <input type="search" id="f-q" placeholder="Chercher…" value="${filtres.q}">
       <div class="ligne-2">
-        <select id="f-pattern">
-          <option value="">Tous patterns</option>
-          ${patterns.map((p) => `<option value="${p}" ${filtres.pattern === p ? 'selected' : ''}>${libelle(p)}</option>`).join('')}
+        <select id="f-muscle">
+          <option value="">Toutes zones ciblées</option>
+          ${muscles.map((m) => `<option value="${m}" ${filtres.muscle === m ? 'selected' : ''}>${libelle(m)}</option>`).join('')}
         </select>
         <select id="f-equip">
           <option value="">Tout équipement</option>
@@ -33,25 +36,36 @@ function listeExercices(el) {
         </select>
       </div>
     </div>
-    <div class="liste" id="liste-exos"></div>`;
+    <div id="liste-exos"></div>`;
 
   const rendre = () => {
     const exos = [...ctx.exercices.values()]
       .filter((ex) => !filtres.q || ex.nom.toLowerCase().includes(filtres.q.toLowerCase()))
-      .filter((ex) => !filtres.pattern || ex.pattern === filtres.pattern)
+      .filter((ex) => !filtres.muscle || ex.muscles_primaires.includes(filtres.muscle))
       .filter((ex) => !filtres.equipement || ex.equipement.includes(filtres.equipement))
       .sort((a, b) => a.difficulte - b.difficulte || a.nom.localeCompare(b.nom));
 
-    el.querySelector('#liste-exos').innerHTML = exos.map((ex) => `
+    const carte = (ex) => `
       <a class="carte carte-exo-liste" href="#/exercices/${ex.id}">
         <div><strong>${ex.nom}</strong>${ex.skill ? ' <span class="badge badge-accent">skill</span>' : ''}</div>
-        <div class="texte-2">${libelle(ex.pattern)} · ${ex.type === 'hold' ? 'tenue' : 'reps'} · difficulté ${ex.difficulte}/10</div>
-      </a>`).join('') || '<p class="texte-2 centre">Aucun exercice ne correspond.</p>';
+        <div class="texte-2">${ex.muscles_primaires.map(libelle).join(', ')} · ${ex.type === 'hold' ? 'tenue' : 'reps'} · difficulté ${ex.difficulte}/10</div>
+      </a>`;
+
+    // Rangés par famille de mouvement : chaque exercice appartient à UN pattern
+    // (un regroupement par muscle dupliquerait les fiches), et le filtre
+    // « zone ciblée » ci-dessus croise les groupes.
+    el.querySelector('#liste-exos').innerHTML = patterns
+      .map((p) => ({ p, groupe: exos.filter((ex) => ex.pattern === p) }))
+      .filter(({ groupe }) => groupe.length)
+      .map(({ p, groupe }) => `
+        <h3>${libelle(p)} · ${groupe.length}</h3>
+        <div class="liste">${groupe.map(carte).join('')}</div>`)
+      .join('') || '<p class="texte-2 centre">Aucun exercice ne correspond.</p>';
   };
   rendre();
 
   el.querySelector('#f-q').addEventListener('input', (e) => { filtres.q = e.target.value; rendre(); });
-  el.querySelector('#f-pattern').addEventListener('change', (e) => { filtres.pattern = e.target.value; rendre(); });
+  el.querySelector('#f-muscle').addEventListener('change', (e) => { filtres.muscle = e.target.value; rendre(); });
   el.querySelector('#f-equip').addEventListener('change', (e) => { filtres.equipement = e.target.value; rendre(); });
 }
 

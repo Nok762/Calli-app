@@ -13,6 +13,13 @@ const LIBELLES = {
   gainage_anti_extension: 'gainage anti-extension',
   gainage_anti_rotation: 'gainage anti-rotation',
   straight_arm: 'straight-arm',
+  // Muscles (zones ciblées, filtre de la bibliothèque d'exercices).
+  pectoraux: 'pectoraux', dorsaux: 'dorsaux', trapezes: 'trapèzes',
+  deltoides: 'deltoïdes', deltoides_anterieurs: 'deltoïdes antérieurs',
+  biceps: 'biceps', triceps: 'triceps', avant_bras: 'avant-bras',
+  quadriceps: 'quadriceps', ischios: 'ischios', fessiers: 'fessiers',
+  fléchisseurs_hanche: 'fléchisseurs de hanche',
+  gainage: 'gainage', obliques: 'obliques',
 };
 
 export function libelle(valeur) {
